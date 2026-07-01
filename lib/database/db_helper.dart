@@ -12,15 +12,31 @@ class DatabaseHelper {
   static late Box<dynamic> paymentBox;
 
   static Future<void> init() async {
-    await Hive.initFlutter();
+    if (!Hive.isBoxOpen('transactions')) {
+      transactionBox = await Hive.openBox('transactions');
+    } else {
+      transactionBox = Hive.box('transactions');
+    }
     
-    transactionBox = await Hive.openBox('transactions');
-    debtBox = await Hive.openBox('debts');
-    bankBox = await Hive.openBox('banks');
-    paymentBox = await Hive.openBox('payments');
+    if (!Hive.isBoxOpen('debts')) {
+      debtBox = await Hive.openBox('debts');
+    } else {
+      debtBox = Hive.box('debts');
+    }
+    
+    if (!Hive.isBoxOpen('banks')) {
+      bankBox = await Hive.openBox('banks');
+    } else {
+      bankBox = Hive.box('banks');
+    }
+    
+    if (!Hive.isBoxOpen('payments')) {
+      paymentBox = await Hive.openBox('payments');
+    } else {
+      paymentBox = Hive.box('payments');
+    }
   }
 
-  // Transactions
   static Future<void> insertTransaction(Transaction transaction) async {
     await transactionBox.put(transaction.id, transaction.toMap());
   }
@@ -41,7 +57,6 @@ class DatabaseHelper {
     await transactionBox.delete(id);
   }
 
-  // Debts
   static Future<void> insertDebt(Debt debt) async {
     await debtBox.put(debt.id, debt.toMap());
   }
@@ -62,7 +77,6 @@ class DatabaseHelper {
     await debtBox.delete(id);
   }
 
-  // Banks
   static Future<void> insertBank(Bank bank) async {
     await bankBox.put(bank.id, bank.toMap());
   }
@@ -83,7 +97,6 @@ class DatabaseHelper {
     await bankBox.delete(id);
   }
 
-  // Payments
   static Future<void> insertPayment(Payment payment) async {
     await paymentBox.put(payment.id, payment.toMap());
   }
