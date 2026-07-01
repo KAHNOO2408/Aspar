@@ -4,7 +4,6 @@ import '../database/db_helper.dart';
 
 class AddBankScreen extends StatefulWidget {
   const AddBankScreen({Key? key}) : super(key: key);
-
   @override
   State<AddBankScreen> createState() => _AddBankScreenState();
 }
@@ -38,15 +37,13 @@ class _AddBankScreenState extends State<AddBankScreen> {
         );
         return;
       }
-
       final bank = Bank(
+        id: DateTime.now().millisecondsSinceEpoch,
         bankName: bankNameController.text,
         accountNumber: accountNumberController.text,
         balance: double.parse(balanceController.text),
       );
-
       await DatabaseHelper.insertBank(bank);
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('بانک اضافه شد')),
       );
