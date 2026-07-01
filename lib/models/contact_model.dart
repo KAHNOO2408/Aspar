@@ -1,149 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:hive/hive.dart';
-import '../models/debt_model.dart';
-import '../models/contact_model.dart';
 
-class AddDebtScreen extends StatefulWidget {
-  final DebtType type;
-  const AddDebtScreen({Key? key, required this.type}) : super(key: key);
+class Contact {
+  final int? id;
+  final String firstName;
+  final String lastName;
+  final String phoneNumber;
+  final String? address;
 
-  @override
-  State<AddDebtScreen> createState() => _AddDebtScreenState();
+  Contact({
+    this.id,
+    required this.firstName,
+    required this.lastName,
+    required this.phoneNumber,
+    this.address,
+  });
+
+  String get fullName => '$firstName $lastName';
 }
 
-class _AddDebtScreenState extends State<AddDebtScreen> {
-  final amountController = TextEditingController();
-  final descriptionController = TextEditingController();
-  Contact? selectedContact;
-  List<Contact> allContacts = [];
+class ContactProvider extends ChangeNotifier {
+  List<Contact> contacts = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadContacts();
+  void addContact(Contact contact) {
+    contacts.add(Contact(
+      id: contacts.isEmpty ? 1 : contacts.last.id! + 1,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      phoneNumber: contact.phoneNumber,
+      address: contact.address,
+    ));
+    notifyListeners();
   }
 
-  void _loadContacts() {
-    try {
-      allContacts = context.read<ContactProvider>().contacts;
-    } catch (e) {
-      print('خطا در بارگذاری مخاطبین: $e');
+  void updateContact(Contact contact) {
+    final index = contacts.indexWhere((c) => c.id == contact.id);
+    if (index != -1) {
+      contacts[index] = contact;
+      notifyListeners();
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.type == DebtType.owed ? 'افزودن بدهی' : 'افزودن طلب'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('انتخاب مخاطب',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-            const SizedBox(height: 10),
-            DropdownButton<Contact>(
-              isExpanded: true,
-              hint: const Text('مخاطب را انتخاب کنید'),
-              value: selectedContact,
-              items: allContacts.map((contact) {
-                return DropdownMenuItem(
-                  value: contact,
-                  child: Text(contact.fullName),
-                );
-              }).toList(),
-              onChanged: (contact) {
-                setState(() {
-                  selectedContact = contact;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: amountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'مبلغ',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: descriptionController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: 'توضیح',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _addDebt,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.type == DebtType.owed ? Colors.red : Colors.green,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text(
-                'اضافه کن',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _addDebt() {
-    if (selectedContact == null || amountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('مخاطب و مبلغ را انتخاب کنید')),
-      );
-      return;
-    }
-
-    final amount = double.tryParse(amountController.text) ?? 0;
-    if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('مبلغ باید بزرگتر از صفر باشد')),
-      );
-      return;
-    }
-
-    final debt = Debt(
-      personName: selectedContact!.firstName,
-      personFamily: selectedContact!.lastName,
-      totalAmount: amount,
-      description: descriptionController.text,
-      date: DateTime.now(),
-      type: widget.type,
-    );
-
-    try {
-      context.read<DebtProvider>().addDebt(debt);
-
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('افزودن شد ✅')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('خطا: $e')),
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    amountController.dispose();
-    descriptionController.dispose();
-    super.dispose();
+  void deleteContact(int id) {
+    contacts.removeWhere((c) => c.id == id);
+    notifyListeners();
   }
 }
