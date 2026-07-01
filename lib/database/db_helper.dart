@@ -10,6 +10,7 @@ class DatabaseHelper {
   static late Box<dynamic> debtBox;
   static late Box<dynamic> bankBox;
   static late Box<dynamic> paymentBox;
+  static late Box<dynamic> authBox;
 
   static Future<void> init() async {
     if (!Hive.isBoxOpen('transactions')) {
@@ -17,23 +18,29 @@ class DatabaseHelper {
     } else {
       transactionBox = Hive.box('transactions');
     }
-    
+
     if (!Hive.isBoxOpen('debts')) {
       debtBox = await Hive.openBox('debts');
     } else {
       debtBox = Hive.box('debts');
     }
-    
+
     if (!Hive.isBoxOpen('banks')) {
       bankBox = await Hive.openBox('banks');
     } else {
       bankBox = Hive.box('banks');
     }
-    
+
     if (!Hive.isBoxOpen('payments')) {
       paymentBox = await Hive.openBox('payments');
     } else {
       paymentBox = Hive.box('payments');
+    }
+
+    if (!Hive.isBoxOpen('auth')) {
+      authBox = await Hive.openBox('auth');
+    } else {
+      authBox = Hive.box('auth');
     }
   }
 
