@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import '../models/bank_model.dart';
+import '../database/db_helper.dart';
 
 class AddBankScreen extends StatefulWidget {
   const AddBankScreen({Key? key}) : super(key: key);
@@ -45,16 +45,13 @@ class _AddBankScreenState extends State<AddBankScreen> {
         balance: double.parse(balanceController.text),
       );
 
-      // Hive میں ذخیره کریں
-      final box = Hive.box<Bank>('banks');
-      await box.add(bank);
+      await DatabaseHelper.insertBank(bank);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('بانک اضافه شد')),
       );
       Navigator.pop(context);
     } catch (e) {
-      print('خطا: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('خطا: $e')),
       );
