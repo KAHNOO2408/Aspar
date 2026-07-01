@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 import '../models/debt_model.dart';
 import '../models/contact_model.dart';
 
@@ -15,24 +15,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final amountController = TextEditingController();
   final descriptionController = TextEditingController();
   Contact? selectedContact;
-  List<Contact> allContacts = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadContacts();
-  }
-
-  void _loadContacts() {
-    try {
-      final contactBox = Hive.box<Contact>('contacts');
-      setState(() {
-        allContacts = contactBox.values.toList();
-      });
-    } catch (e) {
-      print('خطا در بارگذاری مخاطبین: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,62 +24,66 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('انتخاب مخاطب',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-            const SizedBox(height: 10),
-            DropdownButton<Contact>(
-              isExpanded: true,
-              hint: const Text('مخاطب را انتخاب کنید'),
-              value: selectedContact,
-              items: allContacts.map((contact) {
-                return DropdownMenuItem(
-                  value: contact,
-                  child: Text('${contact.name} ${contact.family}'),
-                );
-              }).toList(),
-              onChanged: (contact) {
-                setState(() {
-                  selectedContact = contact;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: amountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'مبلغ',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: descriptionController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: 'توضیح',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _addDebt,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.type == DebtType.owed ? Colors.red : Colors.green,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text(
-                'اضافه کن',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
-              ),
-            ),
-          ],
+        child: Consumer<ContactProvider>(
+          builder: (context, contactProvider, child) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('انتخاب مخاطب',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 10),
+                DropdownButton<Contact>(
+                  isExpanded: true,
+                  hint: const Text('مخاطب را انتخاب کنید'),
+                  value: selectedContact,
+                  items: contactProvider.contacts.map((contact) {
+                    return DropdownMenuItem(
+                      value: contact,
+                      child: Text(contact.fullName),
+                    );
+                  }).toList(),
+                  onChanged: (contact) {
+                    setState(() {
+                      selectedContact = contact;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: amountController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'مبلغ',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'توضیح',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _addDebt,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.type == DebtType.owed ? Colors.red : Colors.green,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text(
+                    'اضافه کن',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -120,8 +106,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     }
 
     final debt = Debt(
-      personName: selectedContact!.name,
-      personFamily: selectedContact!.family,
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
       totalAmount: amount,
       description: descriptionController.text,
       date: DateTime.now(),
@@ -129,8 +115,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     );
 
     try {
-      final debtBox = Hive.box<Debt>('debts');
-      debtBox.add(debt);
+      context.read<DebtProvider>().addDebt(debt);
 
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
