@@ -16,27 +16,24 @@ import 'services/security_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   try {
     await SecurityService.init();
     await SecurityService.initializeSession();
-
     await Hive.initFlutter();
+    
     await DatabaseHelper.init();
-
-    final authBox = await Hive.openBox('auth');
+    
+    final authBox = Hive.box('auth');
     final isActivated = authBox.get('activated', defaultValue: false);
-
+    
     runApp(MyApp(isActivated: isActivated));
   } catch (e) {
-    debugPrint('❌ FATAL ERROR: $e');
     rethrow;
   }
 }
 
 class MyApp extends StatelessWidget {
   final bool isActivated;
-
   const MyApp({Key? key, required this.isActivated}) : super(key: key);
 
   @override
