@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive/hive.dart';
 import 'package:local_auth/local_auth.dart';
 import 'main_screen.dart';
+import 'pattern_verify_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -20,23 +21,26 @@ class _LoginScreenState extends State<LoginScreen> {
   final LocalAuthentication _localAuth = LocalAuthentication();
   bool _biometricAvailable = false;
   bool _useBiometric = false;
+  bool _usePattern = false;
 
   @override
   void initState() {
     super.initState();
-    _initBiometric();
+    _initSecuritySettings();
   }
 
-  Future<void> _initBiometric() async {
+  Future<void> _initSecuritySettings() async {
     try {
       final settingsBox = await Hive.openBox('settings');
       final useBiometric = settingsBox.get('useBiometric', defaultValue: false);
+      final usePattern = settingsBox.get('usePattern', defaultValue: false);
 
       final canCheckBiometrics = await _localAuth.canCheckBiometrics;
       final isDeviceSupported = await _localAuth.isDeviceSupported();
 
       setState(() {
         _useBiometric = useBiometric;
+        _usePattern = usePattern;
         _biometricAvailable = canCheckBiometrics && isDeviceSupported;
       });
 
@@ -44,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) => _authenticateWithBiometrics());
       }
     } catch (e) {
-      debugPrint('Biometric init error: $e');
+      debugPrint('Security init error: $e');
     }
   }
 
@@ -66,6 +70,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         _showError('احراز هویت بیومتریک ناموفق بود، لطفاً با رمز عبور وارد شوید');
       }
+    }
+  }
+
+  Future<void> _authenticateWithPattern() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const PatternVerifyScreen()),
+    );
+
+    if (result == true && mounted) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
     }
   }
 
@@ -156,12 +170,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                     ),
 
-                    if (_useBiometric && _biometricAvailable) ...[
+                    if ((_useBiometric && _biometricAvailable) || _usePattern) ...[
                       const SizedBox(height: 15),
-                      TextButton.icon(
-                        onPressed: _authenticateWithBiometrics,
-                        icon: const Icon(Icons.fingerprint, color: Colors.blue, size: 28),
-                        label: const Text('ورود با اثر انگشت', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_useBiometric && _biometricAvailable)
+                            TextButton.icon(
+                              onPressed: _authenticateWithBiometrics,
+                              icon: const Icon(Icons.fingerprint, color: Colors.blue, size: 26),
+                              label: const Text('اثر انگشت', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
+                            ),
+                          if (_usePattern)
+                            TextButton.icon(
+                              onPressed: _authenticateWithPattern,
+                              icon: const Icon(Icons.pattern, color: Colors.blue, size: 26),
+                              label: const Text('الگو', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
+                            ),
+                        ],
                       ),
                     ],
                   ],
