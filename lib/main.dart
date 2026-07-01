@@ -12,13 +12,10 @@ import 'screens/license_activation_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_screen.dart';
 import 'database/db_helper.dart';
-import 'services/security_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await SecurityService.init();
-    await SecurityService.initializeSession();
     await Hive.initFlutter();
     
     await DatabaseHelper.init();
@@ -28,6 +25,7 @@ void main() async {
     
     runApp(MyApp(isActivated: isActivated));
   } catch (e) {
+    debugPrint('خطا: $e');
     rethrow;
   }
 }
