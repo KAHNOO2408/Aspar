@@ -45,6 +45,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return true;
   }
 
+  Future<bool> _confirmSwitchMethod(String newMethodName, String currentMethodName) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تغییر روش ورود', style: TextStyle(fontWeight: FontWeight.w700)),
+        content: Text(
+          'برای استفاده از «$newMethodName»، باید «$currentMethodName» غیرفعال شود. آیا ادامه می‌دهید؟',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('انصراف'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+            child: const Text('تایید', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   Future<bool> _showPatternSetupFlow() async {
     List<int>? firstPattern;
     bool success = false;
@@ -107,6 +131,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return success;
   }
 
+  Future<void> _onBiometricChanged(bool value) async {
+    if (value) {
+      if (_usePattern) {
+        final confirmed = await _confirmSwitchMethod('اثر انگشت', 'ورود با الگو');
+        if (!confirmed) return;
+        setState(() => _usePattern = false);
+        await settingsBox.put('usePattern', false);
+        await settingsBox.delete('patternHash');
+      }
+      setState(() => _useBiometric = true);
+      await settingsBox.put('useBiometric', true);
+    } else {
+      setState(() => _useBiometric = false);
+      await settingsBox.put('useBiometric', false);
+    }
+  }
+
+  Future<void> _onPatternChanged(bool value) async {
+    if (value) {
+      if (_useBiometric) {
+        final confirmed = await _confirmSwitchMethod('ورود با الگو', 'اثر انگشت');
+        if (!confirmed) return;
+        setState(() => _useBiometric = false);
+        await settingsBox.put('useBiometric', false);
+      }
+      final confirmedPattern = await _showPatternSetupFlow();
+      if (confirmedPattern) {
+        setState(() => _usePattern = true);
+        await settingsBox.put('usePattern', true);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('الگو ذخیره شد ✅')),
+          );
+        }
+      }
+      // اگه کاربر انصراف داد، بیومتریک از قبل خاموش شده و الگو هم روشن نمی‌شه - این حالت رو کاربر باید دستی دوباره درست کنه
+    } else {
+      setState(() => _usePattern = false);
+      await settingsBox.put('usePattern', false);
+      await settingsBox.delete('patternHash');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,34 +193,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'ورود با اثر انگشت',
                   subtitle: 'فعال‌سازی بیومتریک',
                   value: _useBiometric,
-                  onChanged: (value) async {
-                    setState(() => _useBiometric = value);
-                    await settingsBox.put('useBiometric', value);
-                  },
+                  onChanged: _onBiometricChanged,
                 ),
                 _buildSettingTile(
                   icon: Icons.pattern,
                   title: 'ورود با الگو',
                   subtitle: 'رسم الگو برای ورود',
                   value: _usePattern,
-                  onChanged: (value) async {
-                    if (value) {
-                      final confirmed = await _showPatternSetupFlow();
-                      if (confirmed) {
-                        setState(() => _usePattern = true);
-                        await settingsBox.put('usePattern', true);
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('الگو ذخیره شد ✅')),
-                          );
-                        }
-                      }
-                    } else {
-                      setState(() => _usePattern = false);
-                      await settingsBox.put('usePattern', false);
-                      await settingsBox.delete('patternHash');
-                    }
-                  },
+                  onChanged: _onPatternChanged,
                 ),
                 _buildButton(
                   icon: Icons.lock_reset,
