@@ -20,12 +20,12 @@ void main() async {
     await SecurityService.init();
     await SecurityService.initializeSession();
     await Hive.initFlutter();
-    
+
     await DatabaseHelper.init();
-    
-    final authBox = Hive.box('auth');
+
+    final authBox = DatabaseHelper.authBox;
     final isActivated = authBox.get('activated', defaultValue: false);
-    
+
     runApp(MyApp(isActivated: isActivated));
   } catch (e) {
     rethrow;
@@ -35,7 +35,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   final bool isActivated;
   const MyApp({Key? key, required this.isActivated}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
