@@ -14,8 +14,19 @@
 -keep class encrypt.** { *; }
 -keep class pointycastle.** { *; }
 
+# Play Core Library
+-keep class com.google.android.play.core.** { *; }
+-dontwarn com.google.android.play.core.**
+
+# Local Auth
+-keep class io.flutter.plugins.local_auth.** { *; }
+
+# Secure Storage
+-keep class com.ryanheise.fluttersecurestorage.** { *; }
+
 # General
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
 -optimizationpasses 5
 -verbose
+-dontobfuscate
