@@ -4,7 +4,7 @@
 
 # Provider
 -keep class provider.** { *; }
--keep class package:provider.** { *; }
+-keep class **provider.** { *; }
 
 # Hive
 -keep class com.hive.** { *; }
