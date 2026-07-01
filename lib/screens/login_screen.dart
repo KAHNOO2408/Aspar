@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive/hive.dart';
+import 'package:local_auth/local_auth.dart';
 import 'main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,6 +16,58 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool isLoading = false;
+
+  final LocalAuthentication _localAuth = LocalAuthentication();
+  bool _biometricAvailable = false;
+  bool _useBiometric = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initBiometric();
+  }
+
+  Future<void> _initBiometric() async {
+    try {
+      final settingsBox = await Hive.openBox('settings');
+      final useBiometric = settingsBox.get('useBiometric', defaultValue: false);
+
+      final canCheckBiometrics = await _localAuth.canCheckBiometrics;
+      final isDeviceSupported = await _localAuth.isDeviceSupported();
+
+      setState(() {
+        _useBiometric = useBiometric;
+        _biometricAvailable = canCheckBiometrics && isDeviceSupported;
+      });
+
+      if (_useBiometric && _biometricAvailable) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _authenticateWithBiometrics());
+      }
+    } catch (e) {
+      debugPrint('Biometric init error: $e');
+    }
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    try {
+      final didAuthenticate = await _localAuth.authenticate(
+        localizedReason: 'برای ورود، هویت خود را تایید کنید',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+        ),
+      );
+
+      if (didAuthenticate && mounted) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
+      }
+    } catch (e) {
+      debugPrint('Biometric auth error: $e');
+      if (mounted) {
+        _showError('احراز هویت بیومتریک ناموفق بود، لطفاً با رمز عبور وارد شوید');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +91,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // لوگو SVG
                     SvgPicture.asset(
                       'assets/logo.svg',
                       width: 100,
@@ -103,6 +155,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                     ),
+
+                    if (_useBiometric && _biometricAvailable) ...[
+                      const SizedBox(height: 15),
+                      TextButton.icon(
+                        onPressed: _authenticateWithBiometrics,
+                        icon: const Icon(Icons.fingerprint, color: Colors.blue, size: 28),
+                        label: const Text('ورود با اثر انگشت', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
+                      ),
+                    ],
                   ],
                 ),
               ),
