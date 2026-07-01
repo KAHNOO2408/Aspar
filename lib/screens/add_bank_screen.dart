@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/bank_model.dart';
-import '../database/db_helper.dart';
 
 class AddBankScreen extends StatefulWidget {
   const AddBankScreen({Key? key}) : super(key: key);
@@ -43,7 +43,7 @@ class _AddBankScreenState extends State<AddBankScreen> {
         accountNumber: accountNumberController.text,
         balance: double.parse(balanceController.text),
       );
-      await DatabaseHelper.insertBank(bank);
+      await Provider.of<BankProvider>(context, listen: false).addBank(bank);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('بانک اضافه شد')),
       );
