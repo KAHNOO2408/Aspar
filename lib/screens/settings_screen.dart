@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import '../models/theme_provider.dart';
 import 'package:provider/provider.dart';
+import '../widgets/pattern_lock_widget.dart';
 import 'license_activation_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -28,6 +31,80 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _useBiometric = settingsBox.get('useBiometric', defaultValue: false);
       _usePattern = settingsBox.get('usePattern', defaultValue: false);
     });
+  }
+
+  String _hashPattern(List<int> pattern) {
+    return sha256.convert(utf8.encode(pattern.join('-'))).toString();
+  }
+
+  bool _listEquals(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  Future<bool> _showPatternSetupFlow() async {
+    List<int>? firstPattern;
+    bool success = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final title = firstPattern == null ? 'الگوی جدید را رسم کنید' : 'الگو را دوباره رسم کنید';
+
+            return AlertDialog(
+              title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              content: SizedBox(
+                width: 260,
+                height: 280,
+                child: PatternLockWidget(
+                  onComplete: (pattern) {
+                    if (pattern.length < 4) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('الگو باید حداقل ۴ نقطه داشته باشد')),
+                      );
+                      return;
+                    }
+                    if (firstPattern == null) {
+                      setDialogState(() {
+                        firstPattern = pattern;
+                      });
+                    } else {
+                      if (_listEquals(firstPattern!, pattern)) {
+                        final hash = _hashPattern(pattern);
+                        settingsBox.put('patternHash', hash);
+                        success = true;
+                        Navigator.of(dialogContext).pop();
+                      } else {
+                        setDialogState(() {
+                          firstPattern = null;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('الگوها مطابقت ندارند، دوباره تلاش کنید')),
+                        );
+                      }
+                    }
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('انصراف'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    return success;
   }
 
   @override
@@ -60,9 +137,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: 'رسم الگو برای ورود',
                   value: _usePattern,
                   onChanged: (value) async {
-                    setState(() => _usePattern = value);
-                    await settingsBox.put('usePattern', value);
-                    if (value) _showPatternSetup();
+                    if (value) {
+                      final confirmed = await _showPatternSetupFlow();
+                      if (confirmed) {
+                        setState(() => _usePattern = true);
+                        await settingsBox.put('usePattern', true);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('الگو ذخیره شد ✅')),
+                          );
+                        }
+                      }
+                    } else {
+                      setState(() => _usePattern = false);
+                      await settingsBox.put('usePattern', false);
+                      await settingsBox.delete('patternHash');
+                    }
                   },
                 ),
                 _buildButton(
@@ -294,41 +384,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
             child: const Text('تغییر', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showPatternSetup() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تنظیم الگو', style: TextStyle(fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.pattern, size: 64, color: Colors.indigo),
-            const SizedBox(height: 20),
-            const Text('الگوی خود را رسم کنید:', style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 20),
-            Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(border: Border.all(color: Colors.indigo, width: 2), borderRadius: BorderRadius.circular(10)),
-              child: const Center(child: Text('صفحه رسم الگو')),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الگو ذخیره شد ✅')));
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-            child: const Text('تأیید', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
