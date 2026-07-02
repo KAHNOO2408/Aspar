@@ -6,6 +6,7 @@ import '../models/loan_model.dart';
 import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
 import '../widgets/custom_app_bar.dart';
+import '../utils/formatters.dart';
 import 'add_loan_screen.dart';
 
 class LoansScreen extends StatelessWidget {
@@ -32,7 +33,6 @@ class LoansScreen extends StatelessWidget {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // کل وام‌های باقی
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Card(
@@ -56,7 +56,7 @@ class LoansScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('${totalLoans.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                              Text(formatAmount(totalLoans), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
                               const Text('💳', style: TextStyle(fontSize: 48)),
                             ],
                           ),
@@ -100,10 +100,10 @@ class LoansScreen extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildDetailRow('مبلغ کل', '${loan.totalAmount.toStringAsFixed(0)} ریال'),
-                                    _buildDetailRow('قسط ماهیانه', '${loan.monthlyPayment.toStringAsFixed(0)} ریال'),
-                                    _buildDetailRow('پرداخت شده', '${loan.paidAmount.toStringAsFixed(0)} ریال'),
-                                    _buildDetailRow('باقی مانده', '${loan.remainingAmount.toStringAsFixed(0)} ریال', Colors.red),
+                                    _buildDetailRow('مبلغ کل', '${formatAmount(loan.totalAmount)} ریال'),
+                                    _buildDetailRow('قسط ماهیانه', '${formatAmount(loan.monthlyPayment)} ریال'),
+                                    _buildDetailRow('پرداخت شده', '${formatAmount(loan.paidAmount)} ریال'),
+                                    _buildDetailRow('باقی مانده', '${formatAmount(loan.remainingAmount)} ریال', Colors.red),
                                     _buildDetailRow('تاریخ شروع', _formatDateToJalali(loan.startDate)),
                                     _buildDetailRow('تاریخ پایان', _formatDateToJalali(loan.endDate)),
                                     _buildDetailRow('ماه‌های باقی', '${loan.remainingMonths}'),
@@ -172,7 +172,7 @@ class LoansScreen extends StatelessWidget {
               children: [
                 Text('وام: ${loan.bankName}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 10),
-                Text('قسط پیش‌فرض: ${loan.monthlyPayment.toStringAsFixed(0)} ریال', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                Text('قسط پیش‌فرض: ${formatAmount(loan.monthlyPayment)} ریال', style: const TextStyle(fontSize: 13, color: Colors.grey)),
                 const SizedBox(height: 15),
                 TextField(
                   controller: amountController,
@@ -192,7 +192,7 @@ class LoansScreen extends StatelessWidget {
                       items: List.generate(bankProvider.banks.length, (i) {
                         return DropdownMenuItem<int>(
                           value: i,
-                          child: Text('${bankProvider.banks[i].bankName} - ${bankProvider.banks[i].balance.toStringAsFixed(0)}'),
+                          child: Text('${bankProvider.banks[i].bankName} - ${formatAmount(bankProvider.banks[i].balance)}'),
                         );
                       }),
                       onChanged: (value) => setState(() => selectedBankIndex = value),
