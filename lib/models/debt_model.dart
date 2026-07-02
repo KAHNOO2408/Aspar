@@ -78,6 +78,11 @@ class DebtProvider extends ChangeNotifier {
     await loadDebts();
   }
 
+  Future<void> editDebt(Debt debt) async {
+    await DatabaseHelper.updateDebt(debt);
+    await loadDebts();
+  }
+
   Future<void> payDebt(int id, double amount) async {
     final index = debts.indexWhere((d) => d.id == id);
     if (index == -1) return;
