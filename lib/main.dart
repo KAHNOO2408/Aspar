@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'models/transaction_model.dart';
 import 'models/debt_model.dart';
 import 'models/bank_model.dart';
@@ -56,6 +57,18 @@ class MyApp extends StatelessWidget {
             theme: themeProvider.getLightTheme(),
             darkTheme: themeProvider.getDarkTheme(),
             themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            locale: const Locale('fa', 'IR'),
+            supportedLocales: const [
+              Locale('fa', 'IR'),
+              Locale('en', 'US'),
+            ],
+            localizationsDelegates: const [
+              PersianMaterialLocalizations.delegate,
+              PersianCupertinoLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: isActivated ? const LoginScreen() : const LicenseActivationScreen(),
           );
         },
