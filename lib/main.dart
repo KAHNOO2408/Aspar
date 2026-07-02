@@ -7,6 +7,7 @@ import 'models/bank_model.dart';
 import 'models/contact_model.dart';
 import 'models/profit_model.dart';
 import 'models/loan_model.dart';
+import 'models/payment_model.dart';
 import 'models/theme_provider.dart';
 import 'screens/license_activation_screen.dart';
 import 'screens/login_screen.dart';
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ContactProvider()),
         ChangeNotifierProvider(create: (_) => ProfitProvider()),
         ChangeNotifierProvider(create: (_) => LoanProvider()),
+        ChangeNotifierProvider(create: (_) => PaymentProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: Consumer<ThemeProvider>(
