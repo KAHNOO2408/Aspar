@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
 
 enum PaymentType { debtPayment, receivablePayment }
 
@@ -9,7 +10,6 @@ class Payment {
   final DateTime date;
   final String description;
   final PaymentType type;
-
   Payment({
     this.id,
     required this.debtId,
@@ -18,7 +18,6 @@ class Payment {
     required this.description,
     required this.type,
   });
-
   Map<String, dynamic> toMap() => {
     'id': id,
     'debtId': debtId,
@@ -27,7 +26,6 @@ class Payment {
     'description': description,
     'date': date.toIso8601String(),
   };
-
   factory Payment.fromMap(Map<String, dynamic> map) => Payment(
     id: map['id'],
     debtId: map['debtId'],
@@ -36,4 +34,37 @@ class Payment {
     description: map['description'],
     date: DateTime.parse(map['date']),
   );
+}
+
+class PaymentProvider extends ChangeNotifier {
+  List<Payment> payments = [];
+
+  PaymentProvider() {
+    loadPayments();
+  }
+
+  Future<void> loadPayments() async {
+    payments = await DatabaseHelper.getPayments();
+    notifyListeners();
+  }
+
+  Future<void> addPayment(Payment payment) async {
+    final paymentToSave = payment.id == null
+        ? Payment(
+            id: DateTime.now().millisecondsSinceEpoch,
+            debtId: payment.debtId,
+            amount: payment.amount,
+            date: payment.date,
+            description: payment.description,
+            type: payment.type,
+          )
+        : payment;
+    await DatabaseHelper.insertPayment(paymentToSave);
+    await loadPayments();
+  }
+
+  Future<void> deletePayment(int id) async {
+    await DatabaseHelper.deletePayment(id);
+    await loadPayments();
+  }
 }
