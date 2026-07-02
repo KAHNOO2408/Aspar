@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../models/profit_model.dart';
 import '../widgets/custom_app_bar.dart';
+import '../utils/formatters.dart';
 import 'add_investment_screen.dart';
 
 class InvestmentScreen extends StatelessWidget {
@@ -26,7 +27,6 @@ class InvestmentScreen extends StatelessWidget {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // خلاصه سود
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Card(
@@ -50,7 +50,7 @@ class InvestmentScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('${profit.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                              Text(formatAmount(profit), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
                               const Text('📈', style: TextStyle(fontSize: 48)),
                             ],
                           ),
@@ -60,7 +60,6 @@ class InvestmentScreen extends StatelessWidget {
                   ),
                 ),
 
-                // خریدها و فروش‌ها
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -79,7 +78,7 @@ class InvestmentScreen extends StatelessWidget {
                               children: [
                                 const Text('خریدها', style: TextStyle(color: Colors.white70, fontSize: 12)),
                                 const SizedBox(height: 8),
-                                Text('${totalPurchases.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                                Text(formatAmount(totalPurchases), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
                               ],
                             ),
                           ),
@@ -100,7 +99,7 @@ class InvestmentScreen extends StatelessWidget {
                               children: [
                                 const Text('فروش‌ها', style: TextStyle(color: Colors.white70, fontSize: 12)),
                                 const SizedBox(height: 8),
-                                Text('${totalSales.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                                Text(formatAmount(totalSales), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
                               ],
                             ),
                           ),
@@ -151,8 +150,8 @@ class InvestmentScreen extends StatelessWidget {
                               ),
                             ),
                             title: Text(trans.productName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                            subtitle: Text('${trans.quantity.toStringAsFixed(2)} × ${trans.pricePerUnit.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                            trailing: Text('${trans.totalAmount.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w800, color: trans.type == TransactionType.sale ? Colors.green : Colors.red)),
+                            subtitle: Text('${trans.quantity.toStringAsFixed(2)} × ${formatAmount(trans.pricePerUnit)}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            trailing: Text(formatAmount(trans.totalAmount), style: TextStyle(fontWeight: FontWeight.w800, color: trans.type == TransactionType.sale ? Colors.green : Colors.red)),
                           ),
                         ),
                       );
