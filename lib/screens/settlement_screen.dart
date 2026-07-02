@@ -6,6 +6,7 @@ import '../models/payment_model.dart';
 import '../models/debt_model.dart';
 import '../models/bank_model.dart';
 import '../widgets/custom_app_bar.dart';
+import '../utils/formatters.dart';
 
 class SettlementScreen extends StatefulWidget {
   const SettlementScreen({Key? key}) : super(key: key);
@@ -77,7 +78,7 @@ class _SettlementScreenState extends State<SettlementScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _detailRow('نام و نام خانوادگی', debt != null ? '${debt.personName} ${debt.personFamily}' : 'نامشخص'),
-            _detailRow('مبلغ', '${payment.amount.toStringAsFixed(0)} ریال'),
+            _detailRow('مبلغ', '${formatAmount(payment.amount)} ریال'),
             _detailRow('تاریخ', _formatJalali(payment.date)),
             _detailRow('نوع', payment.type == PaymentType.debtPayment ? 'پرداختی' : 'دریافتی'),
             _detailRow('بانک', bank != null ? bank.bankName : 'ثبت نشده'),
@@ -250,7 +251,7 @@ class _SettlementScreenState extends State<SettlementScreen> {
                           children: [
                             const Text('مجموع پرداختی', style: TextStyle(color: Colors.white70, fontSize: 12)),
                             const SizedBox(height: 6),
-                            Text(totalPaid.toStringAsFixed(0), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                            Text(formatAmount(totalPaid), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
                           ],
                         ),
                         Container(width: 1, height: 30, color: Colors.white24),
@@ -258,7 +259,7 @@ class _SettlementScreenState extends State<SettlementScreen> {
                           children: [
                             const Text('مجموع دریافتی', style: TextStyle(color: Colors.white70, fontSize: 12)),
                             const SizedBox(height: 6),
-                            Text(totalReceived.toStringAsFixed(0), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                            Text(formatAmount(totalReceived), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
                           ],
                         ),
                       ],
@@ -314,7 +315,7 @@ class _SettlementScreenState extends State<SettlementScreen> {
                                 title: Text(fullName, style: const TextStyle(fontWeight: FontWeight.w700)),
                                 subtitle: Text(_formatJalali(payment.date), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                 trailing: Text(
-                                  payment.amount.toStringAsFixed(0),
+                                  formatAmount(payment.amount),
                                   style: TextStyle(
                                     fontWeight: FontWeight.w800,
                                     color: isDebtPayment ? Colors.red : Colors.green,
