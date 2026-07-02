@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
@@ -62,7 +63,7 @@ class MyApp extends StatelessWidget {
               Locale('fa', 'IR'),
               Locale('en', 'US'),
             ],
-            localizationsDelegates: const [
+            localizationsDelegates: [
               PersianMaterialLocalizations.delegate,
               PersianCupertinoLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
