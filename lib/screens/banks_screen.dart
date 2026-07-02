@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../models/bank_model.dart';
 import '../widgets/custom_app_bar.dart';
+import '../utils/formatters.dart';
 import 'add_bank_screen.dart';
 
 class BanksScreen extends StatelessWidget {
@@ -46,7 +47,7 @@ class BanksScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('${provider.getTotalBalance().toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                              Text(formatAmount(provider.getTotalBalance()), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
                               const Text('🏦', style: TextStyle(fontSize: 48)),
                             ],
                           ),
@@ -96,7 +97,7 @@ class BanksScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(bank.accountNumber, style: const TextStyle(fontSize: 12, color: Colors.white70)),
                                 const SizedBox(height: 15),
-                                Text('${bank.balance.toStringAsFixed(0)} ریال', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white)),
+                                Text('${formatAmount(bank.balance)} ریال', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white)),
                                 const SizedBox(height: 15),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
