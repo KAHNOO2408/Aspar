@@ -5,6 +5,7 @@ import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
 import '../models/debt_model.dart';
 import '../widgets/custom_app_bar.dart';
+import '../utils/formatters.dart';
 import 'add_transaction_screen.dart';
 import 'add_debt_screen.dart';
 import 'add_bank_screen.dart';
@@ -175,7 +176,7 @@ class HomeScreen extends StatelessWidget {
                                   children: [
                                     const Text('درآمد', style: TextStyle(color: Colors.white70, fontSize: 12)),
                                     const SizedBox(height: 8),
-                                    Text('${income.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                                    Text(formatAmount(income), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
                                   ],
                                 ),
                               ),
@@ -196,7 +197,7 @@ class HomeScreen extends StatelessWidget {
                                   children: [
                                     const Text('خرج', style: TextStyle(color: Colors.white70, fontSize: 12)),
                                     const SizedBox(height: 8),
-                                    Text('${expense.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                                    Text(formatAmount(expense), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
                                   ],
                                 ),
                               ),
@@ -217,7 +218,7 @@ class HomeScreen extends StatelessWidget {
                                   children: [
                                     const Text('خالص', style: TextStyle(color: Colors.white70, fontSize: 12)),
                                     const SizedBox(height: 8),
-                                    Text('${balance.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                                    Text(formatAmount(balance), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
                                   ],
                                 ),
                               ),
@@ -245,7 +246,7 @@ class HomeScreen extends StatelessWidget {
                                   children: [
                                     const Text('موجودی بانک', style: TextStyle(color: Colors.white70, fontSize: 12)),
                                     const SizedBox(height: 8),
-                                    Text('${bankBalance.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                                    Text(formatAmount(bankBalance), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
                                   ],
                                 ),
                               ),
