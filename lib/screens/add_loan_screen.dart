@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/loan_model.dart';
 
 class AddLoanScreen extends StatefulWidget {
@@ -15,7 +16,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   final totalAmountController = TextEditingController();
   final monthlyPaymentController = TextEditingController();
   final descriptionController = TextEditingController();
-  
+
   DateTime? selectedStartDate;
   DateTime? selectedEndDate;
 
@@ -23,6 +24,30 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     if (date == null) return '';
     final jalali = Jalali.fromDateTime(date);
     return '${jalali.year}/${jalali.month.toString().padLeft(2, '0')}/${jalali.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _pickStartDate() async {
+    final picked = await showPersianDatePicker(
+      context: context,
+      initialDate: Jalali.now(),
+      firstDate: Jalali(1390, 1),
+      lastDate: Jalali(1420, 12, 29),
+    );
+    if (picked != null) {
+      setState(() => selectedStartDate = picked.toDateTime());
+    }
+  }
+
+  Future<void> _pickEndDate() async {
+    final picked = await showPersianDatePicker(
+      context: context,
+      initialDate: Jalali.now(),
+      firstDate: Jalali(1390, 1),
+      lastDate: Jalali(1420, 12, 29),
+    );
+    if (picked != null) {
+      setState(() => selectedEndDate = picked.toDateTime());
+    }
   }
 
   @override
@@ -66,21 +91,11 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
             ),
             const SizedBox(height: 15),
             ElevatedButton.icon(
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2050),
-                );
-                if (picked != null) {
-                  setState(() => selectedStartDate = picked);
-                }
-              },
+              onPressed: _pickStartDate,
               icon: const Icon(Icons.calendar_today),
               label: Text(
-                selectedStartDate == null 
-                  ? 'انتخاب تاریخ شروع *' 
+                selectedStartDate == null
+                  ? 'انتخاب تاریخ شروع *'
                   : _formatDateToJalali(selectedStartDate),
               ),
               style: ElevatedButton.styleFrom(
@@ -90,21 +105,11 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
             ),
             const SizedBox(height: 15),
             ElevatedButton.icon(
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now().add(const Duration(days: 365)),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2050),
-                );
-                if (picked != null) {
-                  setState(() => selectedEndDate = picked);
-                }
-              },
+              onPressed: _pickEndDate,
               icon: const Icon(Icons.calendar_today),
               label: Text(
-                selectedEndDate == null 
-                  ? 'انتخاب تاریخ پایان *' 
+                selectedEndDate == null
+                  ? 'انتخاب تاریخ پایان *'
                   : _formatDateToJalali(selectedEndDate),
               ),
               style: ElevatedButton.styleFrom(
