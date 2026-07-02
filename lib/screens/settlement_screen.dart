@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/payment_model.dart';
 import '../models/debt_model.dart';
+import '../models/bank_model.dart';
 import '../widgets/custom_app_bar.dart';
 
 class SettlementScreen extends StatefulWidget {
@@ -31,6 +33,15 @@ class _SettlementScreenState extends State<SettlementScreen> {
     }
   }
 
+  Bank? _findBank(List<Bank> banks, int? bankId) {
+    if (bankId == null) return null;
+    try {
+      return banks.firstWhere((b) => b.id == bankId);
+    } catch (e) {
+      return null;
+    }
+  }
+
   @override
   void dispose() {
     searchController.dispose();
@@ -38,24 +49,25 @@ class _SettlementScreenState extends State<SettlementScreen> {
   }
 
   Future<void> _pickDate(bool isStart) async {
-    final picked = await showDatePicker(
+    final picked = await showPersianDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2015),
-      lastDate: DateTime(2035),
+      initialDate: Jalali.now(),
+      firstDate: Jalali(1390, 1),
+      lastDate: Jalali(1420, 12, 29),
     );
     if (picked != null) {
+      final gregorian = picked.toDateTime();
       setState(() {
         if (isStart) {
-          startDate = picked;
+          startDate = gregorian;
         } else {
-          endDate = picked;
+          endDate = gregorian;
         }
       });
     }
   }
 
-  void _showDetails(BuildContext context, Payment payment, Debt? debt) {
+  void _showDetails(BuildContext context, Payment payment, Debt? debt, Bank? bank) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -68,6 +80,7 @@ class _SettlementScreenState extends State<SettlementScreen> {
             _detailRow('مبلغ', '${payment.amount.toStringAsFixed(0)} ریال'),
             _detailRow('تاریخ', _formatJalali(payment.date)),
             _detailRow('نوع', payment.type == PaymentType.debtPayment ? 'پرداختی' : 'دریافتی'),
+            _detailRow('بانک', bank != null ? bank.bankName : 'ثبت نشده'),
             if (payment.description.isNotEmpty) _detailRow('یادداشت', payment.description),
             if (debt != null && debt.description.isNotEmpty) _detailRow('بابت', debt.description),
           ],
@@ -103,38 +116,39 @@ class _SettlementScreenState extends State<SettlementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildCustomAppBar(title: 'تسویه', context: context),
-      body: Consumer2<PaymentProvider, DebtProvider>(
-        builder: (context, paymentProvider, debtProvider, _) {
+      body: Consumer3<PaymentProvider, DebtProvider, BankProvider>(
+        builder: (context, paymentProvider, debtProvider, bankProvider, _) {
           final combined = paymentProvider.payments.map((p) {
             final debt = _findDebt(debtProvider.debts, p.debtId);
-            return MapEntry(p, debt);
+            final bank = _findBank(bankProvider.banks, p.bankId);
+            return _PaymentEntry(payment: p, debt: debt, bank: bank);
           }).toList();
 
           var filtered = combined.where((entry) {
-            if (typeFilter == 'debtPayment') return entry.key.type == PaymentType.debtPayment;
-            if (typeFilter == 'receivablePayment') return entry.key.type == PaymentType.receivablePayment;
+            if (typeFilter == 'debtPayment') return entry.payment.type == PaymentType.debtPayment;
+            if (typeFilter == 'receivablePayment') return entry.payment.type == PaymentType.receivablePayment;
             return true;
           }).toList();
 
           if (startDate != null) {
-            filtered = filtered.where((entry) => entry.key.date.isAfter(startDate!.subtract(const Duration(days: 1)))).toList();
+            filtered = filtered.where((entry) => entry.payment.date.isAfter(startDate!.subtract(const Duration(days: 1)))).toList();
           }
           if (endDate != null) {
-            filtered = filtered.where((entry) => entry.key.date.isBefore(endDate!.add(const Duration(days: 1)))).toList();
+            filtered = filtered.where((entry) => entry.payment.date.isBefore(endDate!.add(const Duration(days: 1)))).toList();
           }
 
           final query = searchController.text.trim();
           if (query.isNotEmpty) {
             filtered = filtered.where((entry) {
-              final fullName = entry.value != null ? '${entry.value!.personName} ${entry.value!.personFamily}' : '';
+              final fullName = entry.debt != null ? '${entry.debt!.personName} ${entry.debt!.personFamily}' : '';
               return fullName.contains(query);
             }).toList();
           }
 
-          filtered.sort((a, b) => b.key.date.compareTo(a.key.date));
+          filtered.sort((a, b) => b.payment.date.compareTo(a.payment.date));
 
-          final totalPaid = filtered.where((e) => e.key.type == PaymentType.debtPayment).fold(0.0, (sum, e) => sum + e.key.amount);
-          final totalReceived = filtered.where((e) => e.key.type == PaymentType.receivablePayment).fold(0.0, (sum, e) => sum + e.key.amount);
+          final totalPaid = filtered.where((e) => e.payment.type == PaymentType.debtPayment).fold(0.0, (sum, e) => sum + e.payment.amount);
+          final totalReceived = filtered.where((e) => e.payment.type == PaymentType.receivablePayment).fold(0.0, (sum, e) => sum + e.payment.amount);
 
           return Column(
             children: [
@@ -271,10 +285,10 @@ class _SettlementScreenState extends State<SettlementScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
-                          final payment = filtered[index].key;
-                          final debt = filtered[index].value;
+                          final entry = filtered[index];
+                          final payment = entry.payment;
                           final isDebtPayment = payment.type == PaymentType.debtPayment;
-                          final fullName = debt != null ? '${debt.personName} ${debt.personFamily}' : 'نامشخص';
+                          final fullName = entry.debt != null ? '${entry.debt!.personName} ${entry.debt!.personFamily}' : 'نامشخص';
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
@@ -282,7 +296,7 @@ class _SettlementScreenState extends State<SettlementScreen> {
                               elevation: 2,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               child: ListTile(
-                                onTap: () => _showDetails(context, payment, debt),
+                                onTap: () => _showDetails(context, payment, entry.debt, entry.bank),
                                 leading: Container(
                                   width: 45,
                                   height: 45,
@@ -318,4 +332,11 @@ class _SettlementScreenState extends State<SettlementScreen> {
       ),
     );
   }
+}
+
+class _PaymentEntry {
+  final Payment payment;
+  final Debt? debt;
+  final Bank? bank;
+  _PaymentEntry({required this.payment, this.debt, this.bank});
 }
