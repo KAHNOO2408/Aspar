@@ -7,6 +7,7 @@ import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
 import '../models/profit_model.dart' hide TransactionType;
 import '../widgets/custom_app_bar.dart';
+import '../utils/formatters.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({Key? key}) : super(key: key);
@@ -38,11 +39,8 @@ class ReportsScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            // تراکنش‌ها
             _buildTransactionReports(context),
-            // سود
             _buildProfitReports(context),
-            // بانک‌ها
             _buildBankReports(context),
           ],
         ),
@@ -60,7 +58,6 @@ class ReportsScreen extends StatelessWidget {
         return SingleChildScrollView(
           child: Column(
             children: [
-              // خلاصه
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -79,7 +76,7 @@ class ReportsScreen extends StatelessWidget {
                             children: [
                               const Text('درآمد', style: TextStyle(color: Colors.white70, fontSize: 12)),
                               const SizedBox(height: 8),
-                              Text('${income.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                              Text(formatAmount(income), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
                             ],
                           ),
                         ),
@@ -100,7 +97,7 @@ class ReportsScreen extends StatelessWidget {
                             children: [
                               const Text('خرج', style: TextStyle(color: Colors.white70, fontSize: 12)),
                               const SizedBox(height: 8),
-                              Text('${expense.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                              Text(formatAmount(expense), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
                             ],
                           ),
                         ),
@@ -121,7 +118,7 @@ class ReportsScreen extends StatelessWidget {
                             children: [
                               const Text('خالص', style: TextStyle(color: Colors.white70, fontSize: 12)),
                               const SizedBox(height: 8),
-                              Text('${net.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                              Text(formatAmount(net), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
                             ],
                           ),
                         ),
@@ -131,7 +128,6 @@ class ReportsScreen extends StatelessWidget {
                 ),
               ),
 
-              // نمودار پای
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Card(
@@ -179,7 +175,6 @@ class ReportsScreen extends StatelessWidget {
                 ),
               ),
 
-              // فهرست تراکنش‌ها
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: const Text('آخرین تراکنش‌ها', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
@@ -221,7 +216,7 @@ class ReportsScreen extends StatelessWidget {
                           title: Text(trans.title, style: const TextStyle(fontWeight: FontWeight.w700)),
                           subtitle: Text(_formatDateToJalali(trans.date), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                           trailing: Text(
-                            '${trans.amount.toStringAsFixed(0)}',
+                            formatAmount(trans.amount),
                             style: TextStyle(
                               fontWeight: FontWeight.w800,
                               color: trans.type == TransactionType.income ? Colors.green : Colors.red,
@@ -250,7 +245,6 @@ class ReportsScreen extends StatelessWidget {
         return SingleChildScrollView(
           child: Column(
             children: [
-              // خلاصه سود
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Card(
@@ -271,14 +265,13 @@ class ReportsScreen extends StatelessWidget {
                       children: [
                         const Text('کل سود', style: TextStyle(color: Colors.white70, fontSize: 14)),
                         const SizedBox(height: 15),
-                        Text('${profit.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                        Text(formatAmount(profit), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
                       ],
                     ),
                   ),
                 ),
               ),
 
-              // آمار خرید/فروش
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
@@ -297,7 +290,7 @@ class ReportsScreen extends StatelessWidget {
                             children: [
                               const Text('خریدها', style: TextStyle(color: Colors.white70, fontSize: 12)),
                               const SizedBox(height: 8),
-                              Text('${totalPurchases.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                              Text(formatAmount(totalPurchases), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
                             ],
                           ),
                         ),
@@ -318,7 +311,7 @@ class ReportsScreen extends StatelessWidget {
                             children: [
                               const Text('فروش‌ها', style: TextStyle(color: Colors.white70, fontSize: 12)),
                               const SizedBox(height: 8),
-                              Text('${totalSales.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                              Text(formatAmount(totalSales), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
                             ],
                           ),
                         ),
@@ -328,7 +321,6 @@ class ReportsScreen extends StatelessWidget {
                 ),
               ),
 
-              // نمودار
               if (provider.transactions.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.all(20),
@@ -383,7 +375,6 @@ class ReportsScreen extends StatelessWidget {
         return SingleChildScrollView(
           child: Column(
             children: [
-              // کل موجودی
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Card(
@@ -404,14 +395,13 @@ class ReportsScreen extends StatelessWidget {
                       children: [
                         const Text('کل موجودی بانک‌ها', style: TextStyle(color: Colors.white70, fontSize: 14)),
                         const SizedBox(height: 15),
-                        Text('${provider.getTotalBalance().toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                        Text(formatAmount(provider.getTotalBalance()), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
                       ],
                     ),
                   ),
                 ),
               ),
 
-              // نمودار بانک‌ها
               if (provider.banks.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.all(20),
@@ -455,7 +445,6 @@ class ReportsScreen extends StatelessWidget {
                   ),
                 ),
 
-              // لیست بانک‌ها
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: const Text('جزئیات بانک‌ها', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
@@ -492,7 +481,7 @@ class ReportsScreen extends StatelessWidget {
                           ),
                           title: Text(bank.bankName, style: const TextStyle(fontWeight: FontWeight.w700)),
                           subtitle: Text(bank.accountNumber, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                          trailing: Text('${bank.balance.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.green, fontSize: 14)),
+                          trailing: Text(formatAmount(bank.balance), style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.green, fontSize: 14)),
                         ),
                       ),
                     );
