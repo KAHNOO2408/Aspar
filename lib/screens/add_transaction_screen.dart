@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
+import '../utils/formatters.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({Key? key}) : super(key: key);
@@ -31,7 +32,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // نوع تراکنش
             Row(
               children: [
                 Expanded(
@@ -57,7 +57,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 20),
 
-            // عنوان
             TextField(
               controller: titleController,
               decoration: InputDecoration(
@@ -69,7 +68,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 15),
 
-            // توضیح
             TextField(
               controller: descriptionController,
               maxLines: 2,
@@ -82,7 +80,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 15),
 
-            // مبلغ
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
@@ -95,7 +92,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 15),
 
-            // دسته‌بندی
             DropdownButtonFormField<String>(
               value: selectedCategory,
               items: categories[selectedType == TransactionType.income ? 'income' : 'expense']!
@@ -111,7 +107,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 15),
 
-            // بانک (الزامی)
             Consumer<BankProvider>(
               builder: (context, bankProvider, _) {
                 return DropdownButtonFormField<int>(
@@ -120,7 +115,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   items: bankProvider.banks.map((bank) {
                     return DropdownMenuItem<int>(
                       value: bank.id,
-                      child: Text('${bank.bankName} - ${bank.balance.toStringAsFixed(0)} ریال'),
+                      child: Text('${bank.bankName} - ${formatAmount(bank.balance)} ریال'),
                     );
                   }).toList(),
                   onChanged: (value) => setState(() => selectedBankId = value),
@@ -160,7 +155,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final bankProvider = context.read<BankProvider>();
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
 
-    // تراکنش جدید
     final transaction = Transaction(
       title: titleController.text,
       description: descriptionController.text,
@@ -171,7 +165,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       bankId: selectedBankId,
     );
 
-    // اپدیت بانک
     final updatedBank = Bank(
       id: bank.id,
       bankName: bank.bankName,
@@ -180,7 +173,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
     bankProvider.updateBank(updatedBank);
 
-    // اضافه کردن تراکنش
     context.read<TransactionProvider>().addTransaction(transaction);
 
     Navigator.pop(context);
