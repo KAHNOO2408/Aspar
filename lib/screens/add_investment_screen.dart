@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/profit_model.dart';
 import '../models/bank_model.dart';
+import '../utils/formatters.dart';
 
 class AddInvestmentScreen extends StatefulWidget {
   const AddInvestmentScreen({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
   final quantityController = TextEditingController();
   final pricePerUnitController = TextEditingController();
   final descriptionController = TextEditingController();
-  
+
   TransactionType? selectedType = TransactionType.purchase;
   int? selectedBankId;
 
@@ -27,7 +28,6 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // نوع
             Row(
               children: [
                 Expanded(
@@ -53,7 +53,6 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
             ),
             const SizedBox(height: 20),
 
-            // نام کالا
             TextField(
               controller: productNameController,
               decoration: InputDecoration(
@@ -65,7 +64,6 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
             ),
             const SizedBox(height: 15),
 
-            // تعداد
             TextField(
               controller: quantityController,
               keyboardType: TextInputType.number,
@@ -78,7 +76,6 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
             ),
             const SizedBox(height: 15),
 
-            // قیمت واحد
             TextField(
               controller: pricePerUnitController,
               keyboardType: TextInputType.number,
@@ -91,7 +88,6 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
             ),
             const SizedBox(height: 15),
 
-            // توضیح
             TextField(
               controller: descriptionController,
               maxLines: 2,
@@ -104,7 +100,6 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
             ),
             const SizedBox(height: 15),
 
-            // بانک
             Consumer<BankProvider>(
               builder: (context, bankProvider, _) {
                 return DropdownButtonFormField<int>(
@@ -113,7 +108,7 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
                   items: bankProvider.banks.map((bank) {
                     return DropdownMenuItem<int>(
                       value: bank.id,
-                      child: Text('${bank.bankName} - ${bank.balance.toStringAsFixed(0)} ریال'),
+                      child: Text('${bank.bankName} - ${formatAmount(bank.balance)} ریال'),
                     );
                   }).toList(),
                   onChanged: (value) => setState(() => selectedBankId = value),
@@ -167,14 +162,13 @@ class _AddInvestmentScreenState extends State<AddInvestmentScreen> {
       description: descriptionController.text,
     );
 
-    // اپدیت بانک
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
     final updatedBank = Bank(
       id: bank.id,
       bankName: bank.bankName,
       accountNumber: bank.accountNumber,
-      balance: selectedType == TransactionType.purchase 
-        ? bank.balance - totalAmount 
+      balance: selectedType == TransactionType.purchase
+        ? bank.balance - totalAmount
         : bank.balance + totalAmount,
     );
     bankProvider.updateBank(updatedBank);
