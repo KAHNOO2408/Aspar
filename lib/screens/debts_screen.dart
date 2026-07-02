@@ -5,6 +5,7 @@ import 'package:shamsi_date/shamsi_date.dart';
 import '../models/debt_model.dart';
 import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
+import '../models/payment_model.dart';
 import '../widgets/custom_app_bar.dart';
 import 'add_debt_screen.dart';
 
@@ -333,6 +334,7 @@ class DebtsScreen extends StatelessWidget {
                   if (amount > 0 && amount <= debt.remainder && selectedBankIndex != null) {
                     final bankProvider = context.read<BankProvider>();
                     final transProvider = context.read<TransactionProvider>();
+                    final paymentProvider = context.read<PaymentProvider>();
                     final bank = bankProvider.banks[selectedBankIndex!];
 
                     debtProvider.payDebt(debt.id!, amount);
@@ -357,6 +359,16 @@ class DebtsScreen extends StatelessWidget {
                       bankId: bank.id,
                     );
                     transProvider.addTransaction(transaction);
+
+                    final payment = Payment(
+                      debtId: debt.id!,
+                      amount: amount,
+                      date: DateTime.now(),
+                      description: debt.description,
+                      type: debt.type == DebtType.owed ? PaymentType.debtPayment : PaymentType.receivablePayment,
+                      bankId: bank.id,
+                    );
+                    paymentProvider.addPayment(payment);
 
                     Navigator.pop(dialogContext);
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تسویه شد ✅', style: TextStyle(fontWeight: FontWeight.w600))));
