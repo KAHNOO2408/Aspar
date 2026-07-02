@@ -10,6 +10,7 @@ class Payment {
   final DateTime date;
   final String description;
   final PaymentType type;
+  final int? bankId;
   Payment({
     this.id,
     required this.debtId,
@@ -17,6 +18,7 @@ class Payment {
     required this.date,
     required this.description,
     required this.type,
+    this.bankId,
   });
   Map<String, dynamic> toMap() => {
     'id': id,
@@ -25,6 +27,7 @@ class Payment {
     'type': type == PaymentType.debtPayment ? 'debtPayment' : 'receivablePayment',
     'description': description,
     'date': date.toIso8601String(),
+    'bankId': bankId,
   };
   factory Payment.fromMap(Map<String, dynamic> map) => Payment(
     id: map['id'],
@@ -33,6 +36,7 @@ class Payment {
     type: map['type'] == 'debtPayment' ? PaymentType.debtPayment : PaymentType.receivablePayment,
     description: map['description'],
     date: DateTime.parse(map['date']),
+    bankId: map['bankId'],
   );
 }
 
@@ -57,6 +61,7 @@ class PaymentProvider extends ChangeNotifier {
             date: payment.date,
             description: payment.description,
             type: payment.type,
+            bankId: payment.bankId,
           )
         : payment;
     await DatabaseHelper.insertPayment(paymentToSave);
