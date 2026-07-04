@@ -7,7 +7,6 @@ import '../models/ledger_model.dart';
 
 class TransferBetweenAccountsScreen extends StatefulWidget {
   const TransferBetweenAccountsScreen({Key? key}) : super(key: key);
-
   @override
   State<TransferBetweenAccountsScreen> createState() => _TransferBetweenAccountsScreenState();
 }
@@ -18,6 +17,14 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
   Contact? payerContact;
   Contact? receiverContact;
   DateTime selectedDate = DateTime.now();
+
+  InputDecoration _decoration(String label) => InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.all(14),
+      );
 
   String _formatDateToJalali(DateTime date) {
     final jalali = Jalali.fromDateTime(date);
@@ -31,14 +38,13 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
       firstDate: Jalali(1390, 1),
       lastDate: Jalali(1420, 12, 29),
     );
-    if (picked != null) {
-      setState(() => selectedDate = picked.toDateTime());
-    }
+    if (picked != null) setState(() => selectedDate = picked.toDateTime());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(title: const Text('دریافت و پرداخت بین حساب‌ها')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -48,66 +54,66 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(color: Colors.indigo.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
-                  child: const Text(
-                    'برای وقتی که یک نفر به‌جای تو، مستقیم به شخص دیگه‌ای پول پرداخت می‌کنه (بدون این‌که از بانک تو رد بشه)',
-                    style: TextStyle(fontSize: 12, color: Colors.indigo, fontWeight: FontWeight.w600),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.white, size: 20),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'برای وقتی که یک نفر به‌جای تو، مستقیم به شخص دیگه‌ای پول پرداخت می‌کنه',
+                          style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                const Text('چه کسی پرداخت کرد؟ (پرداخت‌کننده) *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 10),
                 DropdownButtonFormField<Contact>(
                   isExpanded: true,
                   hint: const Text('انتخاب کنید'),
                   value: payerContact,
                   items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
                   onChanged: (c) => setState(() => payerContact = c),
-                  decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
+                  decoration: _decoration('پرداخت‌کننده *'),
                 ),
-                const SizedBox(height: 20),
-
-                const Text('به چه کسی پرداخت شد؟ (دریافت‌کننده) *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
                 DropdownButtonFormField<Contact>(
                   isExpanded: true,
                   hint: const Text('انتخاب کنید'),
                   value: receiverContact,
                   items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
                   onChanged: (c) => setState(() => receiverContact = c),
-                  decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
+                  decoration: _decoration('دریافت‌کننده *'),
                 ),
-                const SizedBox(height: 20),
-
-                TextField(
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'مبلغ *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
-                ),
-                const SizedBox(height: 15),
-
-                TextField(
-                  controller: noteController,
-                  decoration: InputDecoration(labelText: 'یادداشت (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
-                ),
-                const SizedBox(height: 15),
-
-                ElevatedButton.icon(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.calendar_today, size: 16),
-                  label: Text(_formatDateToJalali(selectedDate)),
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 45)),
-                ),
-
+                const SizedBox(height: 16),
+                TextField(controller: amountController, keyboardType: TextInputType.number, decoration: _decoration('مبلغ (تومان) *')),
+                const SizedBox(height: 16),
+                TextField(controller: noteController, decoration: _decoration('یادداشت (اختیاری)')),
+                const SizedBox(height: 16),
+                _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate),
                 const SizedBox(height: 30),
-                SizedBox(
+                Container(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, minimumSize: const Size(double.infinity, 50), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                    child: const Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]),
+                    boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: _submit,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(child: Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16))),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -163,5 +169,37 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
     amountController.dispose();
     noteController.dispose();
     super.dispose();
+  }
+}
+
+class _DateButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _DateButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.calendar_today, size: 16, color: Color(0xFF6A3DE8)),
+                const SizedBox(width: 8),
+                Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
