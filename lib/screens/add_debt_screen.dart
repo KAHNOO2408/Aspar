@@ -23,6 +23,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final priceController = TextEditingController();
   final noteController = TextEditingController();
   final paidNowController = TextEditingController();
+  final feeController = TextEditingController();
   Contact? selectedContact;
   Product? selectedProduct;
   int? selectedBankId;
@@ -148,10 +149,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   value: selectedContact,
                   items: contactProvider.contacts.map((contact) => DropdownMenuItem(value: contact, child: Text(contact.fullName))).toList(),
                   onChanged: (contact) => setState(() => selectedContact = contact),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 20),
 
@@ -166,9 +164,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       children: [
                         const Icon(Icons.inventory_2_outlined, color: Colors.indigo),
                         const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(selectedProduct?.name ?? 'انتخاب محصول...', style: TextStyle(color: selectedProduct != null ? Colors.black : Colors.grey)),
-                        ),
+                        Expanded(child: Text(selectedProduct?.name ?? 'انتخاب محصول...', style: TextStyle(color: selectedProduct != null ? Colors.black : Colors.grey))),
                         if (selectedProduct != null && !isPurchase)
                           Text(
                             stock! > 0 ? 'موجودی: ${stock.toStringAsFixed(0)}' : 'موجود نیست',
@@ -203,7 +199,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'مبلغ کل: ${formatAmount((double.tryParse(quantityController.text) ?? 0) * (double.tryParse(priceController.text) ?? 0))} ریال',
+                  'مبلغ کل: ${formatAmount((double.tryParse(quantityController.text) ?? 0) * (double.tryParse(priceController.text) ?? 0))} تومان',
                   style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.indigo),
                 ),
                 const SizedBox(height: 15),
@@ -243,13 +239,24 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
                 if ((double.tryParse(paidNowController.text) ?? 0) > 0) ...[
                   const SizedBox(height: 15),
+                  TextField(
+                    controller: feeController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'کارمزد (تومان) - اختیاری',
+                      hintText: 'اگه کارمزدی نداشت خالی بذار',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
                   Consumer<BankProvider>(
                     builder: (context, bankProvider, _) {
                       return DropdownButtonFormField<int>(
                         value: selectedBankId,
                         hint: const Text('انتخاب بانک *'),
                         items: bankProvider.banks.map((bank) {
-                          return DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)}'));
+                          return DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان'));
                         }).toList(),
                         onChanged: (value) => setState(() => selectedBankId = value),
                         decoration: InputDecoration(labelText: 'بانک *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
@@ -294,6 +301,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
     final totalAmount = quantity * price;
     final paidNow = double.tryParse(paidNowController.text) ?? 0;
+    final fee = double.tryParse(feeController.text) ?? 0;
     if (paidNow > totalAmount) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ پرداختی نمی‌تواند بیشتر از مبلغ کل باشد')));
       return;
@@ -344,7 +352,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         id: bank.id,
         bankName: bank.bankName,
         accountNumber: bank.accountNumber,
-        balance: isPurchase ? bank.balance - paidNow : bank.balance + paidNow,
+        balance: isPurchase ? bank.balance - paidNow - fee : bank.balance + paidNow - fee,
       );
       await bankProvider.updateBank(updatedBank);
 
@@ -358,6 +366,19 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         bankId: bank.id,
       );
       transProvider.addTransaction(transaction);
+
+      if (fee > 0) {
+        final feeTransaction = Transaction(
+          title: 'کارمزد تراکنش',
+          description: 'کارمزد ${isPurchase ? 'پرداخت به' : 'دریافت از'} ${selectedContact!.fullName}',
+          amount: fee,
+          type: TransactionType.expense,
+          category: 'کارمزد',
+          date: selectedDate,
+          bankId: bank.id,
+        );
+        transProvider.addTransaction(feeTransaction);
+      }
 
       await ledgerProvider.addEntry(LedgerEntry(
         personName: selectedContact!.firstName,
@@ -382,6 +403,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     priceController.dispose();
     noteController.dispose();
     paidNowController.dispose();
+    feeController.dispose();
     super.dispose();
   }
 }
