@@ -24,16 +24,26 @@ class ReportsScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF4F6FB),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(110),
-          child: Column(
-            children: [
-              buildCustomAppBar(title: 'گزارشات', context: context),
-              const TabBar(
-                tabs: [
-                  Tab(text: 'تراکنش‌ها'),
-                  Tab(text: 'بانک‌ها'),
-                ],
-              ),
-            ],
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            ),
+            child: Column(
+              children: [
+                buildCustomAppBar(title: 'گزارشات', context: context),
+                const TabBar(
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white60,
+                  indicatorColor: Colors.white,
+                  indicatorWeight: 3,
+                  labelStyle: TextStyle(fontWeight: FontWeight.w700),
+                  tabs: [
+                    Tab(text: 'تراکنش‌ها'),
+                    Tab(text: 'بانک‌ها'),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
         body: TabBarView(
