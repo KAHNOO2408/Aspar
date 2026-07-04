@@ -25,128 +25,96 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
     'ASPAR-2024-PREMIUM',
   ];
 
+  InputDecoration _decoration(String label, IconData icon, {Widget? suffix}) => InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: const Color(0xFF4F6BF5)),
+        suffixIcon: suffix,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.indigo.shade600, Colors.indigo.shade900],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
         ),
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-            child: Card(
-              elevation: 10,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Padding(
-                padding: const EdgeInsets.all(30),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // لوگو SVG
-                    SvgPicture.asset(
-                      'assets/logo.svg',
-                      width: 120,
-                      height: 120,
+            child: Container(
+              padding: const EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(26),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 30, offset: const Offset(0, 15))],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset('assets/logo.svg', width: 110, height: 110),
+                  const SizedBox(height: 20),
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)]).createShader(bounds),
+                    child: const Text('🔓 فعال‌سازی لایسنس', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white)),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text('برای استفاده از آسپار', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  const SizedBox(height: 30),
+
+                  TextField(controller: licenseCodeController, decoration: _decoration('کد لایسنس *', Icons.vpn_key)),
+                  const SizedBox(height: 15),
+                  TextField(controller: usernameController, decoration: _decoration('نام کاربری *', Icons.person)),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: _decoration('رمز عبور *', Icons.lock,
+                        suffix: IconButton(icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF4F6BF5)), onPressed: () => setState(() => _obscurePassword = !_obscurePassword))),
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: confirmPasswordController,
+                    obscureText: _obscureConfirm,
+                    decoration: _decoration('تأیید رمز عبور *', Icons.lock_outline,
+                        suffix: IconButton(icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF4F6BF5)), onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm))),
+                  ),
+                  const SizedBox(height: 30),
+
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)]),
+                      boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 8))],
                     ),
-                    const SizedBox(height: 20),
-
-                    const Text('🔓 فعال‌سازی لایسنس', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.indigo)),
-                    const SizedBox(height: 10),
-                    const Text('برای استفاده از آسپار', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                    const SizedBox(height: 30),
-
-                    TextField(
-                      controller: licenseCodeController,
-                      decoration: InputDecoration(
-                        labelText: 'کد لایسنس *',
-                        prefixIcon: const Icon(Icons.vpn_key, color: Colors.indigo),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2.5)),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-
-                    TextField(
-                      controller: usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'نام کاربری *',
-                        prefixIcon: const Icon(Icons.person, color: Colors.indigo),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2.5)),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-
-                    TextField(
-                      controller: passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'رمز عبور *',
-                        prefixIcon: const Icon(Icons.lock, color: Colors.indigo),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.indigo),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: isLoading ? null : _activateLicense,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: isLoading
+                                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.verified_user, color: Colors.white),
+                                      SizedBox(width: 10),
+                                      Text('فعال‌سازی', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+                                    ],
+                                  ),
+                          ),
                         ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2.5)),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
                     ),
-                    const SizedBox(height: 15),
-
-                    TextField(
-                      controller: confirmPasswordController,
-                      obscureText: _obscureConfirm,
-                      decoration: InputDecoration(
-                        labelText: 'تأیید رمز عبور *',
-                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.indigo),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility, color: Colors.indigo),
-                          onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
-                        ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2.5)),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-
-                    ElevatedButton(
-                      onPressed: isLoading ? null : _activateLicense,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo.shade600,
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        elevation: 5,
-                      ),
-                      child: isLoading
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white))
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.verified_user, color: Colors.white),
-                                SizedBox(width: 10),
-                                Text('فعال‌سازی', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
-                              ],
-                            ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -165,17 +133,14 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
       _showError('تمام فیلدها الزامی هستند!');
       return;
     }
-
     if (!validLicenseCodes.contains(licenseCode)) {
       _showError('کد لایسنس نامعتبر است!');
       return;
     }
-
     if (password != confirmPassword) {
       _showError('رمزهای عبور مطابقت ندارند!');
       return;
     }
-
     if (password.length < 6) {
       _showError('رمز عبور حداقل 6 کاراکتر باید باشد!');
       return;
@@ -199,9 +164,7 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
   }
 
   @override
