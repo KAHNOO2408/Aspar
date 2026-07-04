@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../models/contact_model.dart';
 import '../widgets/custom_app_bar.dart';
+import 'contact_ledger_screen.dart';
 
 class ContactsScreen extends StatelessWidget {
   const ContactsScreen({Key? key}) : super(key: key);
@@ -50,8 +51,19 @@ class ContactsScreen extends StatelessWidget {
                           subtitle: Text(contact.phoneNumber, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                           trailing: PopupMenuButton(
                             itemBuilder: (context) => [
-                              PopupMenuItem(child: const Text('ویرایش'), onTap: () => _showEditContactDialog(context, provider, contact)),
-                              PopupMenuItem(child: const Text('حذف'), onTap: () => provider.deleteContact(contact.id!)),
+                              PopupMenuItem(
+                                child: const Row(children: [Icon(Icons.receipt_long, size: 18, color: Colors.indigo), SizedBox(width: 8), Text('مشاهده حساب')]),
+                                onTap: () {
+                                  Future.delayed(Duration.zero, () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: contact.firstName, personFamily: contact.lastName)),
+                                    );
+                                  });
+                                },
+                              ),
+                              PopupMenuItem(child: const Row(children: [Icon(Icons.edit, size: 18, color: Colors.blue), SizedBox(width: 8), Text('ویرایش')]), onTap: () => _showEditContactDialog(context, provider, contact)),
+                              PopupMenuItem(child: const Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text('حذف')]), onTap: () => provider.deleteContact(contact.id!)),
                             ],
                           ),
                         ),
