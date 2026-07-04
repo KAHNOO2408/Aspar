@@ -110,10 +110,9 @@ class DebtProvider extends ChangeNotifier {
     await loadDebts();
   }
 
-  // تسویه‌ی واسطه‌ای بین دو مخاطب (بدون دخالت بانک)
-  // reduceType = نوع بدهی/طلبی که با این پرداخت کاهش پیدا می‌کنه
-  // اگه مبلغ بیشتر از بدهی/طلب موجود بود، مابه‌التفاوت به‌عنوان نوع مخالف ثبت میشه
-  Future<void> applyContactPayment({
+  // تسویه‌ی خودکار بین بدهی/طلب یک مخاطب؛ آی‌دی بدهی‌ای که در نهایت
+  // به‌عنوان حامل این پرداخت شناخته میشه رو برمی‌گردونه (برای ثبت Payment)
+  Future<int> applyContactPayment({
     required String personName,
     required String personFamily,
     required double amount,
@@ -133,17 +132,21 @@ class DebtProvider extends ChangeNotifier {
       ..sort((a, b) => a.date.compareTo(b.date));
 
     double remaining = amount;
+    int? lastTouchedId;
+
     for (final debt in targetDebts) {
       if (remaining <= 0) break;
       final offset = remaining < debt.remainder ? remaining : debt.remainder;
       debt.paidAmount += offset;
       await editDebt(debt);
+      lastTouchedId = debt.id;
       remaining -= offset;
     }
 
     if (remaining > 0) {
+      final newId = DateTime.now().millisecondsSinceEpoch + personName.hashCode.abs() % 1000;
       final newDebt = Debt(
-        id: DateTime.now().millisecondsSinceEpoch + personName.hashCode.abs() % 1000,
+        id: newId,
         personName: personName,
         personFamily: personFamily,
         totalAmount: remaining,
@@ -153,7 +156,10 @@ class DebtProvider extends ChangeNotifier {
         paidAmount: 0,
       );
       await addDebt(newDebt);
+      lastTouchedId = newId;
     }
+
+    return lastTouchedId!;
   }
 
   double getTotalOwed(DateTime? startDate, DateTime? endDate) {
