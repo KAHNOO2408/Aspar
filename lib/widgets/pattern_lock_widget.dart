@@ -8,7 +8,7 @@ class PatternLockWidget extends StatefulWidget {
   const PatternLockWidget({
     Key? key,
     required this.onComplete,
-    this.activeColor = Colors.indigo,
+    this.activeColor = const Color(0xFF2B3FBE),
     this.dotColor = Colors.grey,
   }) : super(key: key);
 
