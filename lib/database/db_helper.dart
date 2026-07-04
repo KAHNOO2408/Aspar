@@ -205,4 +205,12 @@ class DatabaseHelper {
     }
     return entries;
   }
+
+  static Future<void> updateLedgerEntry(LedgerEntry entry) async {
+    await ledgerBox.put(entry.id, entry.toMap());
+  }
+
+  static Future<void> deleteLedgerEntry(int id) async {
+    await ledgerBox.delete(id);
+  }
 }
