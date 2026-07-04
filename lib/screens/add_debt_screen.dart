@@ -54,11 +54,12 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
-            final query = searchController.text.trim();
+            final query = searchController.text.trim().toLowerCase();
             final filtered = productProvider.products
-                .where((p) => p.name.contains(query))
+                .where((p) => p.name.toLowerCase().contains(query))
                 .toList();
-            final exactMatch = productProvider.products.any((p) => p.name == query);
+            final exactMatch = productProvider.products
+                .any((p) => p.name.toLowerCase() == query);
 
             return AlertDialog(
               title: const Text('انتخاب محصول', style: TextStyle(fontWeight: FontWeight.w700)),
@@ -80,7 +81,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     const SizedBox(height: 10),
                     Expanded(
                       child: filtered.isEmpty
-                          ? const Center(child: Text('محصولی یافت نشد', style: TextStyle(color: Colors.grey)))
+                          ? const Center(child: Text('محصولی یافت نشد', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)))
                           : ListView.builder(
                               itemCount: filtered.length,
                               itemBuilder: (context, index) {
@@ -101,12 +102,19 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       const Divider(),
                       ElevatedButton.icon(
                         onPressed: () async {
-                          final newProduct = await productProvider.getOrCreateProduct(query);
+                          final newProduct = await productProvider.getOrCreateProduct(searchController.text.trim());
                           if (dialogContext.mounted) Navigator.pop(dialogContext, newProduct);
                         },
-                        icon: const Icon(Icons.add),
-                        label: Text('افزودن محصول جدید: «$query»'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, minimumSize: const Size(double.infinity, 45)),
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        label: Text(
+                          'افزودن محصول جدید: «${searchController.text.trim()}»',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                          textAlign: TextAlign.center,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+                          minimumSize: const Size(double.infinity, 45),
+                        ),
                       ),
                     ],
                   ],
@@ -334,7 +342,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final isPurchase = sameType == DebtType.owed;
     final productProvider = context.read<ProductProvider>();
 
-    // مدیریت انبار: خرید = اضافه شدن موجودی، فروش = کم شدن موجودی (با چک موجودی کافی)
     if (isPurchase) {
       await productProvider.recordPurchase(
         product: selectedProduct!,
