@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
-import '../models/debt_model.dart';
 import '../models/contact_model.dart';
-import '../utils/formatters.dart';
+import '../models/ledger_model.dart';
 
 class TransferBetweenAccountsScreen extends StatefulWidget {
   const TransferBetweenAccountsScreen({Key? key}) : super(key: key);
@@ -50,10 +49,7 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
               children: [
                 Container(
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.indigo.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: BoxDecoration(color: Colors.indigo.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
                   child: const Text(
                     'برای وقتی که یک نفر به‌جای تو، مستقیم به شخص دیگه‌ای پول پرداخت می‌کنه (بدون این‌که از بانک تو رد بشه)',
                     style: TextStyle(fontSize: 12, color: Colors.indigo, fontWeight: FontWeight.w600),
@@ -69,10 +65,7 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
                   value: payerContact,
                   items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
                   onChanged: (c) => setState(() => payerContact = c),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 20),
 
@@ -84,31 +77,20 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
                   value: receiverContact,
                   items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
                   onChanged: (c) => setState(() => receiverContact = c),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 20),
 
                 TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'مبلغ *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'مبلغ *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
                 TextField(
                   controller: noteController,
-                  decoration: InputDecoration(
-                    labelText: 'یادداشت (اختیاری)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'یادداشت (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
@@ -124,11 +106,7 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, minimumSize: const Size(double.infinity, 50), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     child: const Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
                   ),
                 ),
@@ -155,27 +133,24 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
       return;
     }
 
-    final debtProvider = context.read<DebtProvider>();
+    final ledgerProvider = context.read<LedgerProvider>();
+    final note = noteController.text.isNotEmpty ? noteController.text : 'انتقال واسطه‌ای';
 
-    // پرداخت‌کننده: انگار به من پول داده => طلبش از من کم میشه (یا اگه طلبی نداشت، حالا خودش بهم بدهکار میشه)
-    await debtProvider.applyContactPayment(
+    await ledgerProvider.addEntry(LedgerEntry(
       personName: payerContact!.firstName,
       personFamily: payerContact!.lastName,
-      amount: amount,
-      reduceType: DebtType.receivable,
       date: selectedDate,
-      description: noteController.text.isNotEmpty ? noteController.text : 'دریافت واسطه‌ای',
-    );
+      description: 'پرداخت واسطه‌ای به ${receiverContact!.fullName} - $note',
+      creditAmount: amount,
+    ));
 
-    // دریافت‌کننده: انگار من بهش پول دادم => بدهی من بهش کم میشه (یا اگه بدهی نداشتم، حالا اون بهم بدهکار میشه)
-    await debtProvider.applyContactPayment(
+    await ledgerProvider.addEntry(LedgerEntry(
       personName: receiverContact!.firstName,
       personFamily: receiverContact!.lastName,
-      amount: amount,
-      reduceType: DebtType.owed,
       date: selectedDate,
-      description: noteController.text.isNotEmpty ? noteController.text : 'پرداخت واسطه‌ای',
-    );
+      description: 'دریافت واسطه‌ای از ${payerContact!.fullName} - $note',
+      debitAmount: amount,
+    ));
 
     if (mounted) {
       Navigator.pop(context);
