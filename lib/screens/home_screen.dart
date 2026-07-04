@@ -9,12 +9,12 @@ import '../utils/formatters.dart';
 import 'add_transaction_screen.dart';
 import 'add_debt_screen.dart';
 import 'add_bank_screen.dart';
-import 'add_investment_screen.dart';
 import 'debts_screen.dart';
 import 'banks_screen.dart';
 import 'contacts_screen.dart';
 import 'settlement_screen.dart';
 import 'investment_screen.dart';
+import 'products_screen.dart';
 import 'loans_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
@@ -80,6 +80,14 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SettlementScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.inventory_2, color: Colors.brown),
+              title: const Text('انبار محصولات'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductsScreen()));
               },
             ),
             ListTile(
@@ -365,7 +373,7 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddInvestmentScreen())),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductsScreen())),
                           child: Card(
                             elevation: 3,
                             child: Container(
@@ -376,9 +384,9 @@ class HomeScreen extends StatelessWidget {
                               padding: const EdgeInsets.all(20),
                               child: const Column(
                                 children: [
-                                  Icon(Icons.trending_up, color: Colors.white, size: 32),
+                                  Icon(Icons.inventory_2, color: Colors.white, size: 32),
                                   SizedBox(height: 10),
-                                  Text('سود جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+                                  Text('انبار محصولات', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
                                 ],
                               ),
                             ),
