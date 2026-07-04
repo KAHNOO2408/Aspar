@@ -110,6 +110,52 @@ class DebtProvider extends ChangeNotifier {
     await loadDebts();
   }
 
+  // تسویه‌ی واسطه‌ای بین دو مخاطب (بدون دخالت بانک)
+  // reduceType = نوع بدهی/طلبی که با این پرداخت کاهش پیدا می‌کنه
+  // اگه مبلغ بیشتر از بدهی/طلب موجود بود، مابه‌التفاوت به‌عنوان نوع مخالف ثبت میشه
+  Future<void> applyContactPayment({
+    required String personName,
+    required String personFamily,
+    required double amount,
+    required DebtType reduceType,
+    required DateTime date,
+    String description = '',
+  }) async {
+    final oppositeType = reduceType == DebtType.owed ? DebtType.receivable : DebtType.owed;
+
+    final targetDebts = debts
+        .where((d) =>
+            d.personName == personName &&
+            d.personFamily == personFamily &&
+            d.type == reduceType &&
+            d.remainder > 0)
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    double remaining = amount;
+    for (final debt in targetDebts) {
+      if (remaining <= 0) break;
+      final offset = remaining < debt.remainder ? remaining : debt.remainder;
+      debt.paidAmount += offset;
+      await editDebt(debt);
+      remaining -= offset;
+    }
+
+    if (remaining > 0) {
+      final newDebt = Debt(
+        id: DateTime.now().millisecondsSinceEpoch + personName.hashCode.abs() % 1000,
+        personName: personName,
+        personFamily: personFamily,
+        totalAmount: remaining,
+        description: description,
+        date: date,
+        type: oppositeType,
+        paidAmount: 0,
+      );
+      await addDebt(newDebt);
+    }
+  }
+
   double getTotalOwed(DateTime? startDate, DateTime? endDate) {
     return debts.where((d) => d.type == DebtType.owed).fold(0.0, (sum, d) => sum + d.remainder);
   }
