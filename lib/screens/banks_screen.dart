@@ -21,19 +21,36 @@ class BanksScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       appBar: buildCustomAppBar(title: 'بانک', context: context),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
-        backgroundColor: const Color(0xFF2B3FBE),
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-        elevation: 4,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)]),
+          boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.4), blurRadius: 14, offset: const Offset(0, 6))],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
       body: Consumer<BankProvider>(
         builder: (context, provider, _) {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // کارت کل موجودی
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
                   child: Container(
@@ -72,7 +89,7 @@ class BanksScreen extends StatelessWidget {
                               style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                             ),
                             const SizedBox(height: 4),
-                            const Text('ریال', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
+                            const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
                           ],
                         ),
                         Container(
@@ -194,7 +211,7 @@ class BanksScreen extends StatelessWidget {
                                         const SizedBox(width: 6),
                                         Padding(
                                           padding: const EdgeInsets.only(bottom: 3),
-                                          child: Text('ریال', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75))),
+                                          child: Text('تومان', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75))),
                                         ),
                                       ],
                                     ),
@@ -233,7 +250,7 @@ class BanksScreen extends StatelessWidget {
             const SizedBox(height: 16),
             TextField(controller: accountController, decoration: InputDecoration(labelText: 'شماره حساب', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
             const SizedBox(height: 16),
-            TextField(controller: balanceController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'موجودی', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            TextField(controller: balanceController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'موجودی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
           ],
         ),
         actions: [
