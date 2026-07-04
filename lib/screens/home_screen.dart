@@ -27,13 +27,16 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FB),
       appBar: buildCustomAppBar(title: 'خانه', context: context),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.indigo, Colors.indigo.shade700])),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -155,30 +158,43 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // کارت خوش‌آمدگویی
             Padding(
-              padding: const EdgeInsets.all(20),
-              child: Card(
-                elevation: 8,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [Colors.indigo.withOpacity(0.9), Colors.indigo.shade700], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+              child: Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  padding: const EdgeInsets.all(30),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('خوش‌آمدی 👋', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                      SizedBox(height: 8),
-                      Text('آسپار', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
-                      SizedBox(height: 20),
-                      Text('حسابداری شخصی و مدیریت درآمد', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                    ],
-                  ),
+                  boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('خوش‌آمدی 👋', style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
+                        SizedBox(height: 8),
+                        Text('آسپار', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
+                        SizedBox(height: 16),
+                        Text('حسابداری شخصی و مدیریت درآمد', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
+                      child: const Icon(Icons.insights_rounded, color: Colors.white, size: 34),
+                    ),
+                  ],
                 ),
               ),
             ),
+
             Consumer3<TransactionProvider, BankProvider, DebtProvider>(
               builder: (context, transProvider, bankProvider, debtProvider, _) {
                 final income = transProvider.getTotalIncome(null, null);
@@ -189,147 +205,93 @@ class HomeScreen extends StatelessWidget {
                 return Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       child: Row(
                         children: [
                           Expanded(
-                            child: Card(
-                              elevation: 3,
-                              child: Container(
-                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.green.withOpacity(0.7), Colors.green.shade400]), borderRadius: BorderRadius.circular(15)),
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('درآمد', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                    const SizedBox(height: 8),
-                                    Text(formatAmount(income), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
-                                  ],
-                                ),
-                              ),
+                            child: _StatCard(
+                              icon: Icons.arrow_downward_rounded,
+                              label: 'درآمد',
+                              value: formatAmount(income),
+                              gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
-                            child: Card(
-                              elevation: 3,
-                              child: Container(
-                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.red.withOpacity(0.7), Colors.red.shade400]), borderRadius: BorderRadius.circular(15)),
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('خرج', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                    const SizedBox(height: 8),
-                                    Text(formatAmount(expense), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Card(
-                              elevation: 3,
-                              child: Container(
-                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.blue.withOpacity(0.7), Colors.blue.shade400]), borderRadius: BorderRadius.circular(15)),
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('خالص', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                    const SizedBox(height: 8),
-                                    Text(formatAmount(balance), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
-                                  ],
-                                ),
-                              ),
+                            child: _StatCard(
+                              icon: Icons.arrow_upward_rounded,
+                              label: 'خرج',
+                              value: formatAmount(expense),
+                              gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         children: [
                           Expanded(
-                            child: Card(
-                              elevation: 3,
-                              child: Container(
-                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.purple.withOpacity(0.7), Colors.purple.shade400]), borderRadius: BorderRadius.circular(15)),
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('موجودی بانک', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                    const SizedBox(height: 8),
-                                    Text(formatAmount(bankBalance), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
-                                  ],
-                                ),
-                              ),
+                            child: _StatCard(
+                              icon: Icons.account_balance_wallet_rounded,
+                              label: 'خالص',
+                              value: formatAmount(balance),
+                              gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
-                            child: Card(
-                              elevation: 3,
-                              child: Container(
-                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.orange.withOpacity(0.7), Colors.orange.shade400]), borderRadius: BorderRadius.circular(15)),
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('تعداد بانک', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                    const SizedBox(height: 8),
-                                    Text('${bankProvider.banks.length}', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
-                                  ],
-                                ),
-                              ),
+                            child: _StatCard(
+                              icon: Icons.account_balance_rounded,
+                              label: 'موجودی بانک',
+                              value: formatAmount(bankBalance),
+                              gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                      child: _StatCard(
+                        icon: Icons.account_balance_rounded,
+                        label: 'تعداد بانک',
+                        value: '${bankProvider.banks.length}',
+                        gradient: const [Color(0xFFFF5C8A), Color(0xFFD81B60)],
+                        fullWidth: true,
                       ),
                     ),
                   ],
                 );
               },
             ),
+
             const SizedBox(height: 30),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('دسترسی های سریع', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  Text('دسترسی های سریع', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.grey.shade800)),
                   const SizedBox(height: 15),
                   Row(
                     children: [
                       Expanded(
-                        child: GestureDetector(
+                        child: _QuickAction(
+                          icon: Icons.add_rounded,
+                          label: 'تراکنش جدید',
+                          gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTransactionScreen())),
-                          child: Card(
-                            elevation: 3,
-                            child: Container(
-                              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.blue.withOpacity(0.8), Colors.blue.shade600]), borderRadius: BorderRadius.circular(15)),
-                              padding: const EdgeInsets.all(20),
-                              child: const Column(children: [Icon(Icons.add, color: Colors.white, size: 32), SizedBox(height: 10), Text('تراکنش جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12))]),
-                            ),
-                          ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: GestureDetector(
+                        child: _QuickAction(
+                          icon: Icons.shopping_cart_rounded,
+                          label: 'ثبت خرید',
+                          gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.owed))),
-                          child: Card(
-                            elevation: 3,
-                            child: Container(
-                              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.red.withOpacity(0.8), Colors.red.shade600]), borderRadius: BorderRadius.circular(15)),
-                              padding: const EdgeInsets.all(20),
-                              child: const Column(children: [Icon(Icons.shopping_cart, color: Colors.white, size: 32), SizedBox(height: 10), Text('ثبت خرید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12))]),
-                            ),
-                          ),
                         ),
                       ),
                     ],
@@ -338,30 +300,20 @@ class HomeScreen extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: GestureDetector(
+                        child: _QuickAction(
+                          icon: Icons.sell_rounded,
+                          label: 'ثبت فروش',
+                          gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.receivable))),
-                          child: Card(
-                            elevation: 3,
-                            child: Container(
-                              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.green.withOpacity(0.8), Colors.green.shade600]), borderRadius: BorderRadius.circular(15)),
-                              padding: const EdgeInsets.all(20),
-                              child: const Column(children: [Icon(Icons.sell, color: Colors.white, size: 32), SizedBox(height: 10), Text('ثبت فروش', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12))]),
-                            ),
-                          ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: GestureDetector(
+                        child: _QuickAction(
+                          icon: Icons.account_balance_rounded,
+                          label: 'بانک جدید',
+                          gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
-                          child: Card(
-                            elevation: 3,
-                            child: Container(
-                              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.amber.withOpacity(0.8), Colors.amber.shade600]), borderRadius: BorderRadius.circular(15)),
-                              padding: const EdgeInsets.all(20),
-                              child: const Column(children: [Icon(Icons.account_balance, color: Colors.white, size: 32), SizedBox(height: 10), Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12))]),
-                            ),
-                          ),
                         ),
                       ),
                     ],
@@ -371,6 +323,114 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final List<Color> gradient;
+  final bool fullWidth;
+
+  const _StatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.gradient,
+    this.fullWidth = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: fullWidth ? double.infinity : null,
+      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 14, offset: const Offset(0, 7))],
+      ),
+      child: fullWidth
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 6),
+                    Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(12)),
+                  child: Icon(icon, color: Colors.white, size: 22),
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(10)),
+                      child: Icon(icon, color: Colors.white, size: 16),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(value, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
+              ],
+            ),
+    );
+  }
+}
+
+class _QuickAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  const _QuickAction({required this.icon, required this.label, required this.gradient, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 14, offset: const Offset(0, 7))],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 22),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), shape: BoxShape.circle),
+                  child: Icon(icon, color: Colors.white, size: 24),
+                ),
+                const SizedBox(height: 10),
+                Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+              ],
+            ),
+          ),
         ),
       ),
     );
