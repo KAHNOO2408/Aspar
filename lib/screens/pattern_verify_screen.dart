@@ -41,37 +41,43 @@ class _PatternVerifyScreenState extends State<PatternVerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue.shade900,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.pattern, size: 60, color: Colors.white),
-              const SizedBox(height: 20),
-              const Text('الگوی خود را رسم کنید', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 10),
-              if (_errorMessage != null)
-                Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 30),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
+                  child: const Icon(Icons.pattern, size: 40, color: Colors.white),
                 ),
-                child: PatternLockWidget(
-                  key: ValueKey(_attempts),
-                  onComplete: _onPatternComplete,
+                const SizedBox(height: 20),
+                const Text('الگوی خود را رسم کنید', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 10),
+                if (_errorMessage != null)
+                  Text(_errorMessage!, style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 30),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10))],
+                  ),
+                  child: PatternLockWidget(key: ValueKey(_attempts), onComplete: _onPatternComplete),
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('ورود با نام کاربری و رمز عبور', style: TextStyle(color: Colors.white70)),
-              ),
-            ],
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('ورود با نام کاربری و رمز عبور', style: TextStyle(color: Colors.white70)),
+                ),
+              ],
+            ),
           ),
         ),
       ),
