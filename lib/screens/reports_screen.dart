@@ -254,6 +254,15 @@ class _TransactionReportsTab extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(color: const Color(0xFF2B3FBE).withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+                    child: const Text(
+                      'اگه مبلغ یا بانک رو عوض کنی، موجودی بانک هم خودکار تصحیح میشه',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   TextField(controller: titleController, decoration: InputDecoration(labelText: 'عنوان', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
                   TextField(controller: descController, decoration: InputDecoration(labelText: 'توضیح', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
@@ -286,19 +295,44 @@ class _TransactionReportsTab extends StatelessWidget {
             actions: [
               TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
               ElevatedButton(
-                onPressed: () {
-                  final amount = double.tryParse(amountController.text) ?? trans.amount;
+                onPressed: () async {
+                  final newAmount = double.tryParse(amountController.text) ?? trans.amount;
+                  final bankProvider = context.read<BankProvider>();
+
+                  // مرحله ۱: خنثی کردن اثر تراکنش قدیمی روی بانک قدیمی
+                  if (trans.bankId != null) {
+                    try {
+                      final oldBank = bankProvider.banks.firstWhere((b) => b.id == trans.bankId);
+                      final reversedBalance = trans.type == TransactionType.income ? oldBank.balance - trans.amount : oldBank.balance + trans.amount;
+                      await bankProvider.updateBank(Bank(id: oldBank.id, bankName: oldBank.bankName, accountNumber: oldBank.accountNumber, balance: reversedBalance));
+                    } catch (e) {
+                      // بانک قدیمی دیگه وجود نداره، رد میشیم
+                    }
+                  }
+
+                  // مرحله ۲: اعمال اثر تراکنش جدید روی بانک جدید (یا همون بانک، با مبلغ جدید)
+                  if (selectedBankId != null) {
+                    try {
+                      final newBank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
+                      final appliedBalance = trans.type == TransactionType.income ? newBank.balance + newAmount : newBank.balance - newAmount;
+                      await bankProvider.updateBank(Bank(id: newBank.id, bankName: newBank.bankName, accountNumber: newBank.accountNumber, balance: appliedBalance));
+                    } catch (e) {
+                      // بانک انتخاب‌شده پیدا نشد
+                    }
+                  }
+
                   final updated = Transaction(
                     id: trans.id,
                     title: titleController.text,
                     description: descController.text,
-                    amount: amount,
+                    amount: newAmount,
                     type: trans.type,
                     category: trans.category,
                     date: selectedDate,
                     bankId: selectedBankId,
                   );
-                  context.read<TransactionProvider>().editTransaction(updated);
+                  await context.read<TransactionProvider>().editTransaction(updated);
+
                   Navigator.pop(dialogContext);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ویرایش شد ✅')));
                 },
@@ -318,12 +352,24 @@ class _TransactionReportsTab extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('حذف تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-        content: Text('آیا از حذف «${trans.title}» مطمئن هستید؟'),
+        content: Text('آیا از حذف «${trans.title}» مطمئن هستید؟\n\nموجودی بانک هم به‌صورت خودکار اصلاح میشه.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
           ElevatedButton(
-            onPressed: () {
-              context.read<TransactionProvider>().deleteTransaction(trans.id!);
+            onPressed: () async {
+              // خنثی کردن اثر تراکنش روی بانک قبل از حذف
+              if (trans.bankId != null) {
+                final bankProvider = context.read<BankProvider>();
+                try {
+                  final bank = bankProvider.banks.firstWhere((b) => b.id == trans.bankId);
+                  final reversedBalance = trans.type == TransactionType.income ? bank.balance - trans.amount : bank.balance + trans.amount;
+                  await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: reversedBalance));
+                } catch (e) {
+                  // بانک دیگه وجود نداره
+                }
+              }
+
+              await context.read<TransactionProvider>().deleteTransaction(trans.id!);
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حذف شد'), backgroundColor: Colors.red));
             },
