@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
-import '../models/debt_model.dart';
 import '../models/contact_model.dart';
 import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
-import '../models/payment_model.dart';
+import '../models/ledger_model.dart';
 import '../utils/formatters.dart';
 
 class BankDepositScreen extends StatefulWidget {
@@ -54,14 +53,8 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    'برای وقتی که یک مخاطب پول به حساب بانکی تو واریز می‌کنه',
-                    style: TextStyle(fontSize: 12, color: Colors.teal, fontWeight: FontWeight.w600),
-                  ),
+                  decoration: BoxDecoration(color: Colors.teal.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+                  child: const Text('برای وقتی که یک مخاطب پول به حساب بانکی تو واریز می‌کنه', style: TextStyle(fontSize: 12, color: Colors.teal, fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(height: 20),
 
@@ -73,10 +66,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                   value: selectedContact,
                   items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
                   onChanged: (c) => setState(() => selectedContact = c),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 20),
 
@@ -87,17 +77,9 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                     return DropdownButtonFormField<int>(
                       value: selectedBankId,
                       hint: const Text('انتخاب بانک'),
-                      items: bankProvider.banks.map((bank) {
-                        return DropdownMenuItem<int>(
-                          value: bank.id,
-                          child: Text('${bank.bankName} - ${formatAmount(bank.balance)}'),
-                        );
-                      }).toList(),
+                      items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)}'))).toList(),
                       onChanged: (value) => setState(() => selectedBankId = value),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
+                      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                     );
                   },
                 ),
@@ -106,31 +88,19 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                 TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'مبلغ *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'مبلغ *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
                 TextField(
                   controller: trackingCodeController,
-                  decoration: InputDecoration(
-                    labelText: 'کد رهگیری *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'کد رهگیری *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
                 TextField(
                   controller: noteController,
-                  decoration: InputDecoration(
-                    labelText: 'یادداشت (اختیاری)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'یادداشت (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
@@ -146,11 +116,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, minimumSize: const Size(double.infinity, 50), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     child: const Text('ثبت واریز', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
                   ),
                 ),
@@ -174,33 +140,14 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     }
 
     final bankProvider = context.read<BankProvider>();
-    final debtProvider = context.read<DebtProvider>();
     final transProvider = context.read<TransactionProvider>();
-    final paymentProvider = context.read<PaymentProvider>();
+    final ledgerProvider = context.read<LedgerProvider>();
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
 
-    // موجودی بانک زیاد میشه
-    final updatedBank = Bank(
-      id: bank.id,
-      bankName: bank.bankName,
-      accountNumber: bank.accountNumber,
-      balance: bank.balance + amount,
-    );
+    final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount);
     await bankProvider.updateBank(updatedBank);
 
-    // واریز از مخاطب یعنی طلب اون از من کم میشه (یا اگه طلبی نداشت، حالا من بهش بدهکار میشم)
-    final debtId = await debtProvider.applyContactPayment(
-      personName: selectedContact!.firstName,
-      personFamily: selectedContact!.lastName,
-      amount: amount,
-      reduceType: DebtType.receivable,
-      date: selectedDate,
-      description: 'واریز به بانک - کد رهگیری: ${trackingCodeController.text}',
-    );
-
-    final noteText = noteController.text.isNotEmpty
-        ? 'کد رهگیری: ${trackingCodeController.text} - ${noteController.text}'
-        : 'کد رهگیری: ${trackingCodeController.text}';
+    final noteText = noteController.text.isNotEmpty ? 'کد رهگیری: ${trackingCodeController.text} - ${noteController.text}' : 'کد رهگیری: ${trackingCodeController.text}';
 
     final transaction = Transaction(
       title: 'واریز به بانک',
@@ -213,15 +160,14 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     );
     transProvider.addTransaction(transaction);
 
-    final payment = Payment(
-      debtId: debtId,
-      amount: amount,
+    await ledgerProvider.addEntry(LedgerEntry(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
       date: selectedDate,
-      description: noteText,
-      type: PaymentType.receivablePayment,
+      description: 'واریز به بانک - $noteText',
+      creditAmount: amount,
       bankId: bank.id,
-    );
-    await paymentProvider.addPayment(payment);
+    ));
 
     if (mounted) {
       Navigator.pop(context);
