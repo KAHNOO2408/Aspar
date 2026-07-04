@@ -13,6 +13,7 @@ class DebtsScreen extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: const Color(0xFFF4F6FB),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(110),
           child: Column(
@@ -35,8 +36,8 @@ class DebtsScreen extends StatelessWidget {
 
             return TabBarView(
               children: [
-                _buildList(context, owed, Colors.red, 'کل بدهی‌های من', 'بدهی‌ای نداری', '📤'),
-                _buildList(context, receivable, Colors.green, 'کل طلب‌های من', 'طلبی ندارم', '📥'),
+                _buildList(context, owed, const [Color(0xFFFF7A59), Color(0xFFE64A19)], 'کل بدهی‌های من', 'بدهی‌ای نداری', Icons.arrow_upward_rounded),
+                _buildList(context, receivable, const [Color(0xFF11998E), Color(0xFF38EF7D)], 'کل طلب‌های من', 'طلبی ندارم', Icons.arrow_downward_rounded),
               ],
             );
           },
@@ -45,59 +46,70 @@ class DebtsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildList(BuildContext context, List<Map<String, dynamic>> list, Color color, String totalTitle, String emptyText, String emoji) {
+  Widget _buildList(BuildContext context, List<Map<String, dynamic>> list, List<Color> gradient, String totalTitle, String emptyText, IconData emptyIcon) {
     final total = list.fold(0.0, (sum, item) => sum + (item['balance'] as double).abs());
 
     return SingleChildScrollView(
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
-            child: Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [color.withOpacity(0.9), color.withOpacity(0.7)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: const EdgeInsets.all(30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(totalTitle, style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w400)),
-                    const SizedBox(height: 15),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(formatAmount(total), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
-                            const Text('ریال', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                          ],
-                        ),
-                        Text(emoji, style: const TextStyle(fontSize: 48)),
-                      ],
-                    ),
-                  ],
-                ),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+            child: Container(
+              padding: const EdgeInsets.all(26),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
+                            child: Icon(emptyIcon, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(totalTitle, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Text(formatAmount(total), style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 4),
+                      const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
+                    child: Icon(emptyIcon, color: Colors.white, size: 30),
+                  ),
+                ],
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Align(alignment: Alignment.centerRight, child: Text('فهرست تفصیلی', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+            child: Align(alignment: Alignment.centerRight, child: Text('فهرست تفصیلی', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.grey.shade700))),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 8),
           if (list.isEmpty)
             Padding(
               padding: const EdgeInsets.all(50),
               child: Column(
                 children: [
-                  Icon(Icons.done_all, size: 100, color: Colors.grey[200]),
-                  const SizedBox(height: 20),
-                  Text(emptyText, style: const TextStyle(color: Colors.grey, fontSize: 18, fontWeight: FontWeight.w500)),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
+                    child: Icon(Icons.done_all_rounded, size: 50, color: Colors.grey.shade300),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(emptyText, style: TextStyle(color: Colors.grey.shade500, fontSize: 15, fontWeight: FontWeight.w600)),
                 ],
               ),
             )
@@ -105,6 +117,7 @@ class DebtsScreen extends StatelessWidget {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: list.length,
               itemBuilder: (context, index) {
                 final item = list[index];
@@ -113,30 +126,41 @@ class DebtsScreen extends StatelessWidget {
                 final balance = (item['balance'] as double).abs();
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Card(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Material(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
                     elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      leading: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
-                        child: Center(child: Icon(Icons.person, color: color, size: 24)),
-                      ),
-                      title: Text('$personName $personFamily', style: const TextStyle(fontWeight: FontWeight.w700)),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(formatAmount(balance), style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 14)),
-                          const Text('ریال', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                        ],
-                      ),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: personName, personFamily: personFamily)),
+                    shadowColor: Colors.black12,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: personName, personFamily: personFamily))),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                              ),
+                              child: const Icon(Icons.person_rounded, color: Colors.white, size: 24),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text('$personName $personFamily', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(formatAmount(balance), style: TextStyle(fontWeight: FontWeight.w800, color: gradient[1], fontSize: 14)),
+                                const Text('تومان', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
