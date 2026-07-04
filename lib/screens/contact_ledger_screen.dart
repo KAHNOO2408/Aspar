@@ -25,9 +25,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     return '${j.year}/${j.month.toString().padLeft(2, '0')}/${j.day.toString().padLeft(2, '0')}';
   }
 
-  String _formatTime(DateTime date) {
-    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-  }
+  String _formatTime(DateTime date) => '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
   Future<void> _pickDate(bool isStart) async {
     final picked = await showPersianDatePicker(
@@ -63,12 +61,12 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
         bankName = 'ثبت نشده';
       }
     }
-
     final amount = entry.debitAmount > 0 ? entry.debitAmount : entry.creditAmount;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('جزئیات فاکتور', style: TextStyle(fontWeight: FontWeight.w700)),
         content: SingleChildScrollView(
           child: Column(
@@ -88,7 +86,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('بستن', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -120,27 +118,17 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) {
           return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: const Text('ویرایش فاکتور', style: TextStyle(fontWeight: FontWeight.w700)),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
-                    controller: descController,
-                    decoration: InputDecoration(labelText: 'شرح', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                  ),
+                  TextField(controller: descController, decoration: InputDecoration(labelText: 'شرح', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
-                  TextField(
-                    controller: debitController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'پرداختی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                  ),
+                  TextField(controller: debitController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'پرداختی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
-                  TextField(
-                    controller: creditController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'دریافتی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                  ),
+                  TextField(controller: creditController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'دریافتی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
                     onPressed: () async {
@@ -150,9 +138,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                         firstDate: Jalali(1390, 1),
                         lastDate: Jalali(1420, 12, 29),
                       );
-                      if (picked != null) {
-                        setState(() => selectedDate = picked.toDateTime());
-                      }
+                      if (picked != null) setState(() => selectedDate = picked.toDateTime());
                     },
                     icon: const Icon(Icons.calendar_today, size: 16),
                     label: Text(_formatJalali(selectedDate)),
@@ -180,7 +166,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                   Navigator.pop(dialogContext);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ویرایش شد ✅')));
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 child: const Text('ذخیره', style: TextStyle(color: Colors.white)),
               ),
             ],
@@ -194,6 +180,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('حذف فاکتور', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
         content: Text('آیا از حذف «${entry.description}» مطمئن هستید؟'),
         actions: [
@@ -204,7 +191,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حذف شد'), backgroundColor: Colors.red));
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('حذف', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -215,6 +202,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(title: Text('${widget.personName} ${widget.personFamily}')),
       body: Consumer<LedgerProvider>(
         builder: (context, provider, _) {
@@ -229,7 +217,6 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
           final finalBalance = withBalance.isNotEmpty ? withBalance.last.balanceAfter : 0.0;
 
           var filtered = withBalance;
-
           final query = searchController.text.trim();
           if (query.isNotEmpty) {
             filtered = filtered.where((row) => row.entry.description.contains(query)).toList();
@@ -254,9 +241,9 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                   decoration: InputDecoration(
                     hintText: 'جستجوی محصول...',
                     prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     filled: true,
-                    fillColor: Colors.grey.shade50,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     isDense: true,
                   ),
                 ),
@@ -281,60 +268,51 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                       ),
                     ),
                     if (startDate != null || endDate != null)
-                      IconButton(
-                        onPressed: () => setState(() {
-                          startDate = null;
-                          endDate = null;
-                        }),
-                        icon: const Icon(Icons.clear, color: Colors.red),
-                      ),
+                      IconButton(onPressed: () => setState(() { startDate = null; endDate = null; }), icon: const Icon(Icons.clear, color: Colors.red)),
                   ],
                 ),
               ),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: Card(
-                  elevation: 6,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [Colors.indigo.withOpacity(0.9), Colors.indigo.shade700]),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Column(
-                              children: [
-                                const Text('دریافتی', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                const SizedBox(height: 6),
-                                Text('${formatAmount(totalCredit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
-                              ],
-                            ),
-                            Container(width: 1, height: 30, color: Colors.white24),
-                            Column(
-                              children: [
-                                const Text('پرداختی', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                const SizedBox(height: 6),
-                                Text('${formatAmount(totalDebit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const Divider(color: Colors.white24, height: 24),
-                        Text(
-                          finalBalance >= 0
-                              ? 'در حال حاضر ${widget.personName} به شما ${formatAmount(finalBalance)} تومان بدهکار است'
-                              : 'در حال حاضر شما به ${widget.personName} ${formatAmount(finalBalance.abs())} تومان بدهکارید',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                child: Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                    boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 8))],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Column(
+                            children: [
+                              const Text('دریافتی', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              Text('${formatAmount(totalCredit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800)),
+                            ],
+                          ),
+                          Container(width: 1, height: 30, color: Colors.white24),
+                          Column(
+                            children: [
+                              const Text('پرداختی', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              Text('${formatAmount(totalDebit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800)),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const Divider(color: Colors.white24, height: 24),
+                      Text(
+                        finalBalance >= 0
+                            ? 'در حال حاضر ${widget.personName} به شما ${formatAmount(finalBalance)} تومان بدهکار است'
+                            : 'در حال حاضر شما به ${widget.personName} ${formatAmount(finalBalance.abs())} تومان بدهکارید',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -347,9 +325,13 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.receipt_long, size: 90, color: Colors.grey[200]),
-                            const SizedBox(height: 16),
-                            const Text('موردی برای نمایش وجود ندارد', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
+                              child: Icon(Icons.receipt_long, size: 50, color: Colors.grey.shade300),
+                            ),
+                            const SizedBox(height: 18),
+                            Text('موردی برای نمایش وجود ندارد', style: TextStyle(color: Colors.grey.shade500, fontSize: 15)),
                           ],
                         ),
                       )
@@ -364,11 +346,13 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
-                            child: Card(
+                            child: Material(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
                               elevation: 2,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shadowColor: Colors.black12,
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                                 onTap: () => _showDetails(context, entry, row.balanceAfter),
                                 child: Padding(
                                   padding: const EdgeInsets.all(14),
@@ -385,11 +369,8 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                                             icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
                                             onSelected: (value) {
                                               final provider = context.read<LedgerProvider>();
-                                              if (value == 'edit') {
-                                                _showEditDialog(context, provider, entry);
-                                              } else if (value == 'delete') {
-                                                _showDeleteConfirm(context, provider, entry);
-                                              }
+                                              if (value == 'edit') _showEditDialog(context, provider, entry);
+                                              if (value == 'delete') _showDeleteConfirm(context, provider, entry);
                                             },
                                             itemBuilder: (context) => [
                                               const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 18, color: Colors.blue), SizedBox(width: 8), Text('ویرایش')])),
@@ -413,7 +394,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               const Text('پرداختی', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                              Text(hasDebit ? formatAmount(entry.debitAmount) : '-', style: const TextStyle(fontSize: 13, color: Colors.blue, fontWeight: FontWeight.w700)),
+                                              Text(hasDebit ? formatAmount(entry.debitAmount) : '-', style: const TextStyle(fontSize: 13, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700)),
                                             ],
                                           ),
                                           Column(
@@ -422,7 +403,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                                               const Text('مانده', style: TextStyle(fontSize: 10, color: Colors.grey)),
                                               Text(
                                                 formatAmount(row.balanceAfter.abs()),
-                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: row.balanceAfter >= 0 ? Colors.green : Colors.red),
+                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: row.balanceAfter >= 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19)),
                                               ),
                                             ],
                                           ),
