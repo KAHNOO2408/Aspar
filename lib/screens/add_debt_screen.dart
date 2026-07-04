@@ -7,6 +7,7 @@ import '../models/contact_model.dart';
 import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
 import '../models/payment_model.dart';
+import '../models/product_model.dart';
 import '../utils/formatters.dart';
 
 class AddDebtScreen extends StatefulWidget {
@@ -18,10 +19,12 @@ class AddDebtScreen extends StatefulWidget {
 }
 
 class _AddDebtScreenState extends State<AddDebtScreen> {
-  final amountController = TextEditingController();
-  final descriptionController = TextEditingController();
+  final quantityController = TextEditingController();
+  final priceController = TextEditingController();
+  final noteController = TextEditingController();
   final paidNowController = TextEditingController();
   Contact? selectedContact;
+  Product? selectedProduct;
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
 
@@ -42,9 +45,89 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     }
   }
 
+  Future<void> _pickProduct() async {
+    final productProvider = context.read<ProductProvider>();
+    final searchController = TextEditingController();
+
+    final result = await showDialog<Product>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final query = searchController.text.trim();
+            final filtered = productProvider.products
+                .where((p) => p.name.contains(query))
+                .toList();
+            final exactMatch = productProvider.products.any((p) => p.name == query);
+
+            return AlertDialog(
+              title: const Text('انتخاب محصول', style: TextStyle(fontWeight: FontWeight.w700)),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 350,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: searchController,
+                      onChanged: (_) => setDialogState(() {}),
+                      decoration: InputDecoration(
+                        hintText: 'جستجو یا نام محصول جدید...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? const Center(child: Text('محصولی یافت نشد', style: TextStyle(color: Colors.grey)))
+                          : ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final product = filtered[index];
+                                final stock = productProvider.getStock(product.id!);
+                                return ListTile(
+                                  title: Text(product.name),
+                                  trailing: Text(
+                                    stock > 0 ? '${stock.toStringAsFixed(0)} عدد' : 'موجود نیست',
+                                    style: TextStyle(color: stock > 0 ? Colors.green : Colors.red, fontWeight: FontWeight.w600),
+                                  ),
+                                  onTap: () => Navigator.pop(dialogContext, product),
+                                );
+                              },
+                            ),
+                    ),
+                    if (query.isNotEmpty && !exactMatch) ...[
+                      const Divider(),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          final newProduct = await productProvider.getOrCreateProduct(query);
+                          if (dialogContext.mounted) Navigator.pop(dialogContext, newProduct);
+                        },
+                        icon: const Icon(Icons.add),
+                        label: Text('افزودن محصول جدید: «$query»'),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, minimumSize: const Size(double.infinity, 45)),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() => selectedProduct = result);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isPurchase = widget.type == DebtType.owed;
+    final productProvider = context.watch<ProductProvider>();
+    final stock = selectedProduct != null ? productProvider.getStock(selectedProduct!.id!) : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -74,21 +157,77 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                TextField(
-                  controller: descriptionController,
-                  decoration: InputDecoration(
-                    labelText: isPurchase ? 'کالا / بابت خرید *' : 'کالا / بابت فروش *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
+                const Text('محصول *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 10),
+                InkWell(
+                  onTap: _pickProduct,
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.inventory_2_outlined, color: Colors.indigo),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            selectedProduct?.name ?? 'انتخاب محصول...',
+                            style: TextStyle(color: selectedProduct != null ? Colors.black : Colors.grey),
+                          ),
+                        ),
+                        if (selectedProduct != null && !isPurchase)
+                          Text(
+                            stock! > 0 ? 'موجودی: ${stock.toStringAsFixed(0)}' : 'موجود نیست',
+                            style: TextStyle(fontSize: 12, color: stock > 0 ? Colors.green : Colors.red, fontWeight: FontWeight.w700),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
 
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: quantityController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          labelText: 'تعداد *',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: priceController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          labelText: 'قیمت واحد *',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'مبلغ کل: ${formatAmount((double.tryParse(quantityController.text) ?? 0) * (double.tryParse(priceController.text) ?? 0))} ریال',
+                  style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.indigo),
+                ),
+                const SizedBox(height: 15),
+
                 TextField(
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
+                  controller: noteController,
                   decoration: InputDecoration(
-                    labelText: 'مبلغ کل معامله *',
+                    labelText: 'یادداشت (اختیاری)',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     contentPadding: const EdgeInsets.all(12),
                   ),
@@ -106,7 +245,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                 const Divider(),
                 const SizedBox(height: 10),
                 Text(
-                  isPurchase ? '💰 پرداخت فوری (اختیاری - اگه همون لحظه پول دادی)' : '💰 دریافت فوری (اختیاری - اگه همون لحظه پول گرفتی)',
+                  isPurchase ? '💰 پرداخت فوری (اختیاری)' : '💰 دریافت فوری (اختیاری)',
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.grey),
                 ),
                 const SizedBox(height: 10),
@@ -168,17 +307,19 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   }
 
   void _submit() async {
-    if (selectedContact == null || amountController.text.isEmpty || descriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، کالا و مبلغ الزامی هستند')));
+    if (selectedContact == null || selectedProduct == null || quantityController.text.isEmpty || priceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، محصول، تعداد و قیمت الزامی هستند')));
       return;
     }
 
-    final totalAmount = double.tryParse(amountController.text) ?? 0;
-    if (totalAmount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ باید بزرگتر از صفر باشد')));
+    final quantity = double.tryParse(quantityController.text) ?? 0;
+    final price = double.tryParse(priceController.text) ?? 0;
+    if (quantity <= 0 || price <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعداد و قیمت باید بزرگتر از صفر باشند')));
       return;
     }
 
+    final totalAmount = quantity * price;
     final paidNow = double.tryParse(paidNowController.text) ?? 0;
     if (paidNow > totalAmount) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ پرداختی نمی‌تواند بیشتر از مبلغ کل باشد')));
@@ -189,9 +330,40 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       return;
     }
 
-    final debtProvider = context.read<DebtProvider>();
     final sameType = widget.type;
+    final isPurchase = sameType == DebtType.owed;
+    final productProvider = context.read<ProductProvider>();
+
+    // مدیریت انبار: خرید = اضافه شدن موجودی، فروش = کم شدن موجودی (با چک موجودی کافی)
+    if (isPurchase) {
+      await productProvider.recordPurchase(
+        product: selectedProduct!,
+        quantity: quantity,
+        pricePerUnit: price,
+        date: selectedDate,
+      );
+    } else {
+      if (!productProvider.hasEnoughStock(selectedProduct!.id!, quantity)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('موجودی «${selectedProduct!.name}» کافی نیست (موجودی: ${productProvider.getStock(selectedProduct!.id!).toStringAsFixed(0)})')),
+          );
+        }
+        return;
+      }
+      await productProvider.recordSale(
+        product: selectedProduct!,
+        quantity: quantity,
+        pricePerUnit: price,
+        date: selectedDate,
+      );
+    }
+
+    final debtProvider = context.read<DebtProvider>();
     final oppositeType = sameType == DebtType.owed ? DebtType.receivable : DebtType.owed;
+    final itemDescription = noteController.text.isNotEmpty
+        ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد) - ${noteController.text}'
+        : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد)';
 
     final newId = DateTime.now().millisecondsSinceEpoch;
     final newDebt = Debt(
@@ -199,7 +371,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
       totalAmount: totalAmount,
-      description: descriptionController.text,
+      description: itemDescription,
       date: selectedDate,
       type: sameType,
       paidAmount: paidNow,
@@ -243,7 +415,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
       final transaction = Transaction(
         title: sameType == DebtType.owed ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
-        description: '${selectedContact!.fullName} - ${descriptionController.text}',
+        description: '${selectedContact!.fullName} - $itemDescription',
         amount: paidNow,
         type: sameType == DebtType.owed ? TransactionType.expense : TransactionType.income,
         category: 'معامله با مخاطب',
@@ -256,7 +428,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         debtId: newId,
         amount: paidNow,
         date: selectedDate,
-        description: descriptionController.text,
+        description: itemDescription,
         type: sameType == DebtType.owed ? PaymentType.debtPayment : PaymentType.receivablePayment,
         bankId: bank.id,
       );
@@ -271,8 +443,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
   @override
   void dispose() {
-    amountController.dispose();
-    descriptionController.dispose();
+    quantityController.dispose();
+    priceController.dispose();
+    noteController.dispose();
     paidNowController.dispose();
     super.dispose();
   }
