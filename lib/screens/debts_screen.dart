@@ -8,6 +8,7 @@ import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
 import '../models/payment_model.dart';
 import '../widgets/custom_app_bar.dart';
+import '../utils/formatters.dart';
 import 'add_debt_screen.dart';
 
 class DebtsScreen extends StatelessWidget {
@@ -39,8 +40,8 @@ class DebtsScreen extends StatelessWidget {
         ),
         body: Consumer<DebtProvider>(
           builder: (context, provider, _) {
-            final owedDebts = provider.debts.where((d) => d.type == DebtType.owed).toList();
-            final receivableDebts = provider.debts.where((d) => d.type == DebtType.receivable).toList();
+            final owedDebts = provider.debts.where((d) => d.type == DebtType.owed && d.remainder > 0).toList();
+            final receivableDebts = provider.debts.where((d) => d.type == DebtType.receivable && d.remainder > 0).toList();
 
             return TabBarView(
               children: [
@@ -86,7 +87,7 @@ class DebtsScreen extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(total.toStringAsFixed(0), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                            Text(formatAmount(total), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
                             const Text('ریال', style: TextStyle(color: Colors.white70, fontSize: 12)),
                           ],
                         ),
@@ -158,7 +159,7 @@ class DebtsScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(debt.remainder.toStringAsFixed(0), style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 14)),
+                              Text(formatAmount(debt.remainder), style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 14)),
                               const Text('ریال', style: TextStyle(fontSize: 11, color: Colors.grey)),
                             ],
                           ),
@@ -319,7 +320,7 @@ class DebtsScreen extends StatelessWidget {
               children: [
                 Text('نام: ${debt.personName} ${debt.personFamily}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 10),
-                Text('باقی‌مانده: ${debt.remainder.toStringAsFixed(0)} ریال', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.deepOrange)),
+                Text('باقی‌مانده: ${formatAmount(debt.remainder)} ریال', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.deepOrange)),
                 const SizedBox(height: 15),
                 TextField(
                   controller: amountController,
@@ -339,7 +340,7 @@ class DebtsScreen extends StatelessWidget {
                       items: List.generate(bankProvider.banks.length, (i) {
                         return DropdownMenuItem<int>(
                           value: i,
-                          child: Text('${bankProvider.banks[i].bankName} - ${bankProvider.banks[i].balance.toStringAsFixed(0)}'),
+                          child: Text('${bankProvider.banks[i].bankName} - ${formatAmount(bankProvider.banks[i].balance)}'),
                         );
                       }),
                       onChanged: (value) => setState(() => selectedBankIndex = value),
