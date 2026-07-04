@@ -10,7 +10,6 @@ import '../utils/formatters.dart';
 
 class BankDepositScreen extends StatefulWidget {
   const BankDepositScreen({Key? key}) : super(key: key);
-
   @override
   State<BankDepositScreen> createState() => _BankDepositScreenState();
 }
@@ -24,26 +23,22 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
 
+  InputDecoration _decoration(String label) => InputDecoration(labelText: label, filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none), contentPadding: const EdgeInsets.all(14));
+
   String _formatDateToJalali(DateTime date) {
     final jalali = Jalali.fromDateTime(date);
     return '${jalali.year}/${jalali.month.toString().padLeft(2, '0')}/${jalali.day.toString().padLeft(2, '0')}';
   }
 
   Future<void> _pickDate() async {
-    final picked = await showPersianDatePicker(
-      context: context,
-      initialDate: Jalali.fromDateTime(selectedDate),
-      firstDate: Jalali(1390, 1),
-      lastDate: Jalali(1420, 12, 29),
-    );
-    if (picked != null) {
-      setState(() => selectedDate = picked.toDateTime());
-    }
+    final picked = await showPersianDatePicker(context: context, initialDate: Jalali.fromDateTime(selectedDate), firstDate: Jalali(1390, 1), lastDate: Jalali(1420, 12, 29));
+    if (picked != null) setState(() => selectedDate = picked.toDateTime());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(title: const Text('واریز به بانک')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -53,85 +48,37 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(color: Colors.teal.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
-                  child: const Text('برای وقتی که یک مخاطب پول به حساب بانکی تو واریز می‌کنه', style: TextStyle(fontSize: 12, color: Colors.teal, fontWeight: FontWeight.w600)),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF00C6A9), Color(0xFF00897B)]), borderRadius: BorderRadius.circular(16)),
+                  child: const Row(children: [Icon(Icons.info_outline, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('برای وقتی که یک مخاطب پول به حساب بانکی تو واریز می‌کنه', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)))]),
                 ),
                 const SizedBox(height: 20),
-
-                const Text('واریزکننده (مخاطب) *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<Contact>(
-                  isExpanded: true,
-                  hint: const Text('انتخاب کنید'),
-                  value: selectedContact,
-                  items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
-                  onChanged: (c) => setState(() => selectedContact = c),
-                  decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
-                ),
-                const SizedBox(height: 20),
-
-                const Text('بانک مقصد *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 10),
+                DropdownButtonFormField<Contact>(isExpanded: true, hint: const Text('انتخاب کنید'), value: selectedContact, items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(), onChanged: (c) => setState(() => selectedContact = c), decoration: _decoration('واریزکننده (مخاطب) *')),
+                const SizedBox(height: 16),
                 Consumer<BankProvider>(
-                  builder: (context, bankProvider, _) {
-                    return DropdownButtonFormField<int>(
-                      value: selectedBankId,
-                      hint: const Text('انتخاب بانک'),
-                      items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان'))).toList(),
-                      onChanged: (value) => setState(() => selectedBankId = value),
-                      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                TextField(
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'مبلغ (تومان) *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
-                ),
-                const SizedBox(height: 15),
-
-                TextField(
-                  controller: feeController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'کارمزد (تومان) - اختیاری',
-                    hintText: 'اگه کارمزدی نداشت خالی بذار',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
+                  builder: (context, bankProvider, _) => DropdownButtonFormField<int>(
+                    value: selectedBankId,
+                    hint: const Text('انتخاب بانک'),
+                    items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان'))).toList(),
+                    onChanged: (value) => setState(() => selectedBankId = value),
+                    decoration: _decoration('بانک مقصد *'),
                   ),
                 ),
-                const SizedBox(height: 15),
-
-                TextField(
-                  controller: trackingCodeController,
-                  decoration: InputDecoration(labelText: 'کد رهگیری *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
-                ),
-                const SizedBox(height: 15),
-
-                TextField(
-                  controller: noteController,
-                  decoration: InputDecoration(labelText: 'یادداشت (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
-                ),
-                const SizedBox(height: 15),
-
-                ElevatedButton.icon(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.calendar_today, size: 16),
-                  label: Text(_formatDateToJalali(selectedDate)),
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 45)),
-                ),
-
+                const SizedBox(height: 16),
+                TextField(controller: amountController, keyboardType: TextInputType.number, decoration: _decoration('مبلغ (تومان) *')),
+                const SizedBox(height: 16),
+                TextField(controller: feeController, keyboardType: TextInputType.number, decoration: _decoration('کارمزد (تومان) - اختیاری')),
+                const SizedBox(height: 16),
+                TextField(controller: trackingCodeController, decoration: _decoration('کد رهگیری *')),
+                const SizedBox(height: 16),
+                TextField(controller: noteController, decoration: _decoration('یادداشت (اختیاری)')),
+                const SizedBox(height: 16),
+                _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate, color: const Color(0xFF00897B)),
                 const SizedBox(height: 30),
-                SizedBox(
+                Container(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, minimumSize: const Size(double.infinity, 50), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                    child: const Text('ثبت واریز', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
-                  ),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: const LinearGradient(colors: [Color(0xFF00C6A9), Color(0xFF00897B)]), boxShadow: [BoxShadow(color: const Color(0xFF00897B).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
+                  child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(16), onTap: _submit, child: const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: Text('ثبت واریز', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))),
                 ),
               ],
             );
@@ -158,44 +105,16 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     final ledgerProvider = context.read<LedgerProvider>();
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
 
-    final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount - fee);
-    await bankProvider.updateBank(updatedBank);
+    await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount - fee));
 
     final description = noteController.text.isNotEmpty ? 'واریز به بانک - ${noteController.text}' : 'واریز به بانک';
-
-    final transaction = Transaction(
-      title: 'واریز به بانک',
-      description: '${selectedContact!.fullName} - $description',
-      amount: amount,
-      type: TransactionType.income,
-      category: 'واریز بانکی',
-      date: selectedDate,
-      bankId: bank.id,
-    );
-    transProvider.addTransaction(transaction);
+    transProvider.addTransaction(Transaction(title: 'واریز به بانک', description: '${selectedContact!.fullName} - $description', amount: amount, type: TransactionType.income, category: 'واریز بانکی', date: selectedDate, bankId: bank.id));
 
     if (fee > 0) {
-      final feeTransaction = Transaction(
-        title: 'کارمزد واریز',
-        description: 'کارمزد واریز از ${selectedContact!.fullName}',
-        amount: fee,
-        type: TransactionType.expense,
-        category: 'کارمزد',
-        date: selectedDate,
-        bankId: bank.id,
-      );
-      transProvider.addTransaction(feeTransaction);
+      transProvider.addTransaction(Transaction(title: 'کارمزد واریز', description: 'کارمزد واریز از ${selectedContact!.fullName}', amount: fee, type: TransactionType.expense, category: 'کارمزد', date: selectedDate, bankId: bank.id));
     }
 
-    await ledgerProvider.addEntry(LedgerEntry(
-      personName: selectedContact!.firstName,
-      personFamily: selectedContact!.lastName,
-      date: selectedDate,
-      description: description,
-      creditAmount: amount,
-      bankId: bank.id,
-      trackingCode: trackingCodeController.text,
-    ));
+    await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: description, creditAmount: amount, bankId: bank.id, trackingCode: trackingCodeController.text));
 
     if (mounted) {
       Navigator.pop(context);
@@ -210,5 +129,21 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     trackingCodeController.dispose();
     noteController.dispose();
     super.dispose();
+  }
+}
+
+class _DateButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
+  const _DateButton({required this.label, required this.onTap, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+      child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(14), onTap: onTap, child: Padding(padding: const EdgeInsets.symmetric(vertical: 14), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.calendar_today, size: 16, color: color), const SizedBox(width: 8), Text(label, style: const TextStyle(fontWeight: FontWeight.w600))])))),
+    );
   }
 }
