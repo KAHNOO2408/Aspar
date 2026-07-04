@@ -5,6 +5,7 @@ import '../models/debt_model.dart';
 import '../models/bank_model.dart';
 import '../models/payment_model.dart';
 import '../models/product_model.dart';
+import '../models/ledger_model.dart';
 
 class DatabaseHelper {
   static late Box<dynamic> transactionBox;
@@ -15,6 +16,7 @@ class DatabaseHelper {
   static late Box<dynamic> productBox;
   static late Box<dynamic> productBatchBox;
   static late Box<dynamic> productTransactionBox;
+  static late Box<dynamic> ledgerBox;
 
   static Future<void> init() async {
     if (!Hive.isBoxOpen('transactions')) {
@@ -63,6 +65,12 @@ class DatabaseHelper {
       productTransactionBox = await Hive.openBox('productTransactions');
     } else {
       productTransactionBox = Hive.box('productTransactions');
+    }
+
+    if (!Hive.isBoxOpen('ledger')) {
+      ledgerBox = await Hive.openBox('ledger');
+    } else {
+      ledgerBox = Hive.box('ledger');
     }
   }
 
@@ -184,5 +192,17 @@ class DatabaseHelper {
       txs.add(ProductTransaction.fromMap(Map<String, dynamic>.from(value)));
     }
     return txs;
+  }
+
+  static Future<void> insertLedgerEntry(LedgerEntry entry) async {
+    await ledgerBox.put(entry.id, entry.toMap());
+  }
+
+  static Future<List<LedgerEntry>> getLedgerEntries() async {
+    final entries = <LedgerEntry>[];
+    for (var value in ledgerBox.values) {
+      entries.add(LedgerEntry.fromMap(Map<String, dynamic>.from(value)));
+    }
+    return entries;
   }
 }
