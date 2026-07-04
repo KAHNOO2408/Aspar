@@ -18,6 +18,7 @@ import 'products_screen.dart';
 import 'loans_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
+import 'transfer_between_accounts_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -80,6 +81,14 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SettlementScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.compare_arrows, color: Colors.deepPurple),
+              title: const Text('دریافت و پرداخت بین حساب‌ها'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const TransferBetweenAccountsScreen()));
               },
             ),
             ListTile(
@@ -373,20 +382,20 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductsScreen())),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TransferBetweenAccountsScreen())),
                           child: Card(
                             elevation: 3,
                             child: Container(
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Colors.amber.withOpacity(0.8), Colors.amber.shade600]),
+                                gradient: LinearGradient(colors: [Colors.deepPurple.withOpacity(0.8), Colors.deepPurple.shade600]),
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               padding: const EdgeInsets.all(20),
                               child: const Column(
                                 children: [
-                                  Icon(Icons.inventory_2, color: Colors.white, size: 32),
+                                  Icon(Icons.compare_arrows, color: Colors.white, size: 32),
                                   SizedBox(height: 10),
-                                  Text('انبار محصولات', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+                                  Text('انتقال بین حساب‌ها', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
                                 ],
                               ),
                             ),
