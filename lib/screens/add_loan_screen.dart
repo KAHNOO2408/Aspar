@@ -20,6 +20,15 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   DateTime? selectedStartDate;
   DateTime? selectedEndDate;
 
+  InputDecoration _decoration(String label, IconData icon) => InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: const Color(0xFF9B6DFF)),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.all(14),
+      );
+
   String _formatDateToJalali(DateTime? date) {
     if (date == null) return '';
     final jalali = Jalali.fromDateTime(date);
@@ -27,116 +36,62 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   }
 
   Future<void> _pickStartDate() async {
-    final picked = await showPersianDatePicker(
-      context: context,
-      initialDate: Jalali.now(),
-      firstDate: Jalali(1390, 1),
-      lastDate: Jalali(1420, 12, 29),
-    );
-    if (picked != null) {
-      setState(() => selectedStartDate = picked.toDateTime());
-    }
+    final picked = await showPersianDatePicker(context: context, initialDate: Jalali.now(), firstDate: Jalali(1390, 1), lastDate: Jalali(1420, 12, 29));
+    if (picked != null) setState(() => selectedStartDate = picked.toDateTime());
   }
 
   Future<void> _pickEndDate() async {
-    final picked = await showPersianDatePicker(
-      context: context,
-      initialDate: Jalali.now(),
-      firstDate: Jalali(1390, 1),
-      lastDate: Jalali(1420, 12, 29),
-    );
-    if (picked != null) {
-      setState(() => selectedEndDate = picked.toDateTime());
-    }
+    final picked = await showPersianDatePicker(context: context, initialDate: Jalali.now(), firstDate: Jalali(1390, 1), lastDate: Jalali(1420, 12, 29));
+    if (picked != null) setState(() => selectedEndDate = picked.toDateTime());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(title: const Text('اضافه کردن وام')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(
-              controller: bankNameController,
-              decoration: InputDecoration(
-                labelText: 'نام وام/بانک *',
-                prefixIcon: const Icon(Icons.account_balance),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
+            TextField(controller: bankNameController, decoration: _decoration('نام وام/بانک *', Icons.account_balance)),
+            const SizedBox(height: 16),
+            TextField(controller: totalAmountController, keyboardType: TextInputType.number, decoration: _decoration('مبلغ کل وام (تومان) *', Icons.payments_outlined)),
+            const SizedBox(height: 16),
+            TextField(controller: monthlyPaymentController, keyboardType: TextInputType.number, decoration: _decoration('قسط ماهیانه (تومان) *', Icons.calendar_month)),
+            const SizedBox(height: 16),
+            _DateButton(
+              icon: Icons.calendar_today,
+              label: selectedStartDate == null ? 'انتخاب تاریخ شروع *' : _formatDateToJalali(selectedStartDate),
+              onTap: _pickStartDate,
             ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: totalAmountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'مبلغ کل وام *',
-                prefixIcon: const Icon(Icons.attach_money),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
+            const SizedBox(height: 16),
+            _DateButton(
+              icon: Icons.event_available,
+              label: selectedEndDate == null ? 'انتخاب تاریخ پایان *' : _formatDateToJalali(selectedEndDate),
+              onTap: _pickEndDate,
             ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: monthlyPaymentController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'قسط ماهیانه *',
-                prefixIcon: const Icon(Icons.calendar_month),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
-            const SizedBox(height: 15),
-            ElevatedButton.icon(
-              onPressed: _pickStartDate,
-              icon: const Icon(Icons.calendar_today),
-              label: Text(
-                selectedStartDate == null
-                  ? 'انتخاب تاریخ شروع *'
-                  : _formatDateToJalali(selectedStartDate),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                minimumSize: const Size(double.infinity, 50),
-              ),
-            ),
-            const SizedBox(height: 15),
-            ElevatedButton.icon(
-              onPressed: _pickEndDate,
-              icon: const Icon(Icons.calendar_today),
-              label: Text(
-                selectedEndDate == null
-                  ? 'انتخاب تاریخ پایان *'
-                  : _formatDateToJalali(selectedEndDate),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                minimumSize: const Size(double.infinity, 50),
-              ),
-            ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: descriptionController,
-              maxLines: 2,
-              decoration: InputDecoration(
-                labelText: 'توضیح',
-                prefixIcon: const Icon(Icons.description),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
+            const SizedBox(height: 16),
+            TextField(controller: descriptionController, maxLines: 2, decoration: _decoration('توضیح', Icons.description_outlined)),
             const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _addLoan,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]),
+                boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))],
               ),
-              child: const Text('اضافه کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: _addLoan,
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(child: Text('اضافه کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16))),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -175,5 +130,38 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     monthlyPaymentController.dispose();
     descriptionController.dispose();
     super.dispose();
+  }
+}
+
+class _DateButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  const _DateButton({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 16, color: const Color(0xFF6A3DE8)),
+                const SizedBox(width: 8),
+                Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
