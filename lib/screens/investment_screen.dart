@@ -30,11 +30,12 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
       lastDate: Jalali(1420, 12, 29),
     );
     if (picked != null) {
+      final converted = picked.toDateTime();
       setState(() {
         if (isStart) {
-          startDate = picked.toDateTime();
+          startDate = converted;
         } else {
-          endDate = picked.toDateTime(hour: 23, minute: 59, second: 59);
+          endDate = DateTime(converted.year, converted.month, converted.day, 23, 59, 59);
         }
       });
     }
@@ -56,7 +57,6 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // فیلتر بازه‌ی تاریخ
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -108,7 +108,6 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
 
                 const SizedBox(height: 20),
 
-                // کارت سود کل
                 Card(
                   elevation: 8,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -131,7 +130,6 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
 
                 const SizedBox(height: 15),
 
-                // خرید و فروش
                 Row(
                   children: [
                     Expanded(
