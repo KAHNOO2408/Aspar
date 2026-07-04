@@ -10,6 +10,7 @@ class LedgerEntry {
   final double debitAmount;
   final double creditAmount;
   final int? bankId;
+  final String? trackingCode;
 
   LedgerEntry({
     this.id,
@@ -20,6 +21,7 @@ class LedgerEntry {
     this.debitAmount = 0,
     this.creditAmount = 0,
     this.bankId,
+    this.trackingCode,
   });
 
   Map<String, dynamic> toMap() => {
@@ -31,6 +33,7 @@ class LedgerEntry {
         'debitAmount': debitAmount,
         'creditAmount': creditAmount,
         'bankId': bankId,
+        'trackingCode': trackingCode,
       };
 
   factory LedgerEntry.fromMap(Map<String, dynamic> map) => LedgerEntry(
@@ -42,6 +45,7 @@ class LedgerEntry {
         debitAmount: (map['debitAmount'] ?? 0 as num).toDouble(),
         creditAmount: (map['creditAmount'] ?? 0 as num).toDouble(),
         bankId: map['bankId'],
+        trackingCode: map['trackingCode'],
       );
 }
 
@@ -68,6 +72,7 @@ class LedgerProvider extends ChangeNotifier {
             debitAmount: entry.debitAmount,
             creditAmount: entry.creditAmount,
             bankId: entry.bankId,
+            trackingCode: entry.trackingCode,
           )
         : entry;
     await DatabaseHelper.insertLedgerEntry(toSave);
