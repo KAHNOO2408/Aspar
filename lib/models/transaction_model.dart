@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
 
 enum TransactionType { income, expense }
 
@@ -10,7 +11,7 @@ class Transaction {
   final TransactionType type;
   final String category;
   final DateTime date;
-  final int? bankId; // بانک
+  final int? bankId;
 
   Transaction({
     this.id,
@@ -41,7 +42,7 @@ class Transaction {
       id: map['id'],
       title: map['title'],
       description: map['description'],
-      amount: map['amount'],
+      amount: (map['amount'] as num).toDouble(),
       type: map['type'] == 'income' ? TransactionType.income : TransactionType.expense,
       category: map['category'],
       date: DateTime.parse(map['date']),
@@ -53,35 +54,49 @@ class Transaction {
 class TransactionProvider extends ChangeNotifier {
   List<Transaction> transactions = [];
 
-  void addTransaction(Transaction transaction) {
-    transactions.add(Transaction(
-      id: transactions.isEmpty ? 1 : transactions.last.id! + 1,
-      title: transaction.title,
-      description: transaction.description,
-      amount: transaction.amount,
-      type: transaction.type,
-      category: transaction.category,
-      date: transaction.date,
-      bankId: transaction.bankId,
-    ));
+  TransactionProvider() {
+    loadTransactions();
+  }
+
+  Future<void> loadTransactions() async {
+    transactions = await DatabaseHelper.getTransactions();
+    transactions.sort((a, b) => b.date.compareTo(a.date));
     notifyListeners();
   }
 
-  void deleteTransaction(int id) {
-    transactions.removeWhere((t) => t.id == id);
-    notifyListeners();
+  Future<void> addTransaction(Transaction transaction) async {
+    final toSave = transaction.id == null
+        ? Transaction(
+            id: DateTime.now().millisecondsSinceEpoch,
+            title: transaction.title,
+            description: transaction.description,
+            amount: transaction.amount,
+            type: transaction.type,
+            category: transaction.category,
+            date: transaction.date,
+            bankId: transaction.bankId,
+          )
+        : transaction;
+    await DatabaseHelper.insertTransaction(toSave);
+    await loadTransactions();
+  }
+
+  Future<void> editTransaction(Transaction transaction) async {
+    await DatabaseHelper.updateTransaction(transaction);
+    await loadTransactions();
+  }
+
+  Future<void> deleteTransaction(int id) async {
+    await DatabaseHelper.deleteTransaction(id);
+    await loadTransactions();
   }
 
   double getTotalIncome(DateTime? startDate, DateTime? endDate) {
-    return transactions
-        .where((t) => t.type == TransactionType.income)
-        .fold(0.0, (sum, t) => sum + t.amount);
+    return transactions.where((t) => t.type == TransactionType.income).fold(0.0, (sum, t) => sum + t.amount);
   }
 
   double getTotalExpense(DateTime? startDate, DateTime? endDate) {
-    return transactions
-        .where((t) => t.type == TransactionType.expense)
-        .fold(0.0, (sum, t) => sum + t.amount);
+    return transactions.where((t) => t.type == TransactionType.expense).fold(0.0, (sum, t) => sum + t.amount);
   }
 
   double getNetBalance() {
