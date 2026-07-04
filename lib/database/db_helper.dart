@@ -4,6 +4,7 @@ import '../models/transaction_model.dart';
 import '../models/debt_model.dart';
 import '../models/bank_model.dart';
 import '../models/payment_model.dart';
+import '../models/product_model.dart';
 
 class DatabaseHelper {
   static late Box<dynamic> transactionBox;
@@ -11,6 +12,9 @@ class DatabaseHelper {
   static late Box<dynamic> bankBox;
   static late Box<dynamic> paymentBox;
   static late Box<dynamic> authBox;
+  static late Box<dynamic> productBox;
+  static late Box<dynamic> productBatchBox;
+  static late Box<dynamic> productTransactionBox;
 
   static Future<void> init() async {
     if (!Hive.isBoxOpen('transactions')) {
@@ -41,6 +45,24 @@ class DatabaseHelper {
       authBox = await Hive.openBox('auth');
     } else {
       authBox = Hive.box('auth');
+    }
+
+    if (!Hive.isBoxOpen('products')) {
+      productBox = await Hive.openBox('products');
+    } else {
+      productBox = Hive.box('products');
+    }
+
+    if (!Hive.isBoxOpen('productBatches')) {
+      productBatchBox = await Hive.openBox('productBatches');
+    } else {
+      productBatchBox = Hive.box('productBatches');
+    }
+
+    if (!Hive.isBoxOpen('productTransactions')) {
+      productTransactionBox = await Hive.openBox('productTransactions');
+    } else {
+      productTransactionBox = Hive.box('productTransactions');
     }
   }
 
@@ -122,5 +144,45 @@ class DatabaseHelper {
 
   static Future<void> deletePayment(int id) async {
     await paymentBox.delete(id);
+  }
+
+  static Future<void> insertProduct(Product product) async {
+    await productBox.put(product.id, product.toMap());
+  }
+
+  static Future<List<Product>> getProducts() async {
+    final products = <Product>[];
+    for (var value in productBox.values) {
+      products.add(Product.fromMap(Map<String, dynamic>.from(value)));
+    }
+    return products;
+  }
+
+  static Future<void> insertProductBatch(ProductBatch batch) async {
+    await productBatchBox.put(batch.id, batch.toMap());
+  }
+
+  static Future<List<ProductBatch>> getProductBatches() async {
+    final batches = <ProductBatch>[];
+    for (var value in productBatchBox.values) {
+      batches.add(ProductBatch.fromMap(Map<String, dynamic>.from(value)));
+    }
+    return batches;
+  }
+
+  static Future<void> updateProductBatch(ProductBatch batch) async {
+    await productBatchBox.put(batch.id, batch.toMap());
+  }
+
+  static Future<void> insertProductTransaction(ProductTransaction tx) async {
+    await productTransactionBox.put(tx.id, tx.toMap());
+  }
+
+  static Future<List<ProductTransaction>> getProductTransactions() async {
+    final txs = <ProductTransaction>[];
+    for (var value in productTransactionBox.values) {
+      txs.add(ProductTransaction.fromMap(Map<String, dynamic>.from(value)));
+    }
+    return txs;
   }
 }
