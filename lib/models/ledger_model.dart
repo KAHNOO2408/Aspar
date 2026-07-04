@@ -74,6 +74,16 @@ class LedgerProvider extends ChangeNotifier {
     await loadEntries();
   }
 
+  Future<void> updateEntry(LedgerEntry entry) async {
+    await DatabaseHelper.updateLedgerEntry(entry);
+    await loadEntries();
+  }
+
+  Future<void> deleteEntry(int id) async {
+    await DatabaseHelper.deleteLedgerEntry(id);
+    await loadEntries();
+  }
+
   List<LedgerEntry> getEntriesForContact(String name, String family) {
     final list = entries.where((e) => e.personName == name && e.personFamily == family).toList();
     list.sort((a, b) => a.date.compareTo(b.date));
