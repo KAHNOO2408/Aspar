@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
-import '../models/debt_model.dart';
 import '../models/contact_model.dart';
 import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
-import '../models/payment_model.dart';
+import '../models/ledger_model.dart';
 import '../utils/formatters.dart';
 
 class BankWithdrawalScreen extends StatefulWidget {
@@ -54,14 +53,8 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.deepOrange.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    'برای وقتی که از حساب بانکی تو به یک مخاطب پول پرداخت میشه',
-                    style: TextStyle(fontSize: 12, color: Colors.deepOrange, fontWeight: FontWeight.w600),
-                  ),
+                  decoration: BoxDecoration(color: Colors.deepOrange.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+                  child: const Text('برای وقتی که از حساب بانکی تو به یک مخاطب پول پرداخت میشه', style: TextStyle(fontSize: 12, color: Colors.deepOrange, fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(height: 20),
 
@@ -73,10 +66,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
                   value: selectedContact,
                   items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
                   onChanged: (c) => setState(() => selectedContact = c),
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 20),
 
@@ -87,17 +77,9 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
                     return DropdownButtonFormField<int>(
                       value: selectedBankId,
                       hint: const Text('انتخاب بانک'),
-                      items: bankProvider.banks.map((bank) {
-                        return DropdownMenuItem<int>(
-                          value: bank.id,
-                          child: Text('${bank.bankName} - ${formatAmount(bank.balance)}'),
-                        );
-                      }).toList(),
+                      items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)}'))).toList(),
                       onChanged: (value) => setState(() => selectedBankId = value),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
+                      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                     );
                   },
                 ),
@@ -106,31 +88,19 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
                 TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'مبلغ *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'مبلغ *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
                 TextField(
                   controller: trackingCodeController,
-                  decoration: InputDecoration(
-                    labelText: 'کد رهگیری *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'کد رهگیری *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
                 TextField(
                   controller: noteController,
-                  decoration: InputDecoration(
-                    labelText: 'یادداشت (اختیاری)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'یادداشت (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
@@ -146,11 +116,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange, minimumSize: const Size(double.infinity, 50), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     child: const Text('ثبت برداشت', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
                   ),
                 ),
@@ -181,31 +147,13 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
       return;
     }
 
-    final debtProvider = context.read<DebtProvider>();
     final transProvider = context.read<TransactionProvider>();
-    final paymentProvider = context.read<PaymentProvider>();
+    final ledgerProvider = context.read<LedgerProvider>();
 
-    final updatedBank = Bank(
-      id: bank.id,
-      bankName: bank.bankName,
-      accountNumber: bank.accountNumber,
-      balance: bank.balance - amount,
-    );
+    final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance - amount);
     await bankProvider.updateBank(updatedBank);
 
-    // برداشت برای مخاطب یعنی بدهی من بهش کم میشه (یا اگه بدهی نداشتم، حالا اون بهم بدهکار میشه)
-    final debtId = await debtProvider.applyContactPayment(
-      personName: selectedContact!.firstName,
-      personFamily: selectedContact!.lastName,
-      amount: amount,
-      reduceType: DebtType.owed,
-      date: selectedDate,
-      description: 'برداشت از بانک - کد رهگیری: ${trackingCodeController.text}',
-    );
-
-    final noteText = noteController.text.isNotEmpty
-        ? 'کد رهگیری: ${trackingCodeController.text} - ${noteController.text}'
-        : 'کد رهگیری: ${trackingCodeController.text}';
+    final noteText = noteController.text.isNotEmpty ? 'کد رهگیری: ${trackingCodeController.text} - ${noteController.text}' : 'کد رهگیری: ${trackingCodeController.text}';
 
     final transaction = Transaction(
       title: 'برداشت از بانک',
@@ -218,15 +166,14 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
     );
     transProvider.addTransaction(transaction);
 
-    final payment = Payment(
-      debtId: debtId,
-      amount: amount,
+    await ledgerProvider.addEntry(LedgerEntry(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
       date: selectedDate,
-      description: noteText,
-      type: PaymentType.debtPayment,
+      description: 'برداشت از بانک - $noteText',
+      debitAmount: amount,
       bankId: bank.id,
-    );
-    await paymentProvider.addPayment(payment);
+    ));
 
     if (mounted) {
       Navigator.pop(context);
