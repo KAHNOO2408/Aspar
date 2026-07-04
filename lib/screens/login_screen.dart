@@ -56,142 +56,123 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final didAuthenticate = await _localAuth.authenticate(
         localizedReason: 'برای ورود، هویت خود را تایید کنید',
-        options: const AuthenticationOptions(
-          biometricOnly: true,
-          stickyAuth: true,
-        ),
+        options: const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
       );
-
       if (didAuthenticate && mounted) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
       }
     } catch (e) {
       debugPrint('Biometric auth error: $e');
-      if (mounted) {
-        _showError('احراز هویت بیومتریک ناموفق بود، لطفاً با رمز عبور وارد شوید');
-      }
+      if (mounted) _showError('احراز هویت بیومتریک ناموفق بود، لطفاً با رمز عبور وارد شوید');
     }
   }
 
   Future<void> _authenticateWithPattern() async {
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const PatternVerifyScreen()),
-    );
-
+    final result = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const PatternVerifyScreen()));
     if (result == true && mounted) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
     }
   }
 
+  InputDecoration _decoration(String label, IconData icon, {Widget? suffix}) => InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: const Color(0xFF4F6BF5)),
+        suffixIcon: suffix,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue.shade600, Colors.blue.shade900],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
         ),
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-            child: Card(
-              elevation: 10,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Padding(
-                padding: const EdgeInsets.all(30),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/logo.svg',
-                      width: 100,
-                      height: 100,
+            child: Container(
+              padding: const EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(26),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 30, offset: const Offset(0, 15))],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset('assets/logo.svg', width: 100, height: 100),
+                  const SizedBox(height: 20),
+                  const Text('🔐 آسپار', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF2B3FBE))),
+                  const SizedBox(height: 10),
+                  const Text('وارد حساب خود شوید', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  const SizedBox(height: 30),
+
+                  TextField(controller: usernameController, decoration: _decoration('نام کاربری', Icons.person)),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: _decoration('رمز عبور', Icons.lock,
+                        suffix: IconButton(icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF4F6BF5)), onPressed: () => setState(() => _obscurePassword = !_obscurePassword))),
+                  ),
+                  const SizedBox(height: 30),
+
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)]),
+                      boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 8))],
                     ),
-                    const SizedBox(height: 20),
-
-                    const Text('🔐 آسپار', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.blue)),
-                    const SizedBox(height: 10),
-                    const Text('وارد حساب خود شوید', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                    const SizedBox(height: 30),
-
-                    TextField(
-                      controller: usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'نام کاربری',
-                        prefixIcon: const Icon(Icons.person, color: Colors.blue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.blue, width: 2)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.blue, width: 2.5)),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-
-                    TextField(
-                      controller: passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'رمز عبور',
-                        prefixIcon: const Icon(Icons.lock, color: Colors.blue),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.blue),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: isLoading ? null : _login,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: isLoading
+                                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.login, color: Colors.white),
+                                      SizedBox(width: 10),
+                                      Text('ورود', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+                                    ],
+                                  ),
+                          ),
                         ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.blue, width: 2)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.blue, width: 2.5)),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
                     ),
-                    const SizedBox(height: 30),
+                  ),
 
-                    ElevatedButton(
-                      onPressed: isLoading ? null : _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade600,
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        elevation: 5,
-                      ),
-                      child: isLoading
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white))
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.login, color: Colors.white),
-                                SizedBox(width: 10),
-                                Text('ورود', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
-                              ],
-                            ),
+                  if ((_useBiometric && _biometricAvailable) || _usePattern) ...[
+                    const SizedBox(height: 15),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_useBiometric && _biometricAvailable)
+                          TextButton.icon(
+                            onPressed: _authenticateWithBiometrics,
+                            icon: const Icon(Icons.fingerprint, color: Color(0xFF4F6BF5), size: 26),
+                            label: const Text('اثر انگشت', style: TextStyle(color: Color(0xFF2B3FBE), fontWeight: FontWeight.w600)),
+                          ),
+                        if (_usePattern)
+                          TextButton.icon(
+                            onPressed: _authenticateWithPattern,
+                            icon: const Icon(Icons.pattern, color: Color(0xFF4F6BF5), size: 26),
+                            label: const Text('الگو', style: TextStyle(color: Color(0xFF2B3FBE), fontWeight: FontWeight.w600)),
+                          ),
+                      ],
                     ),
-
-                    if ((_useBiometric && _biometricAvailable) || _usePattern) ...[
-                      const SizedBox(height: 15),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (_useBiometric && _biometricAvailable)
-                            TextButton.icon(
-                              onPressed: _authenticateWithBiometrics,
-                              icon: const Icon(Icons.fingerprint, color: Colors.blue, size: 26),
-                              label: const Text('اثر انگشت', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
-                            ),
-                          if (_usePattern)
-                            TextButton.icon(
-                              onPressed: _authenticateWithPattern,
-                              icon: const Icon(Icons.pattern, color: Colors.blue, size: 26),
-                              label: const Text('الگو', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
-                            ),
-                        ],
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
           ),
@@ -219,18 +200,14 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => isLoading = false);
 
     if (username == savedUsername && password == savedPassword) {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
-      }
+      if (mounted) Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
     } else {
       _showError('نام کاربری یا رمز عبور اشتباه است!');
     }
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
   }
 
   @override
