@@ -25,6 +25,10 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     return '${j.year}/${j.month.toString().padLeft(2, '0')}/${j.day.toString().padLeft(2, '0')}';
   }
 
+  String _formatTime(DateTime date) {
+    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
   Future<void> _pickDate(bool isStart) async {
     final picked = await showPersianDatePicker(
       context: context,
@@ -60,6 +64,8 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
       }
     }
 
+    final amount = entry.debitAmount > 0 ? entry.debitAmount : entry.creditAmount;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -70,11 +76,12 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _detailRow('شرح', entry.description),
-              _detailRow('تاریخ', _formatJalali(entry.date)),
-              if (entry.debitAmount > 0) _detailRow('پرداختی', formatAmount(entry.debitAmount)),
-              if (entry.creditAmount > 0) _detailRow('دریافتی', formatAmount(entry.creditAmount)),
               _detailRow('بانک', bankName),
-              _detailRow('مانده بعد از این فاکتور', formatAmount(balanceAfter.abs())),
+              _detailRow('مبلغ', '${formatAmount(amount)} تومان'),
+              if (entry.trackingCode != null && entry.trackingCode!.isNotEmpty) _detailRow('کد پیگیری', entry.trackingCode!),
+              _detailRow('مانده نهایی', '${formatAmount(balanceAfter.abs())} تومان'),
+              _detailRow('تاریخ', _formatJalali(entry.date)),
+              _detailRow('ساعت', _formatTime(entry.date)),
             ],
           ),
         ),
@@ -126,13 +133,13 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                   TextField(
                     controller: debitController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'پرداختی', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                    decoration: InputDecoration(labelText: 'پرداختی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: creditController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'دریافتی', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                    decoration: InputDecoration(labelText: 'دریافتی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
@@ -167,6 +174,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                     debitAmount: double.tryParse(debitController.text) ?? 0,
                     creditAmount: double.tryParse(creditController.text) ?? 0,
                     bankId: entry.bankId,
+                    trackingCode: entry.trackingCode,
                   );
                   provider.updateEntry(updated);
                   Navigator.pop(dialogContext);
@@ -304,7 +312,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                               children: [
                                 const Text('دریافتی', style: TextStyle(color: Colors.white70, fontSize: 12)),
                                 const SizedBox(height: 6),
-                                Text(formatAmount(totalCredit), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                                Text('${formatAmount(totalCredit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
                               ],
                             ),
                             Container(width: 1, height: 30, color: Colors.white24),
@@ -312,7 +320,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                               children: [
                                 const Text('پرداختی', style: TextStyle(color: Colors.white70, fontSize: 12)),
                                 const SizedBox(height: 6),
-                                Text(formatAmount(totalDebit), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                                Text('${formatAmount(totalDebit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
                               ],
                             ),
                           ],
@@ -320,8 +328,8 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                         const Divider(color: Colors.white24, height: 24),
                         Text(
                           finalBalance >= 0
-                              ? 'در حال حاضر ${widget.personName} به شما ${formatAmount(finalBalance)} ریال بدهکار است'
-                              : 'در حال حاضر شما به ${widget.personName} ${formatAmount(finalBalance.abs())} ریال بدهکارید',
+                              ? 'در حال حاضر ${widget.personName} به شما ${formatAmount(finalBalance)} تومان بدهکار است'
+                              : 'در حال حاضر شما به ${widget.personName} ${formatAmount(finalBalance.abs())} تومان بدهکارید',
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
                           textAlign: TextAlign.center,
                         ),
