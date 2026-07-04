@@ -193,7 +193,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final sameType = widget.type;
     final oppositeType = sameType == DebtType.owed ? DebtType.receivable : DebtType.owed;
 
-    // ساخت رکورد جدید بدهی/طلب
     final newId = DateTime.now().millisecondsSinceEpoch;
     final newDebt = Debt(
       id: newId,
@@ -207,7 +206,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     );
     await debtProvider.addDebt(newDebt);
 
-    // خالص‌سازی خودکار با بدهی/طلب مخالف همین مخاطب
     final oppositeDebts = debtProvider.debts
         .where((d) =>
             d.personName == selectedContact!.firstName &&
@@ -229,7 +227,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     newDebt.paidAmount = totalAmount - remainingNew;
     await debtProvider.editDebt(newDebt);
 
-    // ثبت پرداخت/دریافت فوری (اگه بود)
     if (paidNow > 0) {
       final bankProvider = context.read<BankProvider>();
       final transProvider = context.read<TransactionProvider>();
@@ -253,7 +250,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         date: selectedDate,
         bankId: bank.id,
       );
-      await transProvider.addTransaction(transaction);
+      transProvider.addTransaction(transaction);
 
       final payment = Payment(
         debtId: newId,
