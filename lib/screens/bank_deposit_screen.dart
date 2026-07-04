@@ -77,7 +77,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                     return DropdownButtonFormField<int>(
                       value: selectedBankId,
                       hint: const Text('انتخاب بانک'),
-                      items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)}'))).toList(),
+                      items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان'))).toList(),
                       onChanged: (value) => setState(() => selectedBankId = value),
                       decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                     );
@@ -88,7 +88,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                 TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'مبلغ *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
+                  decoration: InputDecoration(labelText: 'مبلغ (تومان) *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
@@ -147,11 +147,11 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount);
     await bankProvider.updateBank(updatedBank);
 
-    final noteText = noteController.text.isNotEmpty ? 'کد رهگیری: ${trackingCodeController.text} - ${noteController.text}' : 'کد رهگیری: ${trackingCodeController.text}';
+    final description = noteController.text.isNotEmpty ? 'واریز به بانک - ${noteController.text}' : 'واریز به بانک';
 
     final transaction = Transaction(
       title: 'واریز به بانک',
-      description: '${selectedContact!.fullName} - $noteText',
+      description: '${selectedContact!.fullName} - $description',
       amount: amount,
       type: TransactionType.income,
       category: 'واریز بانکی',
@@ -164,9 +164,10 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
       date: selectedDate,
-      description: 'واریز به بانک - $noteText',
+      description: description,
       creditAmount: amount,
       bankId: bank.id,
+      trackingCode: trackingCodeController.text,
     ));
 
     if (mounted) {
