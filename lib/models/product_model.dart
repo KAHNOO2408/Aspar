@@ -1,0 +1,247 @@
+import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
+
+class Product {
+  final int? id;
+  final String name;
+  Product({this.id, required this.name});
+
+  Map<String, dynamic> toMap() => {'id': id, 'name': name};
+  factory Product.fromMap(Map<String, dynamic> map) => Product(id: map['id'], name: map['name']);
+}
+
+class ProductBatch {
+  final int? id;
+  final int productId;
+  final double originalQuantity;
+  double remainingQuantity;
+  final double purchasePrice;
+  final DateTime date;
+
+  ProductBatch({
+    this.id,
+    required this.productId,
+    required this.originalQuantity,
+    required this.remainingQuantity,
+    required this.purchasePrice,
+    required this.date,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'productId': productId,
+        'originalQuantity': originalQuantity,
+        'remainingQuantity': remainingQuantity,
+        'purchasePrice': purchasePrice,
+        'date': date.toIso8601String(),
+      };
+
+  factory ProductBatch.fromMap(Map<String, dynamic> map) => ProductBatch(
+        id: map['id'],
+        productId: map['productId'],
+        originalQuantity: (map['originalQuantity'] as num).toDouble(),
+        remainingQuantity: (map['remainingQuantity'] as num).toDouble(),
+        purchasePrice: (map['purchasePrice'] as num).toDouble(),
+        date: DateTime.parse(map['date']),
+      );
+}
+
+enum ProductTxType { purchase, sale }
+
+class ProductTransaction {
+  final int? id;
+  final int productId;
+  final String productName;
+  final double quantity;
+  final double pricePerUnit;
+  final double totalAmount;
+  final ProductTxType type;
+  final DateTime date;
+  final double profit;
+  final double costOfGoods;
+
+  ProductTransaction({
+    this.id,
+    required this.productId,
+    required this.productName,
+    required this.quantity,
+    required this.pricePerUnit,
+    required this.totalAmount,
+    required this.type,
+    required this.date,
+    this.profit = 0,
+    this.costOfGoods = 0,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'productId': productId,
+        'productName': productName,
+        'quantity': quantity,
+        'pricePerUnit': pricePerUnit,
+        'totalAmount': totalAmount,
+        'type': type == ProductTxType.purchase ? 'purchase' : 'sale',
+        'date': date.toIso8601String(),
+        'profit': profit,
+        'costOfGoods': costOfGoods,
+      };
+
+  factory ProductTransaction.fromMap(Map<String, dynamic> map) => ProductTransaction(
+        id: map['id'],
+        productId: map['productId'],
+        productName: map['productName'],
+        quantity: (map['quantity'] as num).toDouble(),
+        pricePerUnit: (map['pricePerUnit'] as num).toDouble(),
+        totalAmount: (map['totalAmount'] as num).toDouble(),
+        type: map['type'] == 'purchase' ? ProductTxType.purchase : ProductTxType.sale,
+        date: DateTime.parse(map['date']),
+        profit: (map['profit'] ?? 0 as num).toDouble(),
+        costOfGoods: (map['costOfGoods'] ?? 0 as num).toDouble(),
+      );
+}
+
+class ProductProvider extends ChangeNotifier {
+  List<Product> products = [];
+  List<ProductBatch> batches = [];
+  List<ProductTransaction> productTransactions = [];
+
+  ProductProvider() {
+    loadAll();
+  }
+
+  Future<void> loadAll() async {
+    products = await DatabaseHelper.getProducts();
+    batches = await DatabaseHelper.getProductBatches();
+    productTransactions = await DatabaseHelper.getProductTransactions();
+    notifyListeners();
+  }
+
+  double getStock(int productId) {
+    return batches.where((b) => b.productId == productId).fold(0.0, (sum, b) => sum + b.remainingQuantity);
+  }
+
+  Future<Product> getOrCreateProduct(String name) async {
+    final trimmed = name.trim();
+    final existing = products.where((p) => p.name == trimmed).toList();
+    if (existing.isNotEmpty) return existing.first;
+    final newProduct = Product(id: DateTime.now().millisecondsSinceEpoch, name: trimmed);
+    await DatabaseHelper.insertProduct(newProduct);
+    await loadAll();
+    return newProduct;
+  }
+
+  Future<void> recordPurchase({
+    required Product product,
+    required double quantity,
+    required double pricePerUnit,
+    required DateTime date,
+  }) async {
+    final batch = ProductBatch(
+      id: DateTime.now().millisecondsSinceEpoch,
+      productId: product.id!,
+      originalQuantity: quantity,
+      remainingQuantity: quantity,
+      purchasePrice: pricePerUnit,
+      date: date,
+    );
+    await DatabaseHelper.insertProductBatch(batch);
+
+    final tx = ProductTransaction(
+      id: DateTime.now().millisecondsSinceEpoch + 1,
+      productId: product.id!,
+      productName: product.name,
+      quantity: quantity,
+      pricePerUnit: pricePerUnit,
+      totalAmount: quantity * pricePerUnit,
+      type: ProductTxType.purchase,
+      date: date,
+    );
+    await DatabaseHelper.insertProductTransaction(tx);
+
+    await loadAll();
+  }
+
+  bool hasEnoughStock(int productId, double quantity) {
+    return getStock(productId) >= quantity;
+  }
+
+  Future<double> recordSale({
+    required Product product,
+    required double quantity,
+    required double pricePerUnit,
+    required DateTime date,
+  }) async {
+    if (!hasEnoughStock(product.id!, quantity)) {
+      throw Exception('موجودی کافی نیست');
+    }
+
+    final productBatches = batches.where((b) => b.productId == product.id && b.remainingQuantity > 0).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    double remainingToSell = quantity;
+    double totalCost = 0;
+
+    for (final batch in productBatches) {
+      if (remainingToSell <= 0) break;
+      final consumed = remainingToSell < batch.remainingQuantity ? remainingToSell : batch.remainingQuantity;
+      totalCost += consumed * batch.purchasePrice;
+      batch.remainingQuantity -= consumed;
+      await DatabaseHelper.updateProductBatch(batch);
+      remainingToSell -= consumed;
+    }
+
+    final totalAmount = quantity * pricePerUnit;
+    final profit = totalAmount - totalCost;
+
+    final tx = ProductTransaction(
+      id: DateTime.now().millisecondsSinceEpoch,
+      productId: product.id!,
+      productName: product.name,
+      quantity: quantity,
+      pricePerUnit: pricePerUnit,
+      totalAmount: totalAmount,
+      type: ProductTxType.sale,
+      date: date,
+      profit: profit,
+      costOfGoods: totalCost,
+    );
+    await DatabaseHelper.insertProductTransaction(tx);
+
+    await loadAll();
+    return profit;
+  }
+
+  List<Map<String, dynamic>> getProfitReport(DateTime? start, DateTime? end) {
+    final filtered = productTransactions.where((t) {
+      if (start != null && t.date.isBefore(start)) return false;
+      if (end != null && t.date.isAfter(end)) return false;
+      return true;
+    }).toList();
+
+    final Map<String, Map<String, dynamic>> grouped = {};
+    for (final t in filtered) {
+      grouped.putIfAbsent(t.productName, () => {
+            'productName': t.productName,
+            'totalPurchase': 0.0,
+            'totalSale': 0.0,
+            'profit': 0.0,
+          });
+      if (t.type == ProductTxType.purchase) {
+        grouped[t.productName]!['totalPurchase'] += t.totalAmount;
+      } else {
+        grouped[t.productName]!['totalSale'] += t.totalAmount;
+        grouped[t.productName]!['profit'] += t.profit;
+      }
+    }
+    return grouped.values.toList();
+  }
+
+  double getTotalProfit(DateTime? start, DateTime? end) {
+    return productTransactions.where((t) {
+      if (t.type != ProductTxType.sale) return false;
+      if (start != null && t.date.isBefore(start)) return false;
+      if (end != null && t.date.isAfter(end)) return false;
+      return true;
+    }).fold(0.0, (sum, t) => sum + t.profit);
+  }
+}
