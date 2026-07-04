@@ -6,9 +6,18 @@ import '../widgets/custom_app_bar.dart';
 class ProductsScreen extends StatelessWidget {
   const ProductsScreen({Key? key}) : super(key: key);
 
+  final List<List<Color>> _gradients = const [
+    [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
+    [Color(0xFF00C6A9), Color(0xFF00897B)],
+    [Color(0xFFFF7A59), Color(0xFFE64A19)],
+    [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
+    [Color(0xFFFF5C8A), Color(0xFFD81B60)],
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FB),
       appBar: buildCustomAppBar(title: 'انبار محصولات', context: context),
       body: Consumer<ProductProvider>(
         builder: (context, provider, _) {
@@ -17,11 +26,15 @@ class ProductsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.inventory_2_outlined, size: 100, color: Colors.grey[200]),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
+                    child: Icon(Icons.inventory_2_outlined, size: 55, color: Colors.grey.shade300),
+                  ),
                   const SizedBox(height: 20),
-                  const Text('هنوز محصولی ثبت نشده', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                  const SizedBox(height: 8),
-                  const Text('از صفحه‌ی «خرید/فروش» محصول اضافه کن', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text('هنوز محصولی ثبت نشده', style: TextStyle(color: Colors.grey.shade500, fontSize: 15, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  Text('از صفحه‌ی «خرید/فروش» محصول اضافه کن', style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
                 ],
               ),
             );
@@ -33,25 +46,46 @@ class ProductsScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = provider.products[index];
               final stock = provider.getStock(product.id!);
+              final gradient = _gradients[index % _gradients.length];
+              final available = stock > 0;
 
-              return Card(
-                elevation: 2,
-                margin: const EdgeInsets.only(bottom: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  leading: Container(
-                    width: 45,
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: stock > 0 ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(10),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Material(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  elevation: 2,
+                  shadowColor: Colors.black12,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            gradient: LinearGradient(colors: available ? gradient : [Colors.grey.shade400, Colors.grey.shade500], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                          ),
+                          child: const Icon(Icons.inventory_2_rounded, color: Colors.white, size: 24),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Text(product.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: available ? const Color(0xFF11998E).withOpacity(0.12) : const Color(0xFFE64A19).withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            available ? '${stock.toStringAsFixed(0)} عدد' : 'موجود نیست',
+                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: available ? const Color(0xFF11998E) : const Color(0xFFE64A19)),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: Icon(Icons.inventory_2, color: stock > 0 ? Colors.green : Colors.red),
-                  ),
-                  title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  trailing: Text(
-                    stock > 0 ? '${stock.toStringAsFixed(0)} عدد' : 'موجود نیست',
-                    style: TextStyle(fontWeight: FontWeight.w800, color: stock > 0 ? Colors.green : Colors.red),
                   ),
                 ),
               );
