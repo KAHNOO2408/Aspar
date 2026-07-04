@@ -19,6 +19,8 @@ import 'loans_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
 import 'transfer_between_accounts_screen.dart';
+import 'bank_deposit_screen.dart';
+import 'bank_withdrawal_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -52,8 +54,24 @@ class HomeScreen extends StatelessWidget {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
+              leading: const Icon(Icons.shopping_cart, color: Colors.red),
+              title: const Text('ثبت خرید'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.owed)));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.sell, color: Colors.green),
+              title: const Text('ثبت فروش'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.receivable)));
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.account_balance_wallet, color: Colors.orange),
-              title: const Text('حساب‌های باز'),
+              title: const Text('بدهی و طلب'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const DebtsScreen()));
@@ -65,6 +83,22 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const BanksScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.call_received, color: Colors.teal),
+              title: const Text('واریز به بانک'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const BankDepositScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.call_made, color: Colors.deepOrange),
+              title: const Text('برداشت از بانک'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const BankWithdrawalScreen()));
               },
             ),
             ListTile(
@@ -314,7 +348,7 @@ class HomeScreen extends StatelessWidget {
                             elevation: 3,
                             child: Container(
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Colors.green.withOpacity(0.8), Colors.green.shade600]),
+                                gradient: LinearGradient(colors: [Colors.blue.withOpacity(0.8), Colors.blue.shade600]),
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               padding: const EdgeInsets.all(20),
@@ -343,9 +377,9 @@ class HomeScreen extends StatelessWidget {
                               padding: const EdgeInsets.all(20),
                               child: const Column(
                                 children: [
-                                  Icon(Icons.person, color: Colors.white, size: 32),
+                                  Icon(Icons.shopping_cart, color: Colors.white, size: 32),
                                   SizedBox(height: 10),
-                                  Text('بدهی جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+                                  Text('ثبت خرید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
                                 ],
                               ),
                             ),
@@ -359,20 +393,20 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.receivable))),
                           child: Card(
                             elevation: 3,
                             child: Container(
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Colors.blue.withOpacity(0.8), Colors.blue.shade600]),
+                                gradient: LinearGradient(colors: [Colors.green.withOpacity(0.8), Colors.green.shade600]),
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               padding: const EdgeInsets.all(20),
                               child: const Column(
                                 children: [
-                                  Icon(Icons.account_balance, color: Colors.white, size: 32),
+                                  Icon(Icons.sell, color: Colors.white, size: 32),
                                   SizedBox(height: 10),
-                                  Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+                                  Text('ثبت فروش', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
                                 ],
                               ),
                             ),
@@ -382,20 +416,20 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TransferBetweenAccountsScreen())),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
                           child: Card(
                             elevation: 3,
                             child: Container(
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Colors.deepPurple.withOpacity(0.8), Colors.deepPurple.shade600]),
+                                gradient: LinearGradient(colors: [Colors.amber.withOpacity(0.8), Colors.amber.shade600]),
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               padding: const EdgeInsets.all(20),
                               child: const Column(
                                 children: [
-                                  Icon(Icons.compare_arrows, color: Colors.white, size: 32),
+                                  Icon(Icons.account_balance, color: Colors.white, size: 32),
                                   SizedBox(height: 10),
-                                  Text('انتقال بین حساب‌ها', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+                                  Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
                                 ],
                               ),
                             ),
