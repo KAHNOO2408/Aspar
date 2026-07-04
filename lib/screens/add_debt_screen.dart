@@ -6,8 +6,8 @@ import '../models/debt_model.dart';
 import '../models/contact_model.dart';
 import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
-import '../models/payment_model.dart';
 import '../models/product_model.dart';
+import '../models/ledger_model.dart';
 import '../utils/formatters.dart';
 
 class AddDebtScreen extends StatefulWidget {
@@ -55,11 +55,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             final query = searchController.text.trim().toLowerCase();
-            final filtered = productProvider.products
-                .where((p) => p.name.toLowerCase().contains(query))
-                .toList();
-            final exactMatch = productProvider.products
-                .any((p) => p.name.toLowerCase() == query);
+            final filtered = productProvider.products.where((p) => p.name.toLowerCase().contains(query)).toList();
+            final exactMatch = productProvider.products.any((p) => p.name.toLowerCase() == query);
 
             return AlertDialog(
               title: const Text('انتخاب محصول', style: TextStyle(fontWeight: FontWeight.w700)),
@@ -111,10 +108,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
                           textAlign: TextAlign.center,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo,
-                          minimumSize: const Size(double.infinity, 45),
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, minimumSize: const Size(double.infinity, 45)),
                       ),
                     ],
                   ],
@@ -138,9 +132,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final stock = selectedProduct != null ? productProvider.getStock(selectedProduct!.id!) : null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isPurchase ? 'ثبت خرید (بدهی جدید)' : 'ثبت فروش (طلب جدید)'),
-      ),
+      appBar: AppBar(title: Text(isPurchase ? 'ثبت خرید' : 'ثبت فروش')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Consumer<ContactProvider>(
@@ -154,9 +146,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   isExpanded: true,
                   hint: const Text('مخاطب را انتخاب کنید'),
                   value: selectedContact,
-                  items: contactProvider.contacts.map((contact) {
-                    return DropdownMenuItem(value: contact, child: Text(contact.fullName));
-                  }).toList(),
+                  items: contactProvider.contacts.map((contact) => DropdownMenuItem(value: contact, child: Text(contact.fullName))).toList(),
                   onChanged: (contact) => setState(() => selectedContact = contact),
                   decoration: InputDecoration(
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -171,19 +161,13 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   onTap: _pickProduct,
                   child: Container(
                     padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade400),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(10)),
                     child: Row(
                       children: [
                         const Icon(Icons.inventory_2_outlined, color: Colors.indigo),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Text(
-                            selectedProduct?.name ?? 'انتخاب محصول...',
-                            style: TextStyle(color: selectedProduct != null ? Colors.black : Colors.grey),
-                          ),
+                          child: Text(selectedProduct?.name ?? 'انتخاب محصول...', style: TextStyle(color: selectedProduct != null ? Colors.black : Colors.grey)),
                         ),
                         if (selectedProduct != null && !isPurchase)
                           Text(
@@ -203,11 +187,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         controller: quantityController,
                         keyboardType: TextInputType.number,
                         onChanged: (_) => setState(() {}),
-                        decoration: InputDecoration(
-                          labelText: 'تعداد *',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.all(12),
-                        ),
+                        decoration: InputDecoration(labelText: 'تعداد *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -216,11 +196,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         controller: priceController,
                         keyboardType: TextInputType.number,
                         onChanged: (_) => setState(() {}),
-                        decoration: InputDecoration(
-                          labelText: 'قیمت واحد *',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.all(12),
-                        ),
+                        decoration: InputDecoration(labelText: 'قیمت واحد *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                       ),
                     ),
                   ],
@@ -234,11 +210,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
                 TextField(
                   controller: noteController,
-                  decoration: InputDecoration(
-                    labelText: 'یادداشت (اختیاری)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
+                  decoration: InputDecoration(labelText: 'یادداشت (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
                 const SizedBox(height: 15),
 
@@ -277,17 +249,10 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         value: selectedBankId,
                         hint: const Text('انتخاب بانک *'),
                         items: bankProvider.banks.map((bank) {
-                          return DropdownMenuItem<int>(
-                            value: bank.id,
-                            child: Text('${bank.bankName} - ${formatAmount(bank.balance)}'),
-                          );
+                          return DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)}'));
                         }).toList(),
                         onChanged: (value) => setState(() => selectedBankId = value),
-                        decoration: InputDecoration(
-                          labelText: 'بانک *',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.all(12),
-                        ),
+                        decoration: InputDecoration(labelText: 'بانک *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                       );
                     },
                   ),
@@ -338,17 +303,11 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       return;
     }
 
-    final sameType = widget.type;
-    final isPurchase = sameType == DebtType.owed;
+    final isPurchase = widget.type == DebtType.owed;
     final productProvider = context.read<ProductProvider>();
 
     if (isPurchase) {
-      await productProvider.recordPurchase(
-        product: selectedProduct!,
-        quantity: quantity,
-        pricePerUnit: price,
-        date: selectedDate,
-      );
+      await productProvider.recordPurchase(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate);
     } else {
       if (!productProvider.hasEnoughStock(selectedProduct!.id!, quantity)) {
         if (mounted) {
@@ -358,88 +317,57 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         }
         return;
       }
-      await productProvider.recordSale(
-        product: selectedProduct!,
-        quantity: quantity,
-        pricePerUnit: price,
-        date: selectedDate,
-      );
+      await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate);
     }
 
-    final debtProvider = context.read<DebtProvider>();
-    final oppositeType = sameType == DebtType.owed ? DebtType.receivable : DebtType.owed;
     final itemDescription = noteController.text.isNotEmpty
         ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد) - ${noteController.text}'
         : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد)';
 
-    final newId = DateTime.now().millisecondsSinceEpoch;
-    final newDebt = Debt(
-      id: newId,
+    final ledgerProvider = context.read<LedgerProvider>();
+
+    await ledgerProvider.addEntry(LedgerEntry(
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
-      totalAmount: totalAmount,
-      description: itemDescription,
       date: selectedDate,
-      type: sameType,
-      paidAmount: paidNow,
-    );
-    await debtProvider.addDebt(newDebt);
-
-    final oppositeDebts = debtProvider.debts
-        .where((d) =>
-            d.personName == selectedContact!.firstName &&
-            d.personFamily == selectedContact!.lastName &&
-            d.type == oppositeType &&
-            d.remainder > 0)
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-
-    double remainingNew = totalAmount - paidNow;
-    for (final oppDebt in oppositeDebts) {
-      if (remainingNew <= 0) break;
-      final offset = remainingNew < oppDebt.remainder ? remainingNew : oppDebt.remainder;
-      oppDebt.paidAmount += offset;
-      await debtProvider.editDebt(oppDebt);
-      remainingNew -= offset;
-    }
-
-    newDebt.paidAmount = totalAmount - remainingNew;
-    await debtProvider.editDebt(newDebt);
+      description: itemDescription,
+      creditAmount: isPurchase ? totalAmount : 0,
+      debitAmount: isPurchase ? 0 : totalAmount,
+    ));
 
     if (paidNow > 0) {
       final bankProvider = context.read<BankProvider>();
       final transProvider = context.read<TransactionProvider>();
-      final paymentProvider = context.read<PaymentProvider>();
       final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
 
       final updatedBank = Bank(
         id: bank.id,
         bankName: bank.bankName,
         accountNumber: bank.accountNumber,
-        balance: sameType == DebtType.owed ? bank.balance - paidNow : bank.balance + paidNow,
+        balance: isPurchase ? bank.balance - paidNow : bank.balance + paidNow,
       );
       await bankProvider.updateBank(updatedBank);
 
       final transaction = Transaction(
-        title: sameType == DebtType.owed ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
+        title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
         description: '${selectedContact!.fullName} - $itemDescription',
         amount: paidNow,
-        type: sameType == DebtType.owed ? TransactionType.expense : TransactionType.income,
+        type: isPurchase ? TransactionType.expense : TransactionType.income,
         category: 'معامله با مخاطب',
         date: selectedDate,
         bankId: bank.id,
       );
       transProvider.addTransaction(transaction);
 
-      final payment = Payment(
-        debtId: newId,
-        amount: paidNow,
+      await ledgerProvider.addEntry(LedgerEntry(
+        personName: selectedContact!.firstName,
+        personFamily: selectedContact!.lastName,
         date: selectedDate,
-        description: itemDescription,
-        type: sameType == DebtType.owed ? PaymentType.debtPayment : PaymentType.receivablePayment,
+        description: isPurchase ? 'پرداخت نقدی بابت: ${selectedProduct!.name}' : 'دریافت نقدی بابت: ${selectedProduct!.name}',
+        debitAmount: isPurchase ? paidNow : 0,
+        creditAmount: isPurchase ? 0 : paidNow,
         bankId: bank.id,
-      );
-      await paymentProvider.addPayment(payment);
+      ));
     }
 
     if (mounted) {
