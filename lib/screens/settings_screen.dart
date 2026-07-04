@@ -49,18 +49,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('تغییر روش ورود', style: TextStyle(fontWeight: FontWeight.w700)),
-        content: Text(
-          'برای استفاده از «$newMethodName»، باید «$currentMethodName» غیرفعال شود. آیا ادامه می‌دهید؟',
-        ),
+        content: Text('برای استفاده از «$newMethodName»، باید «$currentMethodName» غیرفعال شود. آیا ادامه می‌دهید؟'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('انصراف'),
-          ),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('انصراف')),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('تایید', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -82,6 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             final title = firstPattern == null ? 'الگوی جدید را رسم کنید' : 'الگو را دوباره رسم کنید';
 
             return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
               content: SizedBox(
                 width: 260,
@@ -89,15 +86,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: PatternLockWidget(
                   onComplete: (pattern) {
                     if (pattern.length < 4) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('الگو باید حداقل ۴ نقطه داشته باشد')),
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الگو باید حداقل ۴ نقطه داشته باشد')));
                       return;
                     }
                     if (firstPattern == null) {
-                      setDialogState(() {
-                        firstPattern = pattern;
-                      });
+                      setDialogState(() => firstPattern = pattern);
                     } else {
                       if (_listEquals(firstPattern!, pattern)) {
                         final hash = _hashPattern(pattern);
@@ -105,23 +98,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         success = true;
                         Navigator.of(dialogContext).pop();
                       } else {
-                        setDialogState(() {
-                          firstPattern = null;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('الگوها مطابقت ندارند، دوباره تلاش کنید')),
-                        );
+                        setDialogState(() => firstPattern = null);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الگوها مطابقت ندارند، دوباره تلاش کنید')));
                       }
                     }
                   },
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('انصراف'),
-                ),
-              ],
+              actions: [TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('انصراف'))],
             );
           },
         );
@@ -160,13 +144,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (confirmedPattern) {
         setState(() => _usePattern = true);
         await settingsBox.put('usePattern', true);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('الگو ذخیره شد ✅')),
-          );
-        }
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الگو ذخیره شد ✅')));
       }
-      // اگه کاربر انصراف داد، بیومتریک از قبل خاموش شده و الگو هم روشن نمی‌شه - این حالت رو کاربر باید دستی دوباره درست کنه
     } else {
       setState(() => _usePattern = false);
       await settingsBox.put('usePattern', false);
@@ -177,121 +156,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تنظیمات'),
-        elevation: 0,
-      ),
+      backgroundColor: const Color(0xFFF4F6FB),
+      appBar: AppBar(title: const Text('تنظیمات'), elevation: 0),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // امنیت
             _buildSection(
-              title: '🔐 امنیت',
+              title: 'امنیت',
+              icon: Icons.security_rounded,
+              gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
               children: [
-                _buildSettingTile(
-                  icon: Icons.fingerprint,
-                  title: 'ورود با اثر انگشت',
-                  subtitle: 'فعال‌سازی بیومتریک',
-                  value: _useBiometric,
-                  onChanged: _onBiometricChanged,
-                ),
-                _buildSettingTile(
-                  icon: Icons.pattern,
-                  title: 'ورود با الگو',
-                  subtitle: 'رسم الگو برای ورود',
-                  value: _usePattern,
-                  onChanged: _onPatternChanged,
-                ),
-                _buildButton(
-                  icon: Icons.lock_reset,
-                  title: 'تغییر رمز عبور',
-                  onTap: _showChangePassword,
-                ),
+                _buildSettingTile(icon: Icons.fingerprint, title: 'ورود با اثر انگشت', subtitle: 'فعال‌سازی بیومتریک', value: _useBiometric, onChanged: _onBiometricChanged),
+                _buildSettingTile(icon: Icons.pattern, title: 'ورود با الگو', subtitle: 'رسم الگو برای ورود', value: _usePattern, onChanged: _onPatternChanged),
+                _buildButton(icon: Icons.lock_reset, title: 'تغییر رمز عبور', onTap: _showChangePassword),
               ],
             ),
             const SizedBox(height: 20),
 
-            // نمایش
             _buildSection(
-              title: '🎨 نمایش',
+              title: 'نمایش',
+              icon: Icons.palette_rounded,
+              gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
               children: [
                 Consumer<ThemeProvider>(
                   builder: (context, themeProvider, _) {
-                    return _buildSettingTile(
-                      icon: Icons.dark_mode,
-                      title: 'تم تاریک',
-                      subtitle: 'فعال‌سازی حالت شب',
-                      value: themeProvider.isDarkMode,
-                      onChanged: (value) {
-                        themeProvider.toggleTheme();
-                      },
-                    );
+                    return _buildSettingTile(icon: Icons.dark_mode, title: 'تم تاریک', subtitle: 'فعال‌سازی حالت شب', value: themeProvider.isDarkMode, onChanged: (value) => themeProvider.toggleTheme());
                   },
                 ),
               ],
             ),
             const SizedBox(height: 20),
 
-            // داده‌ها
             _buildSection(
-              title: '💾 داده‌ها',
+              title: 'داده‌ها',
+              icon: Icons.storage_rounded,
+              gradient: const [Color(0xFF00C6A9), Color(0xFF00897B)],
               children: [
-                _buildButton(
-                  icon: Icons.backup,
-                  title: 'Backup',
-                  subtitle: 'پشتیبان‌گیری از تمام داده‌ها',
-                  onTap: _showBackup,
-                ),
-                _buildButton(
-                  icon: Icons.restore,
-                  title: 'Restore',
-                  subtitle: 'بازگردانی از پشتیبان',
-                  onTap: _showRestore,
-                ),
-                _buildButton(
-                  icon: Icons.delete_sweep,
-                  title: 'پاک کردن تمام داده‌ها',
-                  subtitle: 'حذف کامل تمام اطلاعات',
-                  color: Colors.red,
-                  onTap: _showDeleteAll,
-                ),
+                _buildButton(icon: Icons.backup, title: 'Backup', subtitle: 'پشتیبان‌گیری از تمام داده‌ها', onTap: _showBackup),
+                _buildButton(icon: Icons.restore, title: 'Restore', subtitle: 'بازگردانی از پشتیبان', onTap: _showRestore),
+                _buildButton(icon: Icons.delete_sweep, title: 'پاک کردن تمام داده‌ها', subtitle: 'حذف کامل تمام اطلاعات', color: const Color(0xFFE64A19), onTap: _showDeleteAll),
               ],
             ),
             const SizedBox(height: 20),
 
-            // اطلاعات
             _buildSection(
-              title: 'ℹ️ اطلاعات',
+              title: 'اطلاعات',
+              icon: Icons.info_outline_rounded,
+              gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
               children: [
-                _buildButton(
-                  icon: Icons.info,
-                  title: 'درباره اپ',
-                  onTap: _showAbout,
-                ),
-                _buildButton(
-                  icon: Icons.privacy_tip,
-                  title: 'سیاست حریم خصوصی',
-                  onTap: _showPrivacyPolicy,
-                ),
-                _buildButton(
-                  icon: Icons.contact_support,
-                  title: 'تماس و پشتیبانی',
-                  onTap: _showSupport,
-                ),
+                _buildButton(icon: Icons.info, title: 'درباره اپ', onTap: _showAbout),
+                _buildButton(icon: Icons.privacy_tip, title: 'سیاست حریم خصوصی', onTap: _showPrivacyPolicy),
+                _buildButton(icon: Icons.contact_support, title: 'تماس و پشتیبانی', onTap: _showSupport),
               ],
             ),
             const SizedBox(height: 20),
 
-            // خروج
             _buildSection(
-              children: [
-                _buildButton(
-                  icon: Icons.logout,
-                  title: 'خروج از حساب',
-                  color: Colors.red,
-                  onTap: _logout,
-                ),
-              ],
+              children: [_buildButton(icon: Icons.logout, title: 'خروج از حساب', color: const Color(0xFFE64A19), onTap: _logout)],
             ),
             const SizedBox(height: 20),
           ],
@@ -300,65 +221,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSection({String? title, required List<Widget> children}) {
+  Widget _buildSection({String? title, IconData? icon, List<Color>? gradient, required List<Widget> children}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (title != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-            child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.indigo)),
+            child: Row(
+              children: [
+                if (icon != null && gradient != null)
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(8)),
+                    child: Icon(icon, color: Colors.white, size: 16),
+                  ),
+                const SizedBox(width: 8),
+                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF2B3FBE))),
+              ],
+            ),
           ),
         ...children,
       ],
     );
   }
 
-  Widget _buildSettingTile({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    required bool value,
-    required Function(bool) onChanged,
-  }) {
+  Widget _buildSettingTile({required IconData icon, required String title, String? subtitle, required bool value, required Function(bool) onChanged}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Card(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shadowColor: Colors.black12,
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: Icon(icon, color: Colors.indigo, size: 26),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: const Color(0xFF2B3FBE).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: const Color(0xFF2B3FBE), size: 22),
+          ),
           title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
           subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
-          trailing: Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: Colors.indigo,
-          ),
+          trailing: Switch(value: value, onChanged: onChanged, activeColor: const Color(0xFF2B3FBE)),
         ),
       ),
     );
   }
 
-  Widget _buildButton({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    Color color = Colors.indigo,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildButton({required IconData icon, required String title, String? subtitle, Color color = const Color(0xFF2B3FBE), required VoidCallback onTap}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Card(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shadowColor: Colors.black12,
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: Icon(icon, color: color, size: 26),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 22)),
           title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: color)),
           subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
-          trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
           onTap: onTap,
         ),
       ),
@@ -373,39 +297,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('تغییر رمز عبور', style: TextStyle(fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: oldPassController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'رمز عبور فعلی',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
+            TextField(controller: oldPassController, obscureText: true, decoration: InputDecoration(labelText: 'رمز عبور فعلی', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
             const SizedBox(height: 15),
-            TextField(
-              controller: newPassController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'رمز عبور جدید',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
+            TextField(controller: newPassController, obscureText: true, decoration: InputDecoration(labelText: 'رمز عبور جدید', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
             const SizedBox(height: 15),
-            TextField(
-              controller: confirmPassController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'تأیید رمز عبور',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
+            TextField(controller: confirmPassController, obscureText: true, decoration: InputDecoration(labelText: 'تأیید رمز عبور', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
           ],
         ),
         actions: [
@@ -419,17 +320,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('رمز عبور فعلی اشتباه است!')));
                 return;
               }
-
               if (newPassController.text != confirmPassController.text) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('رمزهای عبور مطابقت ندارند!')));
                 return;
               }
-
               await authBox.put('password', newPassController.text);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('رمز عبور تغییر کرد ✅')));
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('تغییر', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -441,15 +340,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Backup', style: TextStyle(fontWeight: FontWeight.w700)),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.backup, size: 64, color: Colors.green),
-            SizedBox(height: 20),
-            Text('آیا می‌خواهید از تمام داده‌ها پشتیبان‌گیری کنید؟'),
-          ],
-        ),
+        content: const Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.backup, size: 64, color: Color(0xFF00897B)), SizedBox(height: 20), Text('آیا می‌خواهید از تمام داده‌ها پشتیبان‌گیری کنید؟')]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
           ElevatedButton(
@@ -457,7 +350,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('پشتیبان‌گیری انجام شد ✅')));
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00897B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('بله', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -469,15 +362,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Restore', style: TextStyle(fontWeight: FontWeight.w700)),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.restore, size: 64, color: Colors.blue),
-            SizedBox(height: 20),
-            Text('بازگردانی تمام داده‌ها؟'),
-          ],
-        ),
+        content: const Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.restore, size: 64, color: Color(0xFF4F6BF5)), SizedBox(height: 20), Text('بازگردانی تمام داده‌ها؟')]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
           ElevatedButton(
@@ -485,7 +372,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('بازگردانی انجام شد ✅')));
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F6BF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('بله', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -497,11 +384,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('پاک کردن تمام داده‌ها', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('پاک کردن تمام داده‌ها', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFE64A19))),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.warning, size: 64, color: Colors.red),
+            Icon(Icons.warning, size: 64, color: Color(0xFFE64A19)),
             SizedBox(height: 20),
             Text('این عمل غیرقابل بازگشت است!', style: TextStyle(fontWeight: FontWeight.w600)),
             SizedBox(height: 10),
@@ -515,7 +403,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمام داده‌ها پاک شدند ✅'), backgroundColor: Colors.red));
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE64A19), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('پاک کن', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -527,12 +415,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('درباره اپ', style: TextStyle(fontWeight: FontWeight.w700)),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('آسپار', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.indigo)),
+            Text('آسپار', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF2B3FBE))),
             SizedBox(height: 10),
             Text('نسخه: 1.0.0', style: TextStyle(fontWeight: FontWeight.w600)),
             SizedBox(height: 5),
@@ -544,7 +433,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('بستن', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -556,6 +445,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('سیاست حریم خصوصی', style: TextStyle(fontWeight: FontWeight.w700)),
         content: const SingleChildScrollView(
           child: Column(
@@ -571,7 +461,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('فهمیدم', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -583,6 +473,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('تماس و پشتیبانی', style: TextStyle(fontWeight: FontWeight.w700)),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
@@ -600,7 +491,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('بستن', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -612,6 +503,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('خروج', style: TextStyle(fontWeight: FontWeight.w700)),
         content: const Text('آیا می‌خواهید از حساب خود خارج شوید؟'),
         actions: [
@@ -619,12 +511,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const LicenseActivationScreen()),
-                (route) => false,
-              );
+              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LicenseActivationScreen()), (route) => false);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE64A19), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('خروج', style: TextStyle(color: Colors.white)),
           ),
         ],
