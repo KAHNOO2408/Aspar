@@ -17,6 +17,7 @@ class BankDepositScreen extends StatefulWidget {
 
 class _BankDepositScreenState extends State<BankDepositScreen> {
   final amountController = TextEditingController();
+  final feeController = TextEditingController();
   final trackingCodeController = TextEditingController();
   final noteController = TextEditingController();
   Contact? selectedContact;
@@ -93,6 +94,18 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                 const SizedBox(height: 15),
 
                 TextField(
+                  controller: feeController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'کارمزد (تومان) - اختیاری',
+                    hintText: 'اگه کارمزدی نداشت خالی بذار',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                ),
+                const SizedBox(height: 15),
+
+                TextField(
                   controller: trackingCodeController,
                   decoration: InputDecoration(labelText: 'کد رهگیری *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.all(12)),
                 ),
@@ -138,13 +151,14 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ باید بزرگتر از صفر باشد')));
       return;
     }
+    final fee = double.tryParse(feeController.text) ?? 0;
 
     final bankProvider = context.read<BankProvider>();
     final transProvider = context.read<TransactionProvider>();
     final ledgerProvider = context.read<LedgerProvider>();
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
 
-    final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount);
+    final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount - fee);
     await bankProvider.updateBank(updatedBank);
 
     final description = noteController.text.isNotEmpty ? 'واریز به بانک - ${noteController.text}' : 'واریز به بانک';
@@ -159,6 +173,19 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       bankId: bank.id,
     );
     transProvider.addTransaction(transaction);
+
+    if (fee > 0) {
+      final feeTransaction = Transaction(
+        title: 'کارمزد واریز',
+        description: 'کارمزد واریز از ${selectedContact!.fullName}',
+        amount: fee,
+        type: TransactionType.expense,
+        category: 'کارمزد',
+        date: selectedDate,
+        bankId: bank.id,
+      );
+      transProvider.addTransaction(feeTransaction);
+    }
 
     await ledgerProvider.addEntry(LedgerEntry(
       personName: selectedContact!.firstName,
@@ -179,6 +206,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
   @override
   void dispose() {
     amountController.dispose();
+    feeController.dispose();
     trackingCodeController.dispose();
     noteController.dispose();
     super.dispose();
