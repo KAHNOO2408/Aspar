@@ -12,7 +12,6 @@ import 'add_bank_screen.dart';
 import 'debts_screen.dart';
 import 'banks_screen.dart';
 import 'contacts_screen.dart';
-import 'settlement_screen.dart';
 import 'investment_screen.dart';
 import 'products_screen.dart';
 import 'loans_screen.dart';
@@ -34,11 +33,7 @@ class HomeScreen extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.indigo, Colors.indigo.shade700],
-                ),
-              ),
+              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.indigo, Colors.indigo.shade700])),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -48,11 +43,7 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.home, color: Colors.blue),
-              title: const Text('خانه'),
-              onTap: () => Navigator.pop(context),
-            ),
+            ListTile(leading: const Icon(Icons.home, color: Colors.blue), title: const Text('خانه'), onTap: () => Navigator.pop(context)),
             ListTile(
               leading: const Icon(Icons.shopping_cart, color: Colors.red),
               title: const Text('ثبت خرید'),
@@ -107,14 +98,6 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactsScreen()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.swap_horiz, color: Colors.amber),
-              title: const Text('تسویه'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const SettlementScreen()));
               },
             ),
             ListTile(
@@ -179,11 +162,7 @@ class HomeScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 child: Container(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.indigo.withOpacity(0.9), Colors.indigo.shade700],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    gradient: LinearGradient(colors: [Colors.indigo.withOpacity(0.9), Colors.indigo.shade700], begin: Alignment.topLeft, end: Alignment.bottomRight),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(30),
@@ -217,10 +196,7 @@ class HomeScreen extends StatelessWidget {
                             child: Card(
                               elevation: 3,
                               child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: [Colors.green.withOpacity(0.7), Colors.green.shade400]),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
+                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.green.withOpacity(0.7), Colors.green.shade400]), borderRadius: BorderRadius.circular(15)),
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,10 +214,7 @@ class HomeScreen extends StatelessWidget {
                             child: Card(
                               elevation: 3,
                               child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: [Colors.red.withOpacity(0.7), Colors.red.shade400]),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
+                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.red.withOpacity(0.7), Colors.red.shade400]), borderRadius: BorderRadius.circular(15)),
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,10 +232,7 @@ class HomeScreen extends StatelessWidget {
                             child: Card(
                               elevation: 3,
                               child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: [Colors.blue.withOpacity(0.7), Colors.blue.shade400]),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
+                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.blue.withOpacity(0.7), Colors.blue.shade400]), borderRadius: BorderRadius.circular(15)),
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,10 +257,7 @@ class HomeScreen extends StatelessWidget {
                             child: Card(
                               elevation: 3,
                               child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: [Colors.purple.withOpacity(0.7), Colors.purple.shade400]),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
+                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.purple.withOpacity(0.7), Colors.purple.shade400]), borderRadius: BorderRadius.circular(15)),
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,10 +275,7 @@ class HomeScreen extends StatelessWidget {
                             child: Card(
                               elevation: 3,
                               child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: [Colors.orange.withOpacity(0.7), Colors.orange.shade400]),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
+                                decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.orange.withOpacity(0.7), Colors.orange.shade400]), borderRadius: BorderRadius.circular(15)),
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,18 +311,9 @@ class HomeScreen extends StatelessWidget {
                           child: Card(
                             elevation: 3,
                             child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Colors.blue.withOpacity(0.8), Colors.blue.shade600]),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.blue.withOpacity(0.8), Colors.blue.shade600]), borderRadius: BorderRadius.circular(15)),
                               padding: const EdgeInsets.all(20),
-                              child: const Column(
-                                children: [
-                                  Icon(Icons.add, color: Colors.white, size: 32),
-                                  SizedBox(height: 10),
-                                  Text('تراکنش جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
-                                ],
-                              ),
+                              child: const Column(children: [Icon(Icons.add, color: Colors.white, size: 32), SizedBox(height: 10), Text('تراکنش جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12))]),
                             ),
                           ),
                         ),
@@ -370,18 +325,9 @@ class HomeScreen extends StatelessWidget {
                           child: Card(
                             elevation: 3,
                             child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Colors.red.withOpacity(0.8), Colors.red.shade600]),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.red.withOpacity(0.8), Colors.red.shade600]), borderRadius: BorderRadius.circular(15)),
                               padding: const EdgeInsets.all(20),
-                              child: const Column(
-                                children: [
-                                  Icon(Icons.shopping_cart, color: Colors.white, size: 32),
-                                  SizedBox(height: 10),
-                                  Text('ثبت خرید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
-                                ],
-                              ),
+                              child: const Column(children: [Icon(Icons.shopping_cart, color: Colors.white, size: 32), SizedBox(height: 10), Text('ثبت خرید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12))]),
                             ),
                           ),
                         ),
@@ -397,18 +343,9 @@ class HomeScreen extends StatelessWidget {
                           child: Card(
                             elevation: 3,
                             child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Colors.green.withOpacity(0.8), Colors.green.shade600]),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.green.withOpacity(0.8), Colors.green.shade600]), borderRadius: BorderRadius.circular(15)),
                               padding: const EdgeInsets.all(20),
-                              child: const Column(
-                                children: [
-                                  Icon(Icons.sell, color: Colors.white, size: 32),
-                                  SizedBox(height: 10),
-                                  Text('ثبت فروش', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
-                                ],
-                              ),
+                              child: const Column(children: [Icon(Icons.sell, color: Colors.white, size: 32), SizedBox(height: 10), Text('ثبت فروش', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12))]),
                             ),
                           ),
                         ),
@@ -420,18 +357,9 @@ class HomeScreen extends StatelessWidget {
                           child: Card(
                             elevation: 3,
                             child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [Colors.amber.withOpacity(0.8), Colors.amber.shade600]),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                              decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.amber.withOpacity(0.8), Colors.amber.shade600]), borderRadius: BorderRadius.circular(15)),
                               padding: const EdgeInsets.all(20),
-                              child: const Column(
-                                children: [
-                                  Icon(Icons.account_balance, color: Colors.white, size: 32),
-                                  SizedBox(height: 10),
-                                  Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
-                                ],
-                              ),
+                              child: const Column(children: [Icon(Icons.account_balance, color: Colors.white, size: 32), SizedBox(height: 10), Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12))]),
                             ),
                           ),
                         ),
