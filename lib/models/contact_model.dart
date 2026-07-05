@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
 
 class Contact {
   final int? id;
@@ -16,32 +17,57 @@ class Contact {
   });
 
   String get fullName => '$firstName $lastName';
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'firstName': firstName,
+        'lastName': lastName,
+        'phoneNumber': phoneNumber,
+        'address': address,
+      };
+
+  factory Contact.fromMap(Map<String, dynamic> map) => Contact(
+        id: map['id'],
+        firstName: map['firstName'],
+        lastName: map['lastName'],
+        phoneNumber: map['phoneNumber'],
+        address: map['address'],
+      );
 }
 
 class ContactProvider extends ChangeNotifier {
   List<Contact> contacts = [];
 
-  void addContact(Contact contact) {
-    contacts.add(Contact(
-      id: contacts.isEmpty ? 1 : contacts.last.id! + 1,
-      firstName: contact.firstName,
-      lastName: contact.lastName,
-      phoneNumber: contact.phoneNumber,
-      address: contact.address,
-    ));
+  ContactProvider() {
+    loadContacts();
+  }
+
+  Future<void> loadContacts() async {
+    contacts = await DatabaseHelper.getContacts();
     notifyListeners();
   }
 
-  void updateContact(Contact contact) {
-    final index = contacts.indexWhere((c) => c.id == contact.id);
-    if (index != -1) {
-      contacts[index] = contact;
-      notifyListeners();
-    }
+  Future<void> addContact(Contact contact) async {
+    final toSave = contact.id == null
+        ? Contact(
+            id: DateTime.now().millisecondsSinceEpoch,
+            firstName: contact.firstName,
+            lastName: contact.lastName,
+            phoneNumber: contact.phoneNumber,
+            address: contact.address,
+          )
+        : contact;
+    await DatabaseHelper.insertContact(toSave);
+    await loadContacts();
   }
 
-  void deleteContact(int id) {
-    contacts.removeWhere((c) => c.id == id);
-    notifyListeners();
+  Future<void> updateContact(Contact contact) async {
+    await DatabaseHelper.updateContact(contact);
+    await loadContacts();
+  }
+
+  Future<void> deleteContact(int id) async {
+    await DatabaseHelper.deleteContact(id);
+    await loadContacts();
   }
 }
