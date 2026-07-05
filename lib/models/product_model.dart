@@ -59,6 +59,7 @@ class ProductTransaction {
   final DateTime date;
   final double profit;
   final double costOfGoods;
+  final double laborFee;
 
   ProductTransaction({
     this.id,
@@ -71,6 +72,7 @@ class ProductTransaction {
     required this.date,
     this.profit = 0,
     this.costOfGoods = 0,
+    this.laborFee = 0,
   });
 
   Map<String, dynamic> toMap() => {
@@ -84,6 +86,7 @@ class ProductTransaction {
         'date': date.toIso8601String(),
         'profit': profit,
         'costOfGoods': costOfGoods,
+        'laborFee': laborFee,
       };
 
   factory ProductTransaction.fromMap(Map<String, dynamic> map) => ProductTransaction(
@@ -97,6 +100,7 @@ class ProductTransaction {
         date: DateTime.parse(map['date']),
         profit: (map['profit'] ?? 0 as num).toDouble(),
         costOfGoods: (map['costOfGoods'] ?? 0 as num).toDouble(),
+        laborFee: (map['laborFee'] ?? 0 as num).toDouble(),
       );
 }
 
@@ -170,6 +174,7 @@ class ProductProvider extends ChangeNotifier {
     required double quantity,
     required double pricePerUnit,
     required DateTime date,
+    double laborFee = 0,
   }) async {
     if (!hasEnoughStock(product.id!, quantity)) {
       throw Exception('موجودی کافی نیست');
@@ -204,6 +209,7 @@ class ProductProvider extends ChangeNotifier {
       date: date,
       profit: profit,
       costOfGoods: totalCost,
+      laborFee: laborFee,
     );
     await DatabaseHelper.insertProductTransaction(tx);
 
@@ -243,5 +249,14 @@ class ProductProvider extends ChangeNotifier {
       if (end != null && t.date.isAfter(end)) return false;
       return true;
     }).fold(0.0, (sum, t) => sum + t.profit);
+  }
+
+  double getTotalLaborFee(DateTime? start, DateTime? end) {
+    return productTransactions.where((t) {
+      if (t.type != ProductTxType.sale) return false;
+      if (start != null && t.date.isBefore(start)) return false;
+      if (end != null && t.date.isAfter(end)) return false;
+      return true;
+    }).fold(0.0, (sum, t) => sum + t.laborFee);
   }
 }
