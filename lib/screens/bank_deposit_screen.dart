@@ -7,6 +7,7 @@ import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
 import '../models/ledger_model.dart';
 import '../utils/formatters.dart';
+import '../utils/app_colors.dart';
 
 class BankDepositScreen extends StatefulWidget {
   const BankDepositScreen({Key? key}) : super(key: key);
@@ -23,7 +24,14 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
 
-  InputDecoration _decoration(String label) => InputDecoration(labelText: label, filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none), contentPadding: const EdgeInsets.all(14));
+  InputDecoration _decoration(BuildContext context, String label) => InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: AppColors.card(context),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.all(14),
+        labelStyle: TextStyle(color: AppColors.textSecondary(context)),
+      );
 
   String _formatDateToJalali(DateTime date) {
     final jalali = Jalali.fromDateTime(date);
@@ -38,7 +46,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(title: const Text('واریز به بانک')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -53,7 +61,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                   child: const Row(children: [Icon(Icons.info_outline, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('برای وقتی که یک مخاطب پول به حساب بانکی تو واریز می‌کنه', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)))]),
                 ),
                 const SizedBox(height: 20),
-                DropdownButtonFormField<Contact>(isExpanded: true, hint: const Text('انتخاب کنید'), value: selectedContact, items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(), onChanged: (c) => setState(() => selectedContact = c), decoration: _decoration('واریزکننده (مخاطب) *')),
+                DropdownButtonFormField<Contact>(isExpanded: true, hint: const Text('انتخاب کنید'), value: selectedContact, items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(), onChanged: (c) => setState(() => selectedContact = c), decoration: _decoration(context, 'واریزکننده (مخاطب) *'), style: TextStyle(color: AppColors.text(context))),
                 const SizedBox(height: 16),
                 Consumer<BankProvider>(
                   builder: (context, bankProvider, _) => DropdownButtonFormField<int>(
@@ -61,17 +69,18 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                     hint: const Text('انتخاب بانک'),
                     items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان'))).toList(),
                     onChanged: (value) => setState(() => selectedBankId = value),
-                    decoration: _decoration('بانک مقصد *'),
+                    decoration: _decoration(context, 'بانک مقصد *'),
+                    style: TextStyle(color: AppColors.text(context)),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextField(controller: amountController, keyboardType: TextInputType.number, decoration: _decoration('مبلغ (تومان) *')),
+                TextField(controller: amountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'مبلغ (تومان) *')),
                 const SizedBox(height: 16),
-                TextField(controller: feeController, keyboardType: TextInputType.number, decoration: _decoration('کارمزد (تومان) - اختیاری')),
+                TextField(controller: feeController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'کارمزد (تومان) - اختیاری')),
                 const SizedBox(height: 16),
-                TextField(controller: trackingCodeController, decoration: _decoration('کد رهگیری *')),
+                TextField(controller: trackingCodeController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'کد رهگیری *')),
                 const SizedBox(height: 16),
-                TextField(controller: noteController, decoration: _decoration('یادداشت (اختیاری)')),
+                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'یادداشت (اختیاری)')),
                 const SizedBox(height: 16),
                 _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate, color: const Color(0xFF00897B)),
                 const SizedBox(height: 30),
@@ -142,8 +151,8 @@ class _DateButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-      child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(14), onTap: onTap, child: Padding(padding: const EdgeInsets.symmetric(vertical: 14), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.calendar_today, size: 16, color: color), const SizedBox(width: 8), Text(label, style: const TextStyle(fontWeight: FontWeight.w600))])))),
+      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
+      child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(14), onTap: onTap, child: Padding(padding: const EdgeInsets.symmetric(vertical: 14), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.calendar_today, size: 16, color: color), const SizedBox(width: 8), Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context)))])))),
     );
   }
 }
