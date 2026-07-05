@@ -46,6 +46,7 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
         builder: (context, provider, _) {
           final report = provider.getProfitReport(startDate, endDate);
           final totalProfit = provider.getTotalProfit(startDate, endDate);
+          final totalLaborFee = provider.getTotalLaborFee(startDate, endDate);
           final totalSales = report.fold(0.0, (sum, r) => sum + (r['totalSale'] as double));
           final totalPurchases = report.fold(0.0, (sum, r) => sum + (r['totalPurchase'] as double));
 
@@ -113,6 +114,8 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
                     Expanded(child: _MiniStat(icon: Icons.arrow_downward_rounded, label: 'کل فروش', value: formatAmount(totalSales), gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)])),
                   ],
                 ),
+                const SizedBox(height: 12),
+                _MiniStat(icon: Icons.handshake_outlined, label: 'کل دستمزد', value: formatAmount(totalLaborFee), gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)], fullWidth: true),
 
                 const SizedBox(height: 25),
                 Text('سود به تفکیک محصول', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.text(context))),
@@ -176,12 +179,14 @@ class _MiniStat extends StatelessWidget {
   final String label;
   final String value;
   final List<Color> gradient;
+  final bool fullWidth;
 
-  const _MiniStat({required this.icon, required this.label, required this.value, required this.gradient});
+  const _MiniStat({required this.icon, required this.label, required this.value, required this.gradient, this.fullWidth = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: fullWidth ? double.infinity : null,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(18), gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight), boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))]),
       child: Column(
