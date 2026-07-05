@@ -6,6 +6,8 @@ import '../models/bank_model.dart';
 import '../models/payment_model.dart';
 import '../models/product_model.dart';
 import '../models/ledger_model.dart';
+import '../models/contact_model.dart';
+import '../models/loan_model.dart';
 
 class DatabaseHelper {
   static late Box<dynamic> transactionBox;
@@ -17,6 +19,8 @@ class DatabaseHelper {
   static late Box<dynamic> productBatchBox;
   static late Box<dynamic> productTransactionBox;
   static late Box<dynamic> ledgerBox;
+  static late Box<dynamic> contactBox;
+  static late Box<dynamic> loanBox;
 
   static Future<void> init() async {
     if (!Hive.isBoxOpen('transactions')) {
@@ -71,6 +75,18 @@ class DatabaseHelper {
       ledgerBox = await Hive.openBox('ledger');
     } else {
       ledgerBox = Hive.box('ledger');
+    }
+
+    if (!Hive.isBoxOpen('contacts')) {
+      contactBox = await Hive.openBox('contacts');
+    } else {
+      contactBox = Hive.box('contacts');
+    }
+
+    if (!Hive.isBoxOpen('loans')) {
+      loanBox = await Hive.openBox('loans');
+    } else {
+      loanBox = Hive.box('loans');
     }
   }
 
@@ -212,5 +228,45 @@ class DatabaseHelper {
 
   static Future<void> deleteLedgerEntry(int id) async {
     await ledgerBox.delete(id);
+  }
+
+  static Future<void> insertContact(Contact contact) async {
+    await contactBox.put(contact.id, contact.toMap());
+  }
+
+  static Future<List<Contact>> getContacts() async {
+    final contacts = <Contact>[];
+    for (var value in contactBox.values) {
+      contacts.add(Contact.fromMap(Map<String, dynamic>.from(value)));
+    }
+    return contacts;
+  }
+
+  static Future<void> updateContact(Contact contact) async {
+    await contactBox.put(contact.id, contact.toMap());
+  }
+
+  static Future<void> deleteContact(int id) async {
+    await contactBox.delete(id);
+  }
+
+  static Future<void> insertLoan(Loan loan) async {
+    await loanBox.put(loan.id, loan.toMap());
+  }
+
+  static Future<List<Loan>> getLoans() async {
+    final loans = <Loan>[];
+    for (var value in loanBox.values) {
+      loans.add(Loan.fromMap(Map<String, dynamic>.from(value)));
+    }
+    return loans;
+  }
+
+  static Future<void> updateLoan(Loan loan) async {
+    await loanBox.put(loan.id, loan.toMap());
+  }
+
+  static Future<void> deleteLoan(int id) async {
+    await loanBox.delete(id);
   }
 }
