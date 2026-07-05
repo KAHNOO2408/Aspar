@@ -135,7 +135,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
 
     final ledgerDescription = noteController.text.isNotEmpty ? 'برداشت از بانک - ${noteController.text}' : 'برداشت از بانک';
 
-    transProvider.addTransaction(Transaction(
+    await transProvider.addTransaction(Transaction(
       title: 'برداشت از بانک',
       description: 'برداشت از بانک',
       amount: amount,
@@ -147,7 +147,15 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
     ));
 
     if (fee > 0) {
-      transProvider.addTransaction(Transaction(title: 'کارمزد برداشت', description: 'کارمزد برداشت به ${selectedContact!.fullName}', amount: fee, type: TransactionType.expense, category: 'کارمزد', date: selectedDate, bankId: bank.id));
+      await transProvider.addTransaction(Transaction(
+        title: 'کارمزد برداشت',
+        description: 'کارمزد برداشت به ${selectedContact!.fullName}',
+        amount: fee,
+        type: TransactionType.expense,
+        category: 'کارمزد',
+        date: selectedDate,
+        bankId: bank.id,
+      ));
     }
 
     await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: ledgerDescription, debitAmount: amount, bankId: bank.id, trackingCode: trackingCodeController.text));
