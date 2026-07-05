@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/ledger_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
+import '../utils/app_colors.dart';
 import 'contact_ledger_screen.dart';
 
 class DebtsScreen extends StatelessWidget {
@@ -13,7 +14,7 @@ class DebtsScreen extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F6FB),
+        backgroundColor: AppColors.background(context),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(110),
           child: Container(
@@ -79,11 +80,7 @@ class DebtsScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                            child: Icon(emptyIcon, color: Colors.white, size: 20),
-                          ),
+                          Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)), child: Icon(emptyIcon, color: Colors.white, size: 20)),
                           const SizedBox(width: 10),
                           Text(totalTitle, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                         ],
@@ -94,18 +91,14 @@ class DebtsScreen extends StatelessWidget {
                       const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
-                    child: Icon(emptyIcon, color: Colors.white, size: 30),
-                  ),
+                  Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle), child: Icon(emptyIcon, color: Colors.white, size: 30)),
                 ],
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-            child: Align(alignment: Alignment.centerRight, child: Text('فهرست تفصیلی', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.grey.shade700))),
+            child: Align(alignment: Alignment.centerRight, child: Text('فهرست تفصیلی', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textSecondary(context)))),
           ),
           const SizedBox(height: 8),
           if (list.isEmpty)
@@ -113,13 +106,9 @@ class DebtsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(50),
               child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                    child: Icon(Icons.done_all_rounded, size: 50, color: Colors.grey.shade300),
-                  ),
+                  Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.card(context), shape: BoxShape.circle), child: Icon(Icons.done_all_rounded, size: 50, color: AppColors.textMuted(context))),
                   const SizedBox(height: 18),
-                  Text(emptyText, style: TextStyle(color: Colors.grey.shade500, fontSize: 15, fontWeight: FontWeight.w600)),
+                  Text(emptyText, style: TextStyle(color: AppColors.textSecondary(context), fontSize: 15, fontWeight: FontWeight.w600)),
                 ],
               ),
             )
@@ -138,7 +127,7 @@ class DebtsScreen extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Material(
-                    color: Colors.white,
+                    color: AppColors.card(context),
                     borderRadius: BorderRadius.circular(18),
                     elevation: 2,
                     shadowColor: Colors.black12,
@@ -152,21 +141,16 @@ class DebtsScreen extends StatelessWidget {
                             Container(
                               width: 48,
                               height: 48,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-                              ),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight)),
                               child: const Icon(Icons.person_rounded, color: Colors.white, size: 24),
                             ),
                             const SizedBox(width: 14),
-                            Expanded(
-                              child: Text('$personName $personFamily', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-                            ),
+                            Expanded(child: Text('$personName $personFamily', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text(context)))),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(formatAmount(balance), style: TextStyle(fontWeight: FontWeight.w800, color: gradient[1], fontSize: 14)),
-                                const Text('تومان', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                                Text('تومان', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))),
                               ],
                             ),
                           ],
