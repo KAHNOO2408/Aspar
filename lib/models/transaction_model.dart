@@ -12,6 +12,8 @@ class Transaction {
   final String category;
   final DateTime date;
   final int? bankId;
+  final String? contactName;
+  final double laborFee;
 
   Transaction({
     this.id,
@@ -22,6 +24,8 @@ class Transaction {
     required this.category,
     required this.date,
     this.bankId,
+    this.contactName,
+    this.laborFee = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +38,8 @@ class Transaction {
       'category': category,
       'date': date.toString(),
       'bankId': bankId,
+      'contactName': contactName,
+      'laborFee': laborFee,
     };
   }
 
@@ -47,6 +53,8 @@ class Transaction {
       category: map['category'],
       date: DateTime.parse(map['date']),
       bankId: map['bankId'],
+      contactName: map['contactName'],
+      laborFee: (map['laborFee'] ?? 0 as num).toDouble(),
     );
   }
 }
@@ -75,6 +83,8 @@ class TransactionProvider extends ChangeNotifier {
             category: transaction.category,
             date: transaction.date,
             bankId: transaction.bankId,
+            contactName: transaction.contactName,
+            laborFee: transaction.laborFee,
           )
         : transaction;
     await DatabaseHelper.insertTransaction(toSave);
