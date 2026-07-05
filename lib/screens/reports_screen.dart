@@ -158,6 +158,7 @@ class _TransactionReportsTab extends StatelessWidget {
             children: [
               _row(context, 'عنوان', trans.title),
               if (trans.contactName != null && trans.contactName!.isNotEmpty) _row(context, 'مخاطب', trans.contactName!),
+              if (trans.productInfo != null && trans.productInfo!.isNotEmpty) _row(context, 'کالا', trans.productInfo!),
               _row(context, 'توضیح', trans.description.isNotEmpty ? trans.description : '-'),
               _row(context, 'نوع', isIncome ? 'درآمد' : 'خرج'),
               _row(context, 'دسته‌بندی', trans.category),
@@ -258,7 +259,7 @@ class _TransactionReportsTab extends StatelessWidget {
                     } catch (e) {}
                   }
 
-                  final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId, contactName: trans.contactName, laborFee: trans.laborFee);
+                  final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId, contactName: trans.contactName, productInfo: trans.productInfo, laborFee: trans.laborFee);
                   await context.read<TransactionProvider>().editTransaction(updated);
 
                   Navigator.pop(dialogContext);
