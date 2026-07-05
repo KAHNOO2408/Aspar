@@ -8,6 +8,7 @@ import '../models/bank_model.dart';
 import '../models/profit_model.dart' hide TransactionType;
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
+import '../utils/app_colors.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({Key? key}) : super(key: key);
@@ -22,37 +23,20 @@ class ReportsScreen extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F6FB),
+        backgroundColor: AppColors.background(context),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(110),
           child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-            ),
+            decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
             child: Column(
               children: [
                 buildCustomAppBar(title: 'گزارشات', context: context),
-                const TabBar(
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.white60,
-                  indicatorColor: Colors.white,
-                  indicatorWeight: 3,
-                  labelStyle: TextStyle(fontWeight: FontWeight.w700),
-                  tabs: [
-                    Tab(text: 'تراکنش‌ها'),
-                    Tab(text: 'بانک‌ها'),
-                  ],
-                ),
+                const TabBar(labelColor: Colors.white, unselectedLabelColor: Colors.white60, indicatorColor: Colors.white, indicatorWeight: 3, labelStyle: TextStyle(fontWeight: FontWeight.w700), tabs: [Tab(text: 'تراکنش‌ها'), Tab(text: 'بانک‌ها')]),
               ],
             ),
           ),
         ),
-        body: TabBarView(
-          children: [
-            _TransactionReportsTab(formatDate: _formatDateToJalali),
-            _buildBankReports(context),
-          ],
-        ),
+        body: TabBarView(children: [_TransactionReportsTab(formatDate: _formatDateToJalali), _buildBankReports(context)]),
       ),
     );
   }
@@ -66,11 +50,7 @@ class ReportsScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(26),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  gradient: const LinearGradient(colors: [Color(0xFF11998E), Color(0xFF38EF7D)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                  boxShadow: [BoxShadow(color: const Color(0xFF11998E).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))],
-                ),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), gradient: const LinearGradient(colors: [Color(0xFF11998E), Color(0xFF38EF7D)], begin: Alignment.topLeft, end: Alignment.bottomRight), boxShadow: [BoxShadow(color: const Color(0xFF11998E).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))]),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -93,23 +73,18 @@ class ReportsScreen extends StatelessWidget {
               if (provider.banks.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]),
+                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(18), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('موجودی بانک‌ها', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.grey.shade800)),
+                      Text('موجودی بانک‌ها', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text(context))),
                       const SizedBox(height: 20),
                       SizedBox(
                         height: 200,
                         child: BarChart(
                           BarChartData(
-                            barGroups: List.generate(
-                              provider.banks.length,
-                              (i) => BarChartGroupData(x: i, barRods: [BarChartRodData(toY: (provider.banks[i].balance / 1000000).clamp(0, 100), color: const Color(0xFF4F6BF5), width: 18, borderRadius: BorderRadius.circular(6))]),
-                            ),
-                            titlesData: FlTitlesData(
-                              bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (value, meta) => Text(provider.banks[value.toInt()].bankName, style: const TextStyle(fontSize: 10)))),
-                            ),
+                            barGroups: List.generate(provider.banks.length, (i) => BarChartGroupData(x: i, barRods: [BarChartRodData(toY: (provider.banks[i].balance / 1000000).clamp(0, 100), color: const Color(0xFF4F6BF5), width: 18, borderRadius: BorderRadius.circular(6))])),
+                            titlesData: FlTitlesData(bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (value, meta) => Text(provider.banks[value.toInt()].bankName, style: TextStyle(fontSize: 10, color: AppColors.text(context)))))),
                           ),
                         ),
                       ),
@@ -118,10 +93,10 @@ class ReportsScreen extends StatelessWidget {
                 ),
 
               const SizedBox(height: 20),
-              Align(alignment: Alignment.centerRight, child: Text('جزئیات بانک‌ها', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.grey.shade800))),
+              Align(alignment: Alignment.centerRight, child: Text('جزئیات بانک‌ها', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text(context)))),
               const SizedBox(height: 10),
               if (provider.banks.isEmpty)
-                Padding(padding: const EdgeInsets.all(20), child: Text('بانکی وجود ندارد', style: TextStyle(color: Colors.grey.shade500)))
+                Padding(padding: const EdgeInsets.all(20), child: Text('بانکی وجود ندارد', style: TextStyle(color: AppColors.textSecondary(context))))
               else
                 ListView.builder(
                   shrinkWrap: true,
@@ -133,20 +108,12 @@ class ReportsScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))]),
+                        decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))]),
                         child: Row(
                           children: [
                             Container(width: 42, height: 42, decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(colors: [Color(0xFF11998E), Color(0xFF38EF7D)])), child: const Icon(Icons.account_balance_rounded, color: Colors.white, size: 20)),
                             const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(bank.bankName, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                                  Text(bank.accountNumber, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                                ],
-                              ),
-                            ),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(bank.bankName, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.text(context))), Text(bank.accountNumber, style: TextStyle(fontSize: 11, color: AppColors.textMuted(context)))])),
                             Text(formatAmount(bank.balance), style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF11998E), fontSize: 13)),
                           ],
                         ),
@@ -181,58 +148,37 @@ class _TransactionReportsTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('جزئیات تراکنش', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text('جزئیات تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _row('عنوان', trans.title),
-              _row('توضیح', trans.description.isNotEmpty ? trans.description : '-'),
-              _row('نوع', isIncome ? 'درآمد' : 'خرج'),
-              _row('دسته‌بندی', trans.category),
-              _row('بانک', bankName),
-              _row('مبلغ', '${formatAmount(trans.amount)} تومان'),
-              _row('تاریخ', formatDate(trans.date)),
+              _row(context, 'عنوان', trans.title),
+              _row(context, 'توضیح', trans.description.isNotEmpty ? trans.description : '-'),
+              _row(context, 'نوع', isIncome ? 'درآمد' : 'خرج'),
+              _row(context, 'دسته‌بندی', trans.category),
+              _row(context, 'بانک', bankName),
+              _row(context, 'مبلغ', '${formatAmount(trans.amount)} تومان'),
+              _row(context, 'تاریخ', formatDate(trans.date)),
             ],
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showEditDialog(context, trans);
-            },
-            child: const Text('ویرایش', style: TextStyle(color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showDeleteConfirm(context, trans);
-            },
-            child: const Text('حذف', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('بستن', style: TextStyle(color: Colors.white)),
-          ),
+          TextButton(onPressed: () { Navigator.pop(context); _showEditDialog(context, trans); }, child: const Text('ویرایش', style: TextStyle(color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700))),
+          TextButton(onPressed: () { Navigator.pop(context); _showDeleteConfirm(context, trans); }, child: const Text('حذف', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700))),
+          ElevatedButton(onPressed: () => Navigator.pop(context), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text('بستن', style: TextStyle(color: Colors.white))),
         ],
       ),
     );
   }
 
-  Widget _row(String label, String value) {
+  Widget _row(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(width: 90, child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.grey))),
-          Expanded(child: Text(value)),
-        ],
-      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [SizedBox(width: 90, child: Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textSecondary(context)))), Expanded(child: Text(value, style: TextStyle(color: AppColors.text(context))))]),
     );
   }
 
@@ -248,26 +194,20 @@ class _TransactionReportsTab extends StatelessWidget {
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) {
           return AlertDialog(
+            backgroundColor: AppColors.card(dialogContext),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('ویرایش تراکنش', style: TextStyle(fontWeight: FontWeight.w700)),
+            title: Text('ویرایش تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext))),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: const Color(0xFF2B3FBE).withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
-                    child: const Text(
-                      'اگه مبلغ یا بانک رو عوض کنی، موجودی بانک هم خودکار تصحیح میشه',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w600),
-                    ),
-                  ),
+                  Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF2B3FBE).withOpacity(0.08), borderRadius: BorderRadius.circular(10)), child: const Text('اگه مبلغ یا بانک رو عوض کنی، موجودی بانک هم خودکار تصحیح میشه', style: TextStyle(fontSize: 11, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w600))),
                   const SizedBox(height: 12),
-                  TextField(controller: titleController, decoration: InputDecoration(labelText: 'عنوان', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+                  TextField(controller: titleController, style: TextStyle(color: AppColors.text(dialogContext)), decoration: InputDecoration(labelText: 'عنوان', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
-                  TextField(controller: descController, decoration: InputDecoration(labelText: 'توضیح', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+                  TextField(controller: descController, style: TextStyle(color: AppColors.text(dialogContext)), decoration: InputDecoration(labelText: 'توضیح', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
-                  TextField(controller: amountController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'مبلغ (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+                  TextField(controller: amountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(dialogContext)), decoration: InputDecoration(labelText: 'مبلغ (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
                   Consumer<BankProvider>(
                     builder: (context, bankProvider, _) {
@@ -299,38 +239,23 @@ class _TransactionReportsTab extends StatelessWidget {
                   final newAmount = double.tryParse(amountController.text) ?? trans.amount;
                   final bankProvider = context.read<BankProvider>();
 
-                  // مرحله ۱: خنثی کردن اثر تراکنش قدیمی روی بانک قدیمی
                   if (trans.bankId != null) {
                     try {
                       final oldBank = bankProvider.banks.firstWhere((b) => b.id == trans.bankId);
                       final reversedBalance = trans.type == TransactionType.income ? oldBank.balance - trans.amount : oldBank.balance + trans.amount;
                       await bankProvider.updateBank(Bank(id: oldBank.id, bankName: oldBank.bankName, accountNumber: oldBank.accountNumber, balance: reversedBalance));
-                    } catch (e) {
-                      // بانک قدیمی دیگه وجود نداره، رد میشیم
-                    }
+                    } catch (e) {}
                   }
 
-                  // مرحله ۲: اعمال اثر تراکنش جدید روی بانک جدید (یا همون بانک، با مبلغ جدید)
                   if (selectedBankId != null) {
                     try {
                       final newBank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
                       final appliedBalance = trans.type == TransactionType.income ? newBank.balance + newAmount : newBank.balance - newAmount;
                       await bankProvider.updateBank(Bank(id: newBank.id, bankName: newBank.bankName, accountNumber: newBank.accountNumber, balance: appliedBalance));
-                    } catch (e) {
-                      // بانک انتخاب‌شده پیدا نشد
-                    }
+                    } catch (e) {}
                   }
 
-                  final updated = Transaction(
-                    id: trans.id,
-                    title: titleController.text,
-                    description: descController.text,
-                    amount: newAmount,
-                    type: trans.type,
-                    category: trans.category,
-                    date: selectedDate,
-                    bankId: selectedBankId,
-                  );
+                  final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId);
                   await context.read<TransactionProvider>().editTransaction(updated);
 
                   Navigator.pop(dialogContext);
@@ -350,23 +275,21 @@ class _TransactionReportsTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.card(dialogContext),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('حذف تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-        content: Text('آیا از حذف «${trans.title}» مطمئن هستید؟\n\nموجودی بانک هم به‌صورت خودکار اصلاح میشه.'),
+        content: Text('آیا از حذف «${trans.title}» مطمئن هستید؟\n\nموجودی بانک هم به‌صورت خودکار اصلاح میشه.', style: TextStyle(color: AppColors.text(dialogContext))),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
           ElevatedButton(
             onPressed: () async {
-              // خنثی کردن اثر تراکنش روی بانک قبل از حذف
               if (trans.bankId != null) {
                 final bankProvider = context.read<BankProvider>();
                 try {
                   final bank = bankProvider.banks.firstWhere((b) => b.id == trans.bankId);
                   final reversedBalance = trans.type == TransactionType.income ? bank.balance - trans.amount : bank.balance + trans.amount;
                   await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: reversedBalance));
-                } catch (e) {
-                  // بانک دیگه وجود نداره
-                }
+                } catch (e) {}
               }
 
               await context.read<TransactionProvider>().deleteTransaction(trans.id!);
@@ -406,35 +329,31 @@ class _TransactionReportsTab extends StatelessWidget {
               const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]),
+                decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(18), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('توزیع درآمد و خرج', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.grey.shade800)),
+                    Text('توزیع درآمد و خرج', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text(context))),
                     const SizedBox(height: 20),
                     if (income > 0 && expense > 0)
                       SizedBox(
                         height: 200,
-                        child: PieChart(
-                          PieChartData(
-                            sections: [
-                              PieChartSectionData(color: const Color(0xFF11998E), value: income, title: 'درآمد', radius: 60, titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
-                              PieChartSectionData(color: const Color(0xFFE64A19), value: expense, title: 'خرج', radius: 60, titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
-                            ],
-                          ),
-                        ),
+                        child: PieChart(PieChartData(sections: [
+                          PieChartSectionData(color: const Color(0xFF11998E), value: income, title: 'درآمد', radius: 60, titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+                          PieChartSectionData(color: const Color(0xFFE64A19), value: expense, title: 'خرج', radius: 60, titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+                        ])),
                       )
                     else
-                      Padding(padding: const EdgeInsets.all(20), child: Text('داده‌ای برای نمایش وجود ندارد', style: TextStyle(color: Colors.grey.shade500))),
+                      Padding(padding: const EdgeInsets.all(20), child: Text('داده‌ای برای نمایش وجود ندارد', style: TextStyle(color: AppColors.textSecondary(context)))),
                   ],
                 ),
               ),
 
               const SizedBox(height: 20),
-              Align(alignment: Alignment.centerRight, child: Text('آخرین تراکنش‌ها', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.grey.shade800))),
+              Align(alignment: Alignment.centerRight, child: Text('آخرین تراکنش‌ها', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text(context)))),
               const SizedBox(height: 10),
               if (provider.transactions.isEmpty)
-                Padding(padding: const EdgeInsets.all(20), child: Text('تراکنشی وجود ندارد', style: TextStyle(color: Colors.grey.shade500)))
+                Padding(padding: const EdgeInsets.all(20), child: Text('تراکنشی وجود ندارد', style: TextStyle(color: AppColors.textSecondary(context))))
               else
                 ListView.builder(
                   shrinkWrap: true,
@@ -446,7 +365,7 @@ class _TransactionReportsTab extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Material(
-                        color: Colors.white,
+                        color: AppColors.card(context),
                         borderRadius: BorderRadius.circular(14),
                         elevation: 1,
                         shadowColor: Colors.black12,
@@ -457,25 +376,9 @@ class _TransactionReportsTab extends StatelessWidget {
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    gradient: LinearGradient(colors: isIncome ? const [Color(0xFF11998E), Color(0xFF38EF7D)] : const [Color(0xFFFF7A59), Color(0xFFE64A19)]),
-                                  ),
-                                  child: Icon(isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded, color: Colors.white, size: 20),
-                                ),
+                                Container(width: 42, height: 42, decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: LinearGradient(colors: isIncome ? const [Color(0xFF11998E), Color(0xFF38EF7D)] : const [Color(0xFFFF7A59), Color(0xFFE64A19)])), child: Icon(isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded, color: Colors.white, size: 20)),
                                 const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(trans.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                                      Text(formatDate(trans.date), style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                                    ],
-                                  ),
-                                ),
+                                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(trans.title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.text(context))), Text(formatDate(trans.date), style: TextStyle(fontSize: 11, color: AppColors.textMuted(context)))])),
                                 Text(formatAmount(trans.amount), style: TextStyle(fontWeight: FontWeight.w800, color: isIncome ? const Color(0xFF11998E) : const Color(0xFFE64A19))),
                               ],
                             ),
@@ -507,21 +410,11 @@ class _MiniStat extends StatelessWidget {
     return Container(
       width: fullWidth ? double.infinity : null,
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-        boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(18), gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight), boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: Colors.white, size: 16)),
-              const SizedBox(width: 8),
-              Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
-            ],
-          ),
+          Row(children: [Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: Colors.white, size: 16)), const SizedBox(width: 8), Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600))]),
           const SizedBox(height: 10),
           Text(value, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
         ],
