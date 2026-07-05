@@ -5,6 +5,7 @@ import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/product_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
+import '../utils/app_colors.dart';
 
 class InvestmentScreen extends StatefulWidget {
   const InvestmentScreen({Key? key}) : super(key: key);
@@ -23,12 +24,7 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
   }
 
   Future<void> _pickDate(bool isStart) async {
-    final picked = await showPersianDatePicker(
-      context: context,
-      initialDate: Jalali.now(),
-      firstDate: Jalali(1390, 1),
-      lastDate: Jalali(1420, 12, 29),
-    );
+    final picked = await showPersianDatePicker(context: context, initialDate: Jalali.now(), firstDate: Jalali(1390, 1), lastDate: Jalali(1420, 12, 29));
     if (picked != null) {
       final converted = picked.toDateTime();
       setState(() {
@@ -44,7 +40,7 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: buildCustomAppBar(title: 'سود', context: context),
       body: Consumer<ProductProvider>(
         builder: (context, provider, _) {
@@ -60,33 +56,17 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
+                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(18), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('بازه‌ی زمانی گزارش', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Colors.grey.shade800)),
+                      Text('بازه‌ی زمانی گزارش', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context))),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _pickDate(true),
-                              icon: const Icon(Icons.calendar_today, size: 16),
-                              label: Text(startDate != null ? _formatJalali(startDate!) : 'از تاریخ'),
-                            ),
-                          ),
+                          Expanded(child: OutlinedButton.icon(onPressed: () => _pickDate(true), icon: const Icon(Icons.calendar_today, size: 16), label: Text(startDate != null ? _formatJalali(startDate!) : 'از تاریخ'))),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _pickDate(false),
-                              icon: const Icon(Icons.calendar_today, size: 16),
-                              label: Text(endDate != null ? _formatJalali(endDate!) : 'تا تاریخ'),
-                            ),
-                          ),
+                          Expanded(child: OutlinedButton.icon(onPressed: () => _pickDate(false), icon: const Icon(Icons.calendar_today, size: 16), label: Text(endDate != null ? _formatJalali(endDate!) : 'تا تاریخ'))),
                           if (startDate != null || endDate != null) ...[
                             const SizedBox(width: 6),
                             IconButton(onPressed: () => setState(() { startDate = null; endDate = null; }), icon: const Icon(Icons.clear, color: Colors.red)),
@@ -119,11 +99,7 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
                           const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 12)),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), shape: BoxShape.circle),
-                        child: const Icon(Icons.trending_up_rounded, color: Colors.white, size: 30),
-                      ),
+                      Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), shape: BoxShape.circle), child: const Icon(Icons.trending_up_rounded, color: Colors.white, size: 30)),
                     ],
                   ),
                 ),
@@ -132,18 +108,14 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
 
                 Row(
                   children: [
-                    Expanded(
-                      child: _MiniStat(icon: Icons.arrow_upward_rounded, label: 'کل خرید', value: formatAmount(totalPurchases), gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)]),
-                    ),
+                    Expanded(child: _MiniStat(icon: Icons.arrow_upward_rounded, label: 'کل خرید', value: formatAmount(totalPurchases), gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)])),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: _MiniStat(icon: Icons.arrow_downward_rounded, label: 'کل فروش', value: formatAmount(totalSales), gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)]),
-                    ),
+                    Expanded(child: _MiniStat(icon: Icons.arrow_downward_rounded, label: 'کل فروش', value: formatAmount(totalSales), gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)])),
                   ],
                 ),
 
                 const SizedBox(height: 25),
-                Text('سود به تفکیک محصول', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.grey.shade800)),
+                Text('سود به تفکیک محصول', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.text(context))),
                 const SizedBox(height: 12),
 
                 if (report.isEmpty)
@@ -152,13 +124,9 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
                     padding: const EdgeInsets.all(40),
                     child: Column(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                          child: Icon(Icons.inventory_2_outlined, size: 50, color: Colors.grey.shade300),
-                        ),
+                        Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: AppColors.card(context), shape: BoxShape.circle), child: Icon(Icons.inventory_2_outlined, size: 50, color: AppColors.textMuted(context))),
                         const SizedBox(height: 14),
-                        Text('در این بازه، معامله‌ای ثبت نشده', style: TextStyle(color: Colors.grey.shade500)),
+                        Text('در این بازه، معامله‌ای ثبت نشده', style: TextStyle(color: AppColors.textSecondary(context))),
                       ],
                     ),
                   )
@@ -174,40 +142,18 @@ class _InvestmentScreenState extends State<InvestmentScreen> {
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Container(
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
-                          ),
+                          decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(row['productName'], style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                              Text(row['productName'], style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text(context))),
                               const SizedBox(height: 10),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('خرید', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                                      Text(formatAmount(row['totalPurchase']), style: const TextStyle(fontSize: 13, color: Color(0xFFE64A19), fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('فروش', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                                      Text(formatAmount(row['totalSale']), style: const TextStyle(fontSize: 13, color: Color(0xFF11998E), fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('سود', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                                      Text(formatAmount(profit), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: profit >= 0 ? const Color(0xFF2B3FBE) : const Color(0xFFE64A19))),
-                                    ],
-                                  ),
+                                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('خرید', style: TextStyle(fontSize: 11, color: AppColors.textMuted(context))), Text(formatAmount(row['totalPurchase']), style: const TextStyle(fontSize: 13, color: Color(0xFFE64A19), fontWeight: FontWeight.w600))]),
+                                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('فروش', style: TextStyle(fontSize: 11, color: AppColors.textMuted(context))), Text(formatAmount(row['totalSale']), style: const TextStyle(fontSize: 13, color: Color(0xFF11998E), fontWeight: FontWeight.w600))]),
+                                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('سود', style: TextStyle(fontSize: 11, color: AppColors.textMuted(context))), Text(formatAmount(profit), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: profit >= 0 ? const Color(0xFF2B3FBE) : const Color(0xFFE64A19)))]),
                                 ],
                               ),
                             ],
@@ -237,21 +183,11 @@ class _MiniStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-        boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(18), gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight), boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: Colors.white, size: 16)),
-              const SizedBox(width: 8),
-              Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
-            ],
-          ),
+          Row(children: [Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: Colors.white, size: 16)), const SizedBox(width: 8), Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600))]),
           const SizedBox(height: 10),
           Text(value, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
         ],
