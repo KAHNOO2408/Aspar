@@ -30,15 +30,18 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   Product? selectedProduct;
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
-  String selectedUnit = 'count'; // 'count' یا 'ml'
+  String selectedUnit = 'count';
+
+  static const _fontFamily = 'YekanBakh';
 
   InputDecoration _decoration(BuildContext context, String label) => InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: AppColors.textSecondary(context), fontFamily: _fontFamily),
+        hintStyle: TextStyle(color: AppColors.textMuted(context), fontFamily: _fontFamily),
         filled: true,
         fillColor: AppColors.card(context),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.all(14),
-        labelStyle: TextStyle(color: AppColors.textSecondary(context)),
       );
 
   String _formatDateToJalali(DateTime date) {
@@ -76,21 +79,21 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     TextField(
                       controller: searchController,
                       onChanged: (_) => setDialogState(() {}),
-                      style: TextStyle(color: AppColors.text(dialogContext)),
-                      decoration: InputDecoration(hintText: 'جستجو یا نام محصول جدید...', prefixIcon: const Icon(Icons.search), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                      style: TextStyle(color: AppColors.text(dialogContext), fontFamily: _fontFamily),
+                      decoration: InputDecoration(hintText: 'جستجو یا نام محصول جدید...', hintStyle: const TextStyle(fontFamily: _fontFamily), prefixIcon: const Icon(Icons.search), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
                     ),
                     const SizedBox(height: 10),
                     Expanded(
                       child: filtered.isEmpty
-                          ? Center(child: Text('محصولی یافت نشد', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontWeight: FontWeight.w600)))
+                          ? Center(child: Text('محصولی یافت نشد', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontWeight: FontWeight.w600, fontFamily: _fontFamily)))
                           : ListView.builder(
                               itemCount: filtered.length,
                               itemBuilder: (context, index) {
                                 final product = filtered[index];
                                 final stock = productProvider.getStock(product.id!);
                                 return ListTile(
-                                  title: Text(product.name, style: TextStyle(color: AppColors.text(context))),
-                                  trailing: Text(stock > 0 ? '${stock.toStringAsFixed(0)}' : 'موجود نیست', style: TextStyle(color: stock > 0 ? Colors.green : Colors.red, fontWeight: FontWeight.w600)),
+                                  title: Text(product.name, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
+                                  trailing: Text(stock > 0 ? '${stock.toStringAsFixed(0)}' : 'موجود نیست', style: TextStyle(color: stock > 0 ? Colors.green : Colors.red, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
                                   onTap: () => Navigator.pop(dialogContext, product),
                                 );
                               },
@@ -111,7 +114,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 13),
-                              child: Center(child: Text('افزودن محصول جدید: «${searchController.text.trim()}»', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700), textAlign: TextAlign.center)),
+                              child: Center(child: Text('افزودن محصول جدید: «${searchController.text.trim()}»', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: _fontFamily), textAlign: TextAlign.center)),
                             ),
                           ),
                         ),
@@ -149,12 +152,12 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               children: [
                 DropdownButtonFormField<Contact>(
                   isExpanded: true,
-                  hint: const Text('مخاطب را انتخاب کنید'),
+                  hint: Text('مخاطب را انتخاب کنید', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
                   value: selectedContact,
-                  items: contactProvider.contacts.map((contact) => DropdownMenuItem(value: contact, child: Text(contact.fullName))).toList(),
+                  items: contactProvider.contacts.map((contact) => DropdownMenuItem(value: contact, child: Text(contact.fullName, style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
                   onChanged: (contact) => setState(() => selectedContact = contact),
                   decoration: _decoration(context, 'مخاطب *'),
-                  style: TextStyle(color: AppColors.text(context)),
+                  style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                 ),
                 const SizedBox(height: 16),
 
@@ -168,9 +171,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       children: [
                         Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.inventory_2_outlined, color: Colors.white, size: 18)),
                         const SizedBox(width: 12),
-                        Expanded(child: Text(selectedProduct?.name ?? 'انتخاب محصول...', style: TextStyle(color: selectedProduct != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600))),
+                        Expanded(child: Text(selectedProduct?.name ?? 'انتخاب محصول...', style: TextStyle(color: selectedProduct != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily))),
                         if (selectedProduct != null && !isPurchase)
-                          Text(stock! > 0 ? 'موجودی: ${stock.toStringAsFixed(0)}' : 'موجود نیست', style: TextStyle(fontSize: 12, color: stock > 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19), fontWeight: FontWeight.w700)),
+                          Text(stock! > 0 ? 'موجودی: ${stock.toStringAsFixed(0)}' : 'موجود نیست', style: TextStyle(fontSize: 12, color: stock > 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                       ],
                     ),
                   ),
@@ -190,9 +193,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
                 Row(
                   children: [
-                    Expanded(child: TextField(controller: quantityController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, selectedUnit == 'ml' ? 'مقدار (میل) *' : 'تعداد *'))),
+                    Expanded(child: TextField(controller: quantityController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, selectedUnit == 'ml' ? 'مقدار (میل) *' : 'تعداد *'))),
                     const SizedBox(width: 10),
-                    Expanded(child: TextField(controller: priceController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, selectedUnit == 'ml' ? 'قیمت هر میل *' : 'قیمت واحد *'))),
+                    Expanded(child: TextField(controller: priceController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, selectedUnit == 'ml' ? 'قیمت هر میل *' : 'قیمت واحد *'))),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -204,11 +207,11 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
                 if (showLaborFee) ...[
                   const SizedBox(height: 16),
-                  TextField(controller: laborFeeController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'دستمزد (تومان) - اختیاری')),
+                  TextField(controller: laborFeeController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'دستمزد (تومان) - اختیاری')),
                 ],
 
                 const SizedBox(height: 16),
-                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'یادداشت (اختیاری)')),
+                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'یادداشت (اختیاری)')),
                 const SizedBox(height: 16),
 
                 _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate),
@@ -223,21 +226,21 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                TextField(controller: paidNowController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, isPurchase ? 'مبلغ پرداخت شده الان' : 'مبلغ دریافت شده الان')),
+                TextField(controller: paidNowController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, isPurchase ? 'مبلغ پرداخت شده الان' : 'مبلغ دریافت شده الان')),
 
                 if ((double.tryParse(paidNowController.text) ?? 0) > 0) ...[
                   const SizedBox(height: 15),
-                  TextField(controller: feeController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'کارمزد بانکی (تومان) - اختیاری')),
+                  TextField(controller: feeController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'کارمزد بانکی (تومان) - اختیاری')),
                   const SizedBox(height: 15),
                   Consumer<BankProvider>(
                     builder: (context, bankProvider, _) {
                       return DropdownButtonFormField<int>(
                         value: selectedBankId,
-                        hint: const Text('انتخاب بانک *'),
-                        items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان'))).toList(),
+                        hint: Text('انتخاب بانک *', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
+                        items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان', style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
                         onChanged: (value) => setState(() => selectedBankId = value),
                         decoration: _decoration(context, 'بانک *'),
-                        style: TextStyle(color: AppColors.text(context)),
+                        style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                       );
                     },
                   ),
@@ -297,17 +300,17 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final productProvider = context.read<ProductProvider>();
 
     if (isPurchase) {
-      await productProvider.recordPurchase(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate);
+      await productProvider.recordPurchase(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, contactName: selectedContact!.fullName);
     } else {
       if (!productProvider.hasEnoughStock(selectedProduct!.id!, quantity)) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('موجودی «${selectedProduct!.name}» کافی نیست (موجودی: ${productProvider.getStock(selectedProduct!.id!).toStringAsFixed(0)})')));
         return;
       }
-      await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, laborFee: laborFee);
+      await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, laborFee: laborFee, contactName: selectedContact!.fullName);
     }
 
     final unitLabel = selectedUnit == 'ml' ? 'میل' : 'عدد';
-    final itemDescription = noteController.text.isNotEmpty
+    final productInfo = noteController.text.isNotEmpty
         ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel) - ${noteController.text}'
         : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel)';
 
@@ -316,7 +319,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
       date: selectedDate,
-      description: itemDescription,
+      description: productInfo,
       creditAmount: isPurchase ? totalAmount : 0,
       debitAmount: isPurchase ? 0 : totalAmount,
       laborFee: laborFee,
@@ -332,13 +335,14 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
       transProvider.addTransaction(Transaction(
         title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
-        description: itemDescription,
+        description: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
         amount: paidNow,
         type: isPurchase ? TransactionType.expense : TransactionType.income,
         category: 'معامله با مخاطب',
         date: selectedDate,
         bankId: bank.id,
         contactName: selectedContact!.fullName,
+        productInfo: productInfo,
         laborFee: laborFee,
       ));
 
