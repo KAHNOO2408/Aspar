@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/loan_model.dart';
+import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 
 class AddLoanScreen extends StatefulWidget {
@@ -14,13 +15,13 @@ class AddLoanScreen extends StatefulWidget {
 
 class _AddLoanScreenState extends State<AddLoanScreen> {
   final bankNameController = TextEditingController();
-  final totalAmountController = TextEditingController();
-  final monthlyPaymentController = TextEditingController();
+  final principalController = TextEditingController();
+  final monthsController = TextEditingController();
+  final interestPercentController = TextEditingController();
   final paidInstallmentsController = TextEditingController();
   final descriptionController = TextEditingController();
 
   DateTime? selectedStartDate;
-  DateTime? selectedEndDate;
   bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
@@ -47,10 +48,11 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     if (picked != null) setState(() => selectedStartDate = picked.toDateTime());
   }
 
-  Future<void> _pickEndDate() async {
-    final picked = await showPersianDatePicker(context: context, initialDate: Jalali.now(), firstDate: Jalali(1390, 1), lastDate: Jalali(1420, 12, 29));
-    if (picked != null) setState(() => selectedEndDate = picked.toDateTime());
-  }
+  double get _principal => double.tryParse(principalController.text) ?? 0;
+  int get _months => int.tryParse(monthsController.text) ?? 0;
+  double get _percent => double.tryParse(interestPercentController.text) ?? 0;
+  double get _totalPayable => _principal + (_principal * _percent / 100);
+  double get _computedMonthlyPayment => _months > 0 ? _totalPayable / _months : 0;
 
   @override
   Widget build(BuildContext context) {
@@ -63,15 +65,32 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
           children: [
             TextField(controller: bankNameController, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'نام وام/بانک *', Icons.account_balance)),
             const SizedBox(height: 16),
-            TextField(controller: totalAmountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'مبلغ کل وام (تومان) *', Icons.payments_outlined)),
+            TextField(controller: principalController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'اصل مبلغ وام (تومان) *', Icons.payments_outlined)),
             const SizedBox(height: 16),
-            TextField(controller: monthlyPaymentController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'قسط ماهیانه (تومان) *', Icons.calendar_month)),
+            TextField(controller: monthsController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'تعداد ماه وام *', Icons.calendar_view_month)),
+            const SizedBox(height: 16),
+            TextField(controller: interestPercentController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'درصد سود (اختیاری - اگه سود نداره خالی بذار)', Icons.percent)),
+            const SizedBox(height: 12),
+
+            if (_principal > 0 && _months > 0)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(color: const Color(0xFF9B6DFF).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('مبلغ کل قابل بازپرداخت: ${formatAmount(_totalPayable)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8))),
+                    const SizedBox(height: 6),
+                    Text('قسط ماهیانه (محاسبه‌شده): ${formatAmount(_computedMonthlyPayment)} تومان', style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF6A3DE8), fontSize: 15)),
+                  ],
+                ),
+              ),
+
             const SizedBox(height: 16),
             _DateButton(icon: Icons.calendar_today, label: selectedStartDate == null ? 'انتخاب تاریخ شروع *' : _formatDateToJalali(selectedStartDate), onTap: _pickStartDate),
-            const SizedBox(height: 16),
-            _DateButton(icon: Icons.event_available, label: selectedEndDate == null ? 'انتخاب تاریخ پایان *' : _formatDateToJalali(selectedEndDate), onTap: _pickEndDate),
-            const SizedBox(height: 16),
 
+            const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(color: const Color(0xFF9B6DFF).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
@@ -117,13 +136,20 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
   void _addLoan() async {
     if (_isSubmitting) return;
-    if (bankNameController.text.isEmpty || totalAmountController.text.isEmpty || monthlyPaymentController.text.isEmpty || selectedStartDate == null || selectedEndDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمام فیلدهای الزامی را پر کنید!')));
+    if (bankNameController.text.isEmpty || principalController.text.isEmpty || monthsController.text.isEmpty || selectedStartDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نام وام، اصل مبلغ، تعداد ماه و تاریخ شروع الزامی هستند!')));
       return;
     }
 
-    final totalAmount = double.tryParse(totalAmountController.text) ?? 0;
-    final monthlyPayment = double.tryParse(monthlyPaymentController.text) ?? 0;
+    final principal = _principal;
+    final months = _months;
+    if (principal <= 0 || months <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اصل مبلغ و تعداد ماه باید بزرگتر از صفر باشند')));
+      return;
+    }
+
+    final totalPayable = _totalPayable;
+    final monthlyPayment = _computedMonthlyPayment;
     final paidInstallmentsCount = int.tryParse(paidInstallmentsController.text) ?? 0;
 
     if (paidInstallmentsCount < 0) {
@@ -131,20 +157,25 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
       return;
     }
 
-    double initialPaidAmount = paidInstallmentsCount * monthlyPayment;
-    if (initialPaidAmount > totalAmount) {
+    final initialPaidAmount = paidInstallmentsCount * monthlyPayment;
+    if (initialPaidAmount > totalPayable) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ اقساط پرداخت‌شده نمی‌تواند بیشتر از مبلغ کل وام باشد')));
       return;
     }
 
     setState(() => _isSubmitting = true);
 
+    final endDate = DateTime(selectedStartDate!.year, selectedStartDate!.month + months, selectedStartDate!.day);
+
     final loan = Loan(
       bankName: bankNameController.text,
-      totalAmount: totalAmount,
+      totalAmount: totalPayable,
+      principalAmount: principal,
+      interestPercent: _percent,
       monthlyPayment: monthlyPayment,
+      months: months,
       startDate: selectedStartDate!,
-      endDate: selectedEndDate!,
+      endDate: endDate,
       bankId: 0,
       description: descriptionController.text,
       paidAmount: initialPaidAmount,
@@ -161,8 +192,9 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   @override
   void dispose() {
     bankNameController.dispose();
-    totalAmountController.dispose();
-    monthlyPaymentController.dispose();
+    principalController.dispose();
+    monthsController.dispose();
+    interestPercentController.dispose();
     paidInstallmentsController.dispose();
     descriptionController.dispose();
     super.dispose();
