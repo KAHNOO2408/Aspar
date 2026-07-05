@@ -170,7 +170,7 @@ class DatabaseHelper {
     await paymentBox.delete(id);
   }
 
-  static Future<void> insertProduct(Product product) async {
+  static Future<void> updateProduct(Product product) async {
     await productBox.put(product.id, product.toMap());
   }
 
