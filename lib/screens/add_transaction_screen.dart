@@ -18,6 +18,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   TransactionType? selectedType = TransactionType.income;
   String selectedCategory = 'حقوق';
   int? selectedBankId;
+  bool _isSubmitting = false;
 
   final categories = {
     'income': ['حقوق', 'فریلنس', 'سرمایه‌گذاری', 'دیگر'],
@@ -82,7 +83,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             Container(
               width: double.infinity,
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: LinearGradient(colors: isIncome ? const [Color(0xFF11998E), Color(0xFF38EF7D)] : const [Color(0xFFFF7A59), Color(0xFFE64A19)]), boxShadow: [BoxShadow(color: (isIncome ? const Color(0xFF11998E) : const Color(0xFFE64A19)).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
-              child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(16), onTap: _addTransaction, child: const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: Text('اضافه کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: _isSubmitting ? null : _addTransaction,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: _isSubmitting
+                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                          : const Text('اضافه کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -90,11 +105,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  void _addTransaction() {
+  void _addTransaction() async {
+    if (_isSubmitting) return;
     if (titleController.text.isEmpty || amountController.text.isEmpty || selectedBankId == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('عنوان، مبلغ و بانک الزامی هستند!')));
       return;
     }
+    setState(() => _isSubmitting = true);
+
     final amount = double.tryParse(amountController.text) ?? 0;
     final bankProvider = context.read<BankProvider>();
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
@@ -102,11 +120,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final transaction = Transaction(title: titleController.text, description: descriptionController.text, amount: amount, type: selectedType!, category: selectedCategory, date: DateTime.now(), bankId: selectedBankId);
 
     final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: selectedType == TransactionType.income ? bank.balance + amount : bank.balance - amount);
-    bankProvider.updateBank(updatedBank);
-    context.read<TransactionProvider>().addTransaction(transaction);
+    await bankProvider.updateBank(updatedBank);
+    await context.read<TransactionProvider>().addTransaction(transaction);
 
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اضافه شد ✅')));
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اضافه شد ✅')));
+    }
   }
 
   @override
