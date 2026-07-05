@@ -13,6 +13,7 @@ class Transaction {
   final DateTime date;
   final int? bankId;
   final String? contactName;
+  final String? productInfo;
   final double laborFee;
 
   Transaction({
@@ -25,6 +26,7 @@ class Transaction {
     required this.date,
     this.bankId,
     this.contactName,
+    this.productInfo,
     this.laborFee = 0,
   });
 
@@ -39,6 +41,7 @@ class Transaction {
       'date': date.toString(),
       'bankId': bankId,
       'contactName': contactName,
+      'productInfo': productInfo,
       'laborFee': laborFee,
     };
   }
@@ -54,6 +57,7 @@ class Transaction {
       date: DateTime.parse(map['date']),
       bankId: map['bankId'],
       contactName: map['contactName'],
+      productInfo: map['productInfo'],
       laborFee: (map['laborFee'] ?? 0 as num).toDouble(),
     );
   }
@@ -84,6 +88,7 @@ class TransactionProvider extends ChangeNotifier {
             date: transaction.date,
             bankId: transaction.bankId,
             contactName: transaction.contactName,
+            productInfo: transaction.productInfo,
             laborFee: transaction.laborFee,
           )
         : transaction;
