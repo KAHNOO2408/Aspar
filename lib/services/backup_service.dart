@@ -20,6 +20,10 @@ class BackupService {
     'settings',
   ];
 
+  // این باکس‌ها موقع «پاک کردن تمام داده‌ها» دست‌نخورده می‌مونن
+  // (رمز ورود و تنظیمات امنیتی) تا از حساب پرت نشی
+  static const List<String> _protectedFromDelete = ['auth', 'settings'];
+
   static Future<bool> _requestPermission() async {
     if (await Permission.manageExternalStorage.isGranted) return true;
     final manageStatus = await Permission.manageExternalStorage.request();
@@ -78,20 +82,6 @@ class BackupService {
     return file.path;
   }
 
-  static Future<File?> getLatestBackupFile() async {
-    final hasPermission = await _requestPermission();
-    if (!hasPermission) return null;
-
-    final dir = await _getAsparDirectory();
-    if (!await dir.exists()) return null;
-
-    final files = dir.listSync().whereType<File>().where((f) => f.path.endsWith('.json')).toList();
-    if (files.isEmpty) return null;
-
-    files.sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
-    return files.first;
-  }
-
   static Future<void> restoreFromFile(File file) async {
     final content = await file.readAsString();
     final Map<String, dynamic> backupData = jsonDecode(content);
@@ -108,6 +98,14 @@ class BackupService {
         final key = parsedKey ?? entry.key;
         await box.put(key, entry.value);
       }
+    }
+  }
+
+  static Future<void> deleteAllData() async {
+    for (final name in boxNames) {
+      if (_protectedFromDelete.contains(name)) continue;
+      final box = Hive.isBoxOpen(name) ? Hive.box(name) : await Hive.openBox(name);
+      await box.clear();
     }
   }
 }
