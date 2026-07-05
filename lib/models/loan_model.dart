@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
 
 class Loan {
   final int? id;
@@ -24,14 +25,13 @@ class Loan {
   });
 
   double get remainingAmount => totalAmount - paidAmount;
-  
+
   int get totalMonths => ((endDate.year - startDate.year) * 12) + (endDate.month - startDate.month);
-  
+
   int get paidMonths => (paidAmount / monthlyPayment).floor();
-  
+
   int get remainingMonths => totalMonths - paidMonths;
 
-  // بعدی‌ترین تاریخ قسط
   DateTime? getNextPaymentDate() {
     DateTime nextDate = startDate.add(Duration(days: 30 * (paidMonths + 1)));
     if (nextDate.isBefore(endDate)) {
@@ -40,7 +40,6 @@ class Loan {
     return null;
   }
 
-  // روزهای باقی‌مانده تا قسط بعدی
   int? getDaysUntilNextPayment() {
     final nextDate = getNextPaymentDate();
     if (nextDate != null) {
@@ -67,13 +66,13 @@ class Loan {
     return Loan(
       id: map['id'],
       bankName: map['bankName'],
-      totalAmount: map['totalAmount'],
-      monthlyPayment: map['monthlyPayment'],
+      totalAmount: (map['totalAmount'] as num).toDouble(),
+      monthlyPayment: (map['monthlyPayment'] as num).toDouble(),
       startDate: DateTime.parse(map['startDate']),
       endDate: DateTime.parse(map['endDate']),
       bankId: map['bankId'],
       description: map['description'],
-      paidAmount: map['paidAmount'] ?? 0,
+      paidAmount: (map['paidAmount'] ?? 0 as num).toDouble(),
     );
   }
 }
@@ -81,34 +80,47 @@ class Loan {
 class LoanProvider extends ChangeNotifier {
   List<Loan> loans = [];
 
-  void addLoan(Loan loan) {
-    loans.add(Loan(
-      id: loans.isEmpty ? 1 : loans.last.id! + 1,
-      bankName: loan.bankName,
-      totalAmount: loan.totalAmount,
-      monthlyPayment: loan.monthlyPayment,
-      startDate: loan.startDate,
-      endDate: loan.endDate,
-      bankId: loan.bankId,
-      description: loan.description,
-    ));
+  LoanProvider() {
+    loadLoans();
+  }
+
+  Future<void> loadLoans() async {
+    loans = await DatabaseHelper.getLoans();
     notifyListeners();
   }
 
-  void payLoanInstallment(int id, double amount) {
+  Future<void> addLoan(Loan loan) async {
+    final toSave = loan.id == null
+        ? Loan(
+            id: DateTime.now().millisecondsSinceEpoch,
+            bankName: loan.bankName,
+            totalAmount: loan.totalAmount,
+            monthlyPayment: loan.monthlyPayment,
+            startDate: loan.startDate,
+            endDate: loan.endDate,
+            bankId: loan.bankId,
+            description: loan.description,
+            paidAmount: loan.paidAmount,
+          )
+        : loan;
+    await DatabaseHelper.insertLoan(toSave);
+    await loadLoans();
+  }
+
+  Future<void> payLoanInstallment(int id, double amount) async {
     final loanIndex = loans.indexWhere((l) => l.id == id);
     if (loanIndex != -1) {
       loans[loanIndex].paidAmount += amount;
-      notifyListeners();
+      await DatabaseHelper.updateLoan(loans[loanIndex]);
+      await loadLoans();
     }
   }
 
-  void deleteLoan(int id) {
-    loans.removeWhere((l) => l.id == id);
-    notifyListeners();
+  Future<void> deleteLoan(int id) async {
+    await DatabaseHelper.deleteLoan(id);
+    await loadLoans();
   }
 
-  // وام‌های نزدیک به تاریخ قسط
   List<Loan> getUpcomingLoans() {
     return loans.where((loan) {
       final daysUntil = loan.getDaysUntilNextPayment();
@@ -116,12 +128,10 @@ class LoanProvider extends ChangeNotifier {
     }).toList();
   }
 
-  // کل وام‌های باقی
   double getTotalRemainingLoans() {
     return loans.fold(0, (sum, loan) => sum + loan.remainingAmount);
   }
 
-  // کل پرداخت‌شده
   double getTotalPaidLoans() {
     return loans.fold(0, (sum, loan) => sum + loan.paidAmount);
   }
