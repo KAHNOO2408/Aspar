@@ -4,8 +4,11 @@ import '../database/db_helper.dart';
 class Loan {
   final int? id;
   final String bankName;
-  final double totalAmount;
+  final double totalAmount; // مبلغ کل قابل بازپرداخت (اصل + سود)
+  final double principalAmount; // اصل وام (بدون سود)
+  final double interestPercent; // درصد سود؛ صفر یعنی بدون سود
   final double monthlyPayment;
+  final int months;
   final DateTime startDate;
   final DateTime endDate;
   final int bankId;
@@ -16,7 +19,10 @@ class Loan {
     this.id,
     required this.bankName,
     required this.totalAmount,
+    this.principalAmount = 0,
+    this.interestPercent = 0,
     required this.monthlyPayment,
+    this.months = 0,
     required this.startDate,
     required this.endDate,
     required this.bankId,
@@ -26,15 +32,15 @@ class Loan {
 
   double get remainingAmount => totalAmount - paidAmount;
 
-  int get totalMonths => ((endDate.year - startDate.year) * 12) + (endDate.month - startDate.month);
+  int get totalMonths => months > 0 ? months : (((endDate.year - startDate.year) * 12) + (endDate.month - startDate.month));
 
-  int get paidMonths => (paidAmount / monthlyPayment).floor();
+  int get paidMonths => monthlyPayment > 0 ? (paidAmount / monthlyPayment).floor() : 0;
 
   int get remainingMonths => totalMonths - paidMonths;
 
   DateTime? getNextPaymentDate() {
-    DateTime nextDate = startDate.add(Duration(days: 30 * (paidMonths + 1)));
-    if (nextDate.isBefore(endDate)) {
+    final nextDate = DateTime(startDate.year, startDate.month + paidMonths + 1, startDate.day);
+    if (nextDate.isBefore(endDate) || nextDate.isAtSameMomentAs(endDate)) {
       return nextDate;
     }
     return null;
@@ -53,7 +59,10 @@ class Loan {
       'id': id,
       'bankName': bankName,
       'totalAmount': totalAmount,
+      'principalAmount': principalAmount,
+      'interestPercent': interestPercent,
       'monthlyPayment': monthlyPayment,
+      'months': months,
       'startDate': startDate.toString(),
       'endDate': endDate.toString(),
       'bankId': bankId,
@@ -67,7 +76,10 @@ class Loan {
       id: map['id'],
       bankName: map['bankName'],
       totalAmount: (map['totalAmount'] as num).toDouble(),
+      principalAmount: (map['principalAmount'] ?? 0 as num).toDouble(),
+      interestPercent: (map['interestPercent'] ?? 0 as num).toDouble(),
       monthlyPayment: (map['monthlyPayment'] as num).toDouble(),
+      months: map['months'] ?? 0,
       startDate: DateTime.parse(map['startDate']),
       endDate: DateTime.parse(map['endDate']),
       bankId: map['bankId'],
@@ -95,7 +107,10 @@ class LoanProvider extends ChangeNotifier {
             id: DateTime.now().millisecondsSinceEpoch,
             bankName: loan.bankName,
             totalAmount: loan.totalAmount,
+            principalAmount: loan.principalAmount,
+            interestPercent: loan.interestPercent,
             monthlyPayment: loan.monthlyPayment,
+            months: loan.months,
             startDate: loan.startDate,
             endDate: loan.endDate,
             bankId: loan.bankId,
@@ -104,6 +119,11 @@ class LoanProvider extends ChangeNotifier {
           )
         : loan;
     await DatabaseHelper.insertLoan(toSave);
+    await loadLoans();
+  }
+
+  Future<void> editLoan(Loan loan) async {
+    await DatabaseHelper.updateLoan(loan);
     await loadLoans();
   }
 
