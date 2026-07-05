@@ -60,6 +60,7 @@ class ProductTransaction {
   final double profit;
   final double costOfGoods;
   final double laborFee;
+  final String? contactName;
 
   ProductTransaction({
     this.id,
@@ -73,6 +74,7 @@ class ProductTransaction {
     this.profit = 0,
     this.costOfGoods = 0,
     this.laborFee = 0,
+    this.contactName,
   });
 
   Map<String, dynamic> toMap() => {
@@ -87,6 +89,7 @@ class ProductTransaction {
         'profit': profit,
         'costOfGoods': costOfGoods,
         'laborFee': laborFee,
+        'contactName': contactName,
       };
 
   factory ProductTransaction.fromMap(Map<String, dynamic> map) => ProductTransaction(
@@ -101,6 +104,7 @@ class ProductTransaction {
         profit: (map['profit'] ?? 0 as num).toDouble(),
         costOfGoods: (map['costOfGoods'] ?? 0 as num).toDouble(),
         laborFee: (map['laborFee'] ?? 0 as num).toDouble(),
+        contactName: map['contactName'],
       );
 }
 
@@ -134,11 +138,18 @@ class ProductProvider extends ChangeNotifier {
     return newProduct;
   }
 
+  Future<void> updateProductName(Product product, String newName) async {
+    final updated = Product(id: product.id, name: newName.trim());
+    await DatabaseHelper.updateProduct(updated);
+    await loadAll();
+  }
+
   Future<void> recordPurchase({
     required Product product,
     required double quantity,
     required double pricePerUnit,
     required DateTime date,
+    String? contactName,
   }) async {
     final batch = ProductBatch(
       id: DateTime.now().millisecondsSinceEpoch,
@@ -159,6 +170,7 @@ class ProductProvider extends ChangeNotifier {
       totalAmount: quantity * pricePerUnit,
       type: ProductTxType.purchase,
       date: date,
+      contactName: contactName,
     );
     await DatabaseHelper.insertProductTransaction(tx);
 
@@ -175,6 +187,7 @@ class ProductProvider extends ChangeNotifier {
     required double pricePerUnit,
     required DateTime date,
     double laborFee = 0,
+    String? contactName,
   }) async {
     if (!hasEnoughStock(product.id!, quantity)) {
       throw Exception('موجودی کافی نیست');
@@ -210,11 +223,18 @@ class ProductProvider extends ChangeNotifier {
       profit: profit,
       costOfGoods: totalCost,
       laborFee: laborFee,
+      contactName: contactName,
     );
     await DatabaseHelper.insertProductTransaction(tx);
 
     await loadAll();
     return profit;
+  }
+
+  List<ProductTransaction> getHistoryForProduct(int productId) {
+    final list = productTransactions.where((t) => t.productId == productId).toList();
+    list.sort((a, b) => b.date.compareTo(a.date));
+    return list;
   }
 
   List<Map<String, dynamic>> getProfitReport(DateTime? start, DateTime? end) {
