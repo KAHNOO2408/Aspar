@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/contact_model.dart';
 import '../widgets/custom_app_bar.dart';
+import '../utils/app_colors.dart';
 import 'contact_ledger_screen.dart';
 
 class ContactsScreen extends StatelessWidget {
@@ -18,7 +19,7 @@ class ContactsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: buildCustomAppBar(title: 'مخاطبین', context: context),
       floatingActionButton: Container(
         decoration: BoxDecoration(
@@ -26,17 +27,7 @@ class ContactsScreen extends StatelessWidget {
           gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)]),
           boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.4), blurRadius: 14, offset: const Offset(0, 6))],
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () => _showAddContactDialog(context),
-            child: const Padding(
-              padding: EdgeInsets.all(16),
-              child: Icon(Icons.add, color: Colors.white),
-            ),
-          ),
-        ),
+        child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(16), onTap: () => _showAddContactDialog(context), child: const Padding(padding: EdgeInsets.all(16), child: Icon(Icons.add, color: Colors.white)))),
       ),
       body: Consumer<ContactProvider>(
         builder: (context, provider, _) {
@@ -45,13 +36,9 @@ class ContactsScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                        child: Icon(Icons.contacts_outlined, size: 55, color: Colors.grey.shade300),
-                      ),
+                      Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.card(context), shape: BoxShape.circle), child: Icon(Icons.contacts_outlined, size: 55, color: AppColors.textMuted(context))),
                       const SizedBox(height: 20),
-                      Text('مخاطبی اضافه نکردی', style: TextStyle(color: Colors.grey.shade500, fontSize: 15, fontWeight: FontWeight.w600)),
+                      Text('مخاطبی اضافه نکردی', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 15, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 )
@@ -65,7 +52,7 @@ class ContactsScreen extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Material(
-                        color: Colors.white,
+                        color: AppColors.card(context),
                         borderRadius: BorderRadius.circular(18),
                         elevation: 2,
                         shadowColor: Colors.black12,
@@ -73,28 +60,20 @@ class ContactsScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(14),
                           child: Row(
                             children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(14),
-                                  gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-                                ),
-                                child: const Icon(Icons.person_rounded, color: Colors.white, size: 24),
-                              ),
+                              Container(width: 48, height: 48, decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight)), child: const Icon(Icons.person_rounded, color: Colors.white, size: 24)),
                               const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('${contact.firstName} ${contact.lastName}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                                    Text('${contact.firstName} ${contact.lastName}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context))),
                                     const SizedBox(height: 2),
-                                    Text(contact.phoneNumber, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                    Text(contact.phoneNumber, style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context))),
                                   ],
                                 ),
                               ),
                               PopupMenuButton(
-                                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                                icon: Icon(Icons.more_vert, color: AppColors.textSecondary(context)),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                 itemBuilder: (context) => [
                                   PopupMenuItem(
@@ -121,7 +100,7 @@ class ContactsScreen extends StatelessWidget {
     );
   }
 
-  InputDecoration _decoration(String label) => InputDecoration(labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(12));
+  InputDecoration _decoration(BuildContext context, String label) => InputDecoration(labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(12));
 
   void _showAddContactDialog(BuildContext context) {
     final firstNameController = TextEditingController();
@@ -132,19 +111,20 @@ class ContactsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('مخاطب جدید', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text('مخاطب جدید', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: firstNameController, decoration: _decoration('نام')),
+              TextField(controller: firstNameController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'نام')),
               const SizedBox(height: 12),
-              TextField(controller: lastNameController, decoration: _decoration('نام‌خانوادگی')),
+              TextField(controller: lastNameController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'نام‌خانوادگی')),
               const SizedBox(height: 12),
-              TextField(controller: phoneController, decoration: _decoration('تلفن')),
+              TextField(controller: phoneController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'تلفن')),
               const SizedBox(height: 12),
-              TextField(controller: addressController, decoration: _decoration('آدرس')),
+              TextField(controller: addressController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'آدرس')),
             ],
           ),
         ),
@@ -172,19 +152,20 @@ class ContactsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('ویرایش مخاطب', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text('ویرایش مخاطب', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: firstNameController, decoration: _decoration('نام')),
+              TextField(controller: firstNameController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'نام')),
               const SizedBox(height: 12),
-              TextField(controller: lastNameController, decoration: _decoration('نام‌خانوادگی')),
+              TextField(controller: lastNameController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'نام‌خانوادگی')),
               const SizedBox(height: 12),
-              TextField(controller: phoneController, decoration: _decoration('تلفن')),
+              TextField(controller: phoneController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'تلفن')),
               const SizedBox(height: 12),
-              TextField(controller: addressController, decoration: _decoration('آدرس')),
+              TextField(controller: addressController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'آدرس')),
             ],
           ),
         ),
