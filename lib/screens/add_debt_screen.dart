@@ -31,6 +31,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
   String selectedUnit = 'count';
+  bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
 
@@ -254,8 +255,15 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
-                      onTap: _submit,
-                      child: const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))),
+                      onTap: _isSubmitting ? null : _submit,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: _isSubmitting
+                              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                              : const Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -268,6 +276,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   }
 
   void _submit() async {
+    if (_isSubmitting) return;
     if (selectedContact == null || selectedProduct == null || quantityController.text.isEmpty || priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، محصول، تعداد و قیمت الزامی هستند')));
       return;
@@ -297,13 +306,18 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       return;
     }
 
+    setState(() => _isSubmitting = true);
+
     final productProvider = context.read<ProductProvider>();
 
     if (isPurchase) {
       await productProvider.recordPurchase(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, contactName: selectedContact!.fullName);
     } else {
       if (!productProvider.hasEnoughStock(selectedProduct!.id!, quantity)) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('موجودی «${selectedProduct!.name}» کافی نیست (موجودی: ${productProvider.getStock(selectedProduct!.id!).toStringAsFixed(0)})')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('موجودی «${selectedProduct!.name}» کافی نیست (موجودی: ${productProvider.getStock(selectedProduct!.id!).toStringAsFixed(0)})')));
+          setState(() => _isSubmitting = false);
+        }
         return;
       }
       await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, laborFee: laborFee, contactName: selectedContact!.fullName);
