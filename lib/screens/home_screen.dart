@@ -6,6 +6,7 @@ import '../models/bank_model.dart';
 import '../models/debt_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
+import '../utils/app_colors.dart';
 import 'add_transaction_screen.dart';
 import 'add_debt_screen.dart';
 import 'add_bank_screen.dart';
@@ -27,7 +28,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: buildCustomAppBar(title: 'خانه', context: context),
       drawer: Drawer(
         child: ListView(
@@ -158,18 +159,13 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // کارت خوش‌آمدگویی
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
               child: Container(
                 padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                   boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))],
                 ),
                 child: Row(
@@ -273,7 +269,7 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('دسترسی های سریع', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.grey.shade800)),
+                  Text('دسترسی های سریع', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.text(context))),
                   const SizedBox(height: 15),
                   Row(
                     children: [
