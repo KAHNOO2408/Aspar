@@ -18,6 +18,7 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
   Contact? payerContact;
   Contact? receiverContact;
   DateTime selectedDate = DateTime.now();
+  bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
 
@@ -88,7 +89,21 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]), boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
-                  child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(16), onTap: _submit, child: const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: _isSubmitting ? null : _submit,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: _isSubmitting
+                              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                              : const Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             );
@@ -99,6 +114,7 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
   }
 
   void _submit() async {
+    if (_isSubmitting) return;
     if (payerContact == null || receiverContact == null || amountController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('پرداخت‌کننده، دریافت‌کننده و مبلغ الزامی هستند')));
       return;
@@ -112,6 +128,8 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ باید بزرگتر از صفر باشد')));
       return;
     }
+
+    setState(() => _isSubmitting = true);
 
     final ledgerProvider = context.read<LedgerProvider>();
     final note = noteController.text.isNotEmpty ? noteController.text : 'انتقال واسطه‌ای';
