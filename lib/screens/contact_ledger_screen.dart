@@ -73,6 +73,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
               _detailRow(context, 'شرح', entry.description),
               _detailRow(context, 'بانک', bankName),
               _detailRow(context, 'مبلغ', '${formatAmount(amount)} تومان'),
+              if (entry.laborFee > 0) _detailRow(context, 'دستمزد', '${formatAmount(entry.laborFee)} تومان'),
               if (entry.trackingCode != null && entry.trackingCode!.isNotEmpty) _detailRow(context, 'کد پیگیری', entry.trackingCode!),
               _detailRow(context, 'مانده نهایی', '${formatAmount(balanceAfter.abs())} تومان'),
               _detailRow(context, 'تاریخ', _formatJalali(entry.date)),
@@ -154,6 +155,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                     creditAmount: double.tryParse(creditController.text) ?? 0,
                     bankId: entry.bankId,
                     trackingCode: entry.trackingCode,
+                    laborFee: entry.laborFee,
                   );
                   provider.updateEntry(updated);
                   Navigator.pop(dialogContext);
