@@ -19,13 +19,16 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
   Contact? receiverContact;
   DateTime selectedDate = DateTime.now();
 
+  static const _fontFamily = 'YekanBakh';
+
   InputDecoration _decoration(BuildContext context, String label) => InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: AppColors.textSecondary(context), fontFamily: _fontFamily),
+        hintStyle: TextStyle(color: AppColors.textMuted(context), fontFamily: _fontFamily),
         filled: true,
         fillColor: AppColors.card(context),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.all(14),
-        labelStyle: TextStyle(color: AppColors.textSecondary(context)),
       );
 
   String _formatDateToJalali(DateTime date) {
@@ -53,32 +56,32 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]), borderRadius: BorderRadius.circular(16)),
-                  child: const Row(children: [Icon(Icons.info_outline, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('برای وقتی که یک نفر به‌جای تو، مستقیم به شخص دیگه‌ای پول پرداخت می‌کنه', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)))]),
+                  child: const Row(children: [Icon(Icons.info_outline, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('برای وقتی که یک نفر به‌جای تو، مستقیم به شخص دیگه‌ای پول پرداخت می‌کنه', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600, fontFamily: _fontFamily)))]),
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<Contact>(
                   isExpanded: true,
-                  hint: const Text('انتخاب کنید'),
+                  hint: Text('انتخاب کنید', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
                   value: payerContact,
-                  items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
+                  items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName, style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
                   onChanged: (c) => setState(() => payerContact = c),
                   decoration: _decoration(context, 'پرداخت‌کننده *'),
-                  style: TextStyle(color: AppColors.text(context)),
+                  style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<Contact>(
                   isExpanded: true,
-                  hint: const Text('انتخاب کنید'),
+                  hint: Text('انتخاب کنید', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
                   value: receiverContact,
-                  items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
+                  items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName, style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
                   onChanged: (c) => setState(() => receiverContact = c),
                   decoration: _decoration(context, 'دریافت‌کننده *'),
-                  style: TextStyle(color: AppColors.text(context)),
+                  style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                 ),
                 const SizedBox(height: 16),
-                TextField(controller: amountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'مبلغ (تومان) *')),
+                TextField(controller: amountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'مبلغ (تومان) *')),
                 const SizedBox(height: 16),
-                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'یادداشت (اختیاری)')),
+                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'یادداشت (اختیاری)')),
                 const SizedBox(height: 16),
                 _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate),
                 const SizedBox(height: 30),
@@ -147,14 +150,7 @@ class _DateButton extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.calendar_today, size: 16, color: Color(0xFF6A3DE8)),
-                const SizedBox(width: 8),
-                Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context))),
-              ],
-            ),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.calendar_today, size: 16, color: Color(0xFF6A3DE8)), const SizedBox(width: 8), Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context)))]),
           ),
         ),
       ),
