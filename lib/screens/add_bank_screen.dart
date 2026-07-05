@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/bank_model.dart';
+import '../utils/app_colors.dart';
 
 class AddBankScreen extends StatefulWidget {
   const AddBankScreen({Key? key}) : super(key: key);
@@ -13,13 +14,14 @@ class _AddBankScreenState extends State<AddBankScreen> {
   final accountNumberController = TextEditingController();
   final balanceController = TextEditingController();
 
-  InputDecoration _decoration(String label, {String? hint}) => InputDecoration(
+  InputDecoration _decoration(BuildContext context, String label, {String? hint}) => InputDecoration(
         labelText: label,
         hintText: hint,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.card(context),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.all(16),
+        labelStyle: TextStyle(color: AppColors.textSecondary(context)),
       );
 
   void _saveBank() async {
@@ -28,12 +30,7 @@ class _AddBankScreenState extends State<AddBankScreen> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('فیلدهای الزامی را پر کنید')));
         return;
       }
-      final bank = Bank(
-        id: DateTime.now().millisecondsSinceEpoch,
-        bankName: bankNameController.text,
-        accountNumber: accountNumberController.text,
-        balance: double.parse(balanceController.text),
-      );
+      final bank = Bank(id: DateTime.now().millisecondsSinceEpoch, bankName: bankNameController.text, accountNumber: accountNumberController.text, balance: double.parse(balanceController.text));
       await Provider.of<BankProvider>(context, listen: false).addBank(bank);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('بانک اضافه شد')));
       Navigator.pop(context);
@@ -45,43 +42,29 @@ class _AddBankScreenState extends State<AddBankScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(title: const Text('اضافه کردن بانک')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('نام بانک', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey.shade700)),
+            Text('نام بانک', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textSecondary(context))),
             const SizedBox(height: 8),
-            TextField(controller: bankNameController, decoration: _decoration('', hint: 'مثل: بانک ملی')),
+            TextField(controller: bankNameController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, '', hint: 'مثل: بانک ملی')),
             const SizedBox(height: 20),
-            Text('شماره حساب', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey.shade700)),
+            Text('شماره حساب', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textSecondary(context))),
             const SizedBox(height: 8),
-            TextField(controller: accountNumberController, decoration: _decoration('', hint: '1234567890')),
+            TextField(controller: accountNumberController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, '', hint: '1234567890')),
             const SizedBox(height: 20),
-            Text('موجودی (تومان)', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey.shade700)),
+            Text('موجودی (تومان)', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textSecondary(context))),
             const SizedBox(height: 8),
-            TextField(controller: balanceController, keyboardType: TextInputType.number, decoration: _decoration('', hint: '1000000')),
+            TextField(controller: balanceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, '', hint: '1000000')),
             const SizedBox(height: 30),
             Container(
               width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)]),
-                boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: _saveBank,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(child: Text('اضافه کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16))),
-                  ),
-                ),
-              ),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)]), boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
+              child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(16), onTap: _saveBank, child: const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: Text('اضافه کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))),
             ),
           ],
         ),
