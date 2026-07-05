@@ -333,7 +333,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: isPurchase ? bank.balance - paidNow - fee : bank.balance + paidNow - fee);
       await bankProvider.updateBank(updatedBank);
 
-      transProvider.addTransaction(Transaction(
+      await transProvider.addTransaction(Transaction(
         title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
         description: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
         amount: paidNow,
@@ -347,7 +347,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       ));
 
       if (fee > 0) {
-        transProvider.addTransaction(Transaction(
+        await transProvider.addTransaction(Transaction(
           title: 'کارمزد تراکنش',
           description: 'کارمزد ${isPurchase ? 'پرداخت به' : 'دریافت از'} ${selectedContact!.fullName}',
           amount: fee,
