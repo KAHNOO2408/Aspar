@@ -23,6 +23,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
   Contact? selectedContact;
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
+  bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
 
@@ -98,7 +99,21 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: const LinearGradient(colors: [Color(0xFF00C6A9), Color(0xFF00897B)]), boxShadow: [BoxShadow(color: const Color(0xFF00897B).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
-                  child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(16), onTap: _submit, child: const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: Text('ثبت واریز', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: _isSubmitting ? null : _submit,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: _isSubmitting
+                              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                              : const Text('ثبت واریز', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             );
@@ -109,6 +124,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
   }
 
   void _submit() async {
+    if (_isSubmitting) return;
     if (selectedContact == null || selectedBankId == null || amountController.text.isEmpty || trackingCodeController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، بانک، مبلغ و کد رهگیری الزامی هستند')));
       return;
@@ -119,6 +135,8 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       return;
     }
     final fee = double.tryParse(feeController.text) ?? 0;
+
+    setState(() => _isSubmitting = true);
 
     final bankProvider = context.read<BankProvider>();
     final transProvider = context.read<TransactionProvider>();
