@@ -2,10 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'dart:io';
 import '../models/theme_provider.dart';
+import '../models/transaction_model.dart';
+import '../models/bank_model.dart';
+import '../models/payment_model.dart';
+import '../models/product_model.dart';
+import '../models/ledger_model.dart';
+import '../models/contact_model.dart';
+import '../models/loan_model.dart';
 import 'package:provider/provider.dart';
 import '../widgets/pattern_lock_widget.dart';
 import '../utils/app_colors.dart';
+import '../services/backup_service.dart';
 import 'license_activation_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -18,6 +27,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _useBiometric = false;
   bool _usePattern = false;
+  bool _isProcessing = false;
   late Box settingsBox;
 
   @override
@@ -267,8 +277,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 22)),
           title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: color)),
           subtitle: subtitle != null ? Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context))) : null,
-          trailing: Icon(Icons.arrow_forward_ios, color: AppColors.textMuted(context), size: 16),
-          onTap: onTap,
+          trailing: _isProcessing ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(Icons.arrow_forward_ios, color: AppColors.textMuted(context), size: 16),
+          onTap: _isProcessing ? null : onTap,
         ),
       ),
     );
@@ -328,10 +338,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Backup', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.backup, size: 64, color: Color(0xFF00897B)), const SizedBox(height: 20), Text('آیا می‌خواهید از تمام داده‌ها پشتیبان‌گیری کنید؟', style: TextStyle(color: AppColors.text(context)))]),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.backup, size: 64, color: Color(0xFF00897B)), const SizedBox(height: 20), Text('یه پوشه به اسم «اسپار» توی حافظه‌ی گوشی ساخته میشه و تمام اطلاعات (بانک، بدهی/طلب، محصولات، مخاطبین، وام، تنظیمات و...) توش ذخیره میشه.', style: TextStyle(color: AppColors.text(context)), textAlign: TextAlign.center)]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
-          ElevatedButton(onPressed: () { Navigator.pop(context); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('پشتیبان‌گیری انجام شد ✅'))); }, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00897B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text('بله', style: TextStyle(color: Colors.white))),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() => _isProcessing = true);
+              try {
+                final path = await BackupService.createBackup();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('پشتیبان‌گیری انجام شد ✅\n$path'), duration: const Duration(seconds: 5)));
+                }
+              } catch (e) {
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطا در پشتیبان‌گیری: $e'), backgroundColor: Colors.red));
+              } finally {
+                if (mounted) setState(() => _isProcessing = false);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00897B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            child: const Text('بله', style: TextStyle(color: Colors.white)),
+          ),
         ],
       ),
     );
@@ -344,10 +371,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Restore', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.restore, size: 64, color: Color(0xFF4F6BF5)), const SizedBox(height: 20), Text('بازگردانی تمام داده‌ها؟', style: TextStyle(color: AppColors.text(context)))]),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.restore, size: 64, color: Color(0xFF4F6BF5)), const SizedBox(height: 20), Text('آخرین پشتیبان از پوشه‌ی «اسپار» بازگردانی میشه.\n\n⚠️ داده‌های فعلی جای اطلاعات قبلی رو می‌گیرن.', style: TextStyle(color: AppColors.text(context)), textAlign: TextAlign.center)]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
-          ElevatedButton(onPressed: () { Navigator.pop(context); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('بازگردانی انجام شد ✅'))); }, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F6BF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text('بله', style: TextStyle(color: Colors.white))),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() => _isProcessing = true);
+              try {
+                final file = await BackupService.getLatestBackupFile();
+                if (file == null) {
+                  if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('هیچ فایل پشتیبانی پیدا نشد'), backgroundColor: Colors.red));
+                  return;
+                }
+                await BackupService.restoreFromFile(file);
+
+                if (mounted) {
+                  await context.read<TransactionProvider>().loadTransactions();
+                  await context.read<BankProvider>().loadBanks();
+                  await context.read<PaymentProvider>().loadPayments();
+                  await context.read<ProductProvider>().loadAll();
+                  await context.read<LedgerProvider>().loadEntries();
+                  await context.read<ContactProvider>().loadContacts();
+                  await context.read<LoanProvider>().loadLoans();
+                }
+
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('بازگردانی انجام شد ✅')));
+              } catch (e) {
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطا در بازگردانی: $e'), backgroundColor: Colors.red));
+              } finally {
+                if (mounted) setState(() => _isProcessing = false);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F6BF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            child: const Text('بله', style: TextStyle(color: Colors.white)),
+          ),
         ],
       ),
     );
@@ -382,7 +440,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             const Text('آسپار', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF2B3FBE))),
             const SizedBox(height: 10),
-            Text('نسخه: 1.2.0', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context))),
+            Text('نسخه: 1.0.0', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context))),
             const SizedBox(height: 5),
             Text('توسعه‌دهنده: بنیامین قاسمی', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context))),
             const SizedBox(height: 15),
