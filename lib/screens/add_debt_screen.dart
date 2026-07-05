@@ -25,10 +25,12 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final noteController = TextEditingController();
   final paidNowController = TextEditingController();
   final feeController = TextEditingController();
+  final laborFeeController = TextEditingController();
   Contact? selectedContact;
   Product? selectedProduct;
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
+  String selectedUnit = 'count'; // 'count' یا 'ml'
 
   InputDecoration _decoration(BuildContext context, String label) => InputDecoration(
         labelText: label,
@@ -88,7 +90,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                                 final stock = productProvider.getStock(product.id!);
                                 return ListTile(
                                   title: Text(product.name, style: TextStyle(color: AppColors.text(context))),
-                                  trailing: Text(stock > 0 ? '${stock.toStringAsFixed(0)} عدد' : 'موجود نیست', style: TextStyle(color: stock > 0 ? Colors.green : Colors.red, fontWeight: FontWeight.w600)),
+                                  trailing: Text(stock > 0 ? '${stock.toStringAsFixed(0)}' : 'موجود نیست', style: TextStyle(color: stock > 0 ? Colors.green : Colors.red, fontWeight: FontWeight.w600)),
                                   onTap: () => Navigator.pop(dialogContext, product),
                                 );
                               },
@@ -133,6 +135,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final gradient = isPurchase ? const [Color(0xFFFF7A59), Color(0xFFE64A19)] : const [Color(0xFF11998E), Color(0xFF38EF7D)];
     final productProvider = context.watch<ProductProvider>();
     final stock = selectedProduct != null ? productProvider.getStock(selectedProduct!.id!) : null;
+    final showLaborFee = selectedUnit == 'ml' && !isPurchase;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -174,11 +177,22 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                Text('واحد اندازه‌گیری', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textSecondary(context))),
+                const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: TextField(controller: quantityController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'تعداد *'))),
+                    Expanded(child: _UnitButton(label: 'تعداد', selected: selectedUnit == 'count', gradient: gradient, onTap: () => setState(() => selectedUnit = 'count'))),
                     const SizedBox(width: 10),
-                    Expanded(child: TextField(controller: priceController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'قیمت واحد *'))),
+                    Expanded(child: _UnitButton(label: 'میل', selected: selectedUnit == 'ml', gradient: gradient, onTap: () => setState(() => selectedUnit = 'ml'))),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                Row(
+                  children: [
+                    Expanded(child: TextField(controller: quantityController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, selectedUnit == 'ml' ? 'مقدار (میل) *' : 'تعداد *'))),
+                    const SizedBox(width: 10),
+                    Expanded(child: TextField(controller: priceController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, selectedUnit == 'ml' ? 'قیمت هر میل *' : 'قیمت واحد *'))),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -187,8 +201,13 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                   child: Text('مبلغ کل: ${formatAmount((double.tryParse(quantityController.text) ?? 0) * (double.tryParse(priceController.text) ?? 0))} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1])),
                 ),
-                const SizedBox(height: 16),
 
+                if (showLaborFee) ...[
+                  const SizedBox(height: 16),
+                  TextField(controller: laborFeeController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'دستمزد (تومان) - اختیاری')),
+                ],
+
+                const SizedBox(height: 16),
                 TextField(controller: noteController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'یادداشت (اختیاری)')),
                 const SizedBox(height: 16),
 
@@ -208,7 +227,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
                 if ((double.tryParse(paidNowController.text) ?? 0) > 0) ...[
                   const SizedBox(height: 15),
-                  TextField(controller: feeController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'کارمزد (تومان) - اختیاری')),
+                  TextField(controller: feeController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'کارمزد بانکی (تومان) - اختیاری')),
                   const SizedBox(height: 15),
                   Consumer<BankProvider>(
                     builder: (context, bankProvider, _) {
@@ -258,7 +277,12 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       return;
     }
 
-    final totalAmount = quantity * price;
+    final isPurchase = widget.type == DebtType.owed;
+    final showLaborFee = selectedUnit == 'ml' && !isPurchase;
+    final laborFee = showLaborFee ? (double.tryParse(laborFeeController.text) ?? 0) : 0;
+
+    final baseAmount = quantity * price;
+    final totalAmount = baseAmount + laborFee; // دستمزد به مبلغ کل اضافه میشه، ولی توی محاسبه‌ی سود محصول اثر نمی‌کنه
     final paidNow = double.tryParse(paidNowController.text) ?? 0;
     final fee = double.tryParse(feeController.text) ?? 0;
     if (paidNow > totalAmount) {
@@ -270,7 +294,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       return;
     }
 
-    final isPurchase = widget.type == DebtType.owed;
     final productProvider = context.read<ProductProvider>();
 
     if (isPurchase) {
@@ -283,7 +306,11 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate);
     }
 
-    final itemDescription = noteController.text.isNotEmpty ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد) - ${noteController.text}' : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد)';
+    final unitLabel = selectedUnit == 'ml' ? 'میل' : 'عدد';
+    final laborText = laborFee > 0 ? ' + دستمزد ${formatAmount(laborFee)}' : '';
+    final itemDescription = noteController.text.isNotEmpty
+        ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel)$laborText - ${noteController.text}'
+        : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel)$laborText';
 
     final ledgerProvider = context.read<LedgerProvider>();
     await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: itemDescription, creditAmount: isPurchase ? totalAmount : 0, debitAmount: isPurchase ? 0 : totalAmount));
@@ -318,7 +345,37 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     noteController.dispose();
     paidNowController.dispose();
     feeController.dispose();
+    laborFeeController.dispose();
     super.dispose();
+  }
+}
+
+class _UnitButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  const _UnitButton({required this.label, required this.selected, required this.gradient, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: selected ? LinearGradient(colors: gradient) : null,
+        color: selected ? null : AppColors.card(context),
+        boxShadow: selected ? [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))] : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Center(child: Text(label, style: TextStyle(color: selected ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700)))),
+        ),
+      ),
+    );
   }
 }
 
