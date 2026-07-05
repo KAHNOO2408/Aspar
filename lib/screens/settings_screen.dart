@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import '../models/theme_provider.dart';
 import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
@@ -52,6 +53,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+
+  Future<void> _reloadAllProviders() async {
+    await context.read<TransactionProvider>().loadTransactions();
+    await context.read<BankProvider>().loadBanks();
+    await context.read<PaymentProvider>().loadPayments();
+    await context.read<ProductProvider>().loadAll();
+    await context.read<LedgerProvider>().loadEntries();
+    await context.read<ContactProvider>().loadContacts();
+    await context.read<LoanProvider>().loadLoans();
   }
 
   Future<bool> _confirmSwitchMethod(String newMethodName, String currentMethodName) async {
@@ -338,7 +349,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Backup', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.backup, size: 64, color: Color(0xFF00897B)), const SizedBox(height: 20), Text('یه پوشه به اسم «اسپار» توی حافظه‌ی گوشی ساخته میشه و تمام اطلاعات (بانک، بدهی/طلب، محصولات، مخاطبین، وام، تنظیمات و...) توش ذخیره میشه.', style: TextStyle(color: AppColors.text(context)), textAlign: TextAlign.center)]),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.backup, size: 64, color: Color(0xFF00897B)), const SizedBox(height: 20), Text('یه پوشه به اسم «اسپار» توی حافظه‌ی گوشی ساخته میشه و تمام اطلاعات ذخیره میشه.', style: TextStyle(color: AppColors.text(context)), textAlign: TextAlign.center)]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
           ElevatedButton(
@@ -347,9 +358,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() => _isProcessing = true);
               try {
                 final path = await BackupService.createBackup();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('پشتیبان‌گیری انجام شد ✅\n$path'), duration: const Duration(seconds: 5)));
-                }
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('پشتیبان‌گیری انجام شد ✅\n$path'), duration: const Duration(seconds: 5)));
               } catch (e) {
                 if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطا در پشتیبان‌گیری: $e'), backgroundColor: Colors.red));
               } finally {
@@ -371,30 +380,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Restore', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.restore, size: 64, color: Color(0xFF4F6BF5)), const SizedBox(height: 20), Text('آخرین پشتیبان از پوشه‌ی «اسپار» بازگردانی میشه.\n\n⚠️ داده‌های فعلی جای اطلاعات قبلی رو می‌گیرن.', style: TextStyle(color: AppColors.text(context)), textAlign: TextAlign.center)]),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.folder_open, size: 64, color: Color(0xFF4F6BF5)), const SizedBox(height: 20), Text('یه صفحه‌ی مرور فایل باز میشه، هرجای گوشی که فایل بکاپ (JSON) رو ذخیره کردی، انتخابش کن.\n\n⚠️ داده‌های فعلی جای اطلاعات قبلی رو می‌گیرن.', style: TextStyle(color: AppColors.text(context)), textAlign: TextAlign.center)]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              setState(() => _isProcessing = true);
               try {
-                final file = await BackupService.getLatestBackupFile();
-                if (file == null) {
-                  if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('هیچ فایل پشتیبانی پیدا نشد'), backgroundColor: Colors.red));
-                  return;
-                }
-                await BackupService.restoreFromFile(file);
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['json'],
+                );
+                if (result == null || result.files.single.path == null) return;
 
-                if (mounted) {
-                  await context.read<TransactionProvider>().loadTransactions();
-                  await context.read<BankProvider>().loadBanks();
-                  await context.read<PaymentProvider>().loadPayments();
-                  await context.read<ProductProvider>().loadAll();
-                  await context.read<LedgerProvider>().loadEntries();
-                  await context.read<ContactProvider>().loadContacts();
-                  await context.read<LoanProvider>().loadLoans();
-                }
+                setState(() => _isProcessing = true);
+                final file = File(result.files.single.path!);
+                await BackupService.restoreFromFile(file);
+                await _reloadAllProviders();
 
                 if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('بازگردانی انجام شد ✅')));
               } catch (e) {
@@ -404,7 +406,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F6BF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('بله', style: TextStyle(color: Colors.white)),
+            child: const Text('انتخاب فایل بکاپ', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -418,10 +420,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('پاک کردن تمام داده‌ها', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFE64A19))),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.warning, size: 64, color: Color(0xFFE64A19)), const SizedBox(height: 20), Text('این عمل غیرقابل بازگشت است!', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context))), const SizedBox(height: 10), Text('تمام تراکنش‌ها، بانک‌ها و دیگر اطلاعات حذف خواهند شد.', style: TextStyle(color: AppColors.text(context)))]),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.warning, size: 64, color: Color(0xFFE64A19)), const SizedBox(height: 20), Text('این عمل غیرقابل بازگشت است!', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context))), const SizedBox(height: 10), Text('تمام تراکنش‌ها، بانک‌ها، بدهی/طلب، محصولات، مخاطبین و وام‌ها حذف خواهند شد.\n\n(رمز ورود و تنظیمات دست‌نخورده می‌مونن)', style: TextStyle(color: AppColors.text(context)), textAlign: TextAlign.center)]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
-          ElevatedButton(onPressed: () { Navigator.pop(context); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمام داده‌ها پاک شدند ✅'), backgroundColor: Colors.red)); }, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE64A19), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text('پاک کن', style: TextStyle(color: Colors.white))),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() => _isProcessing = true);
+              try {
+                await BackupService.deleteAllData();
+                await _reloadAllProviders();
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمام داده‌ها پاک شدند ✅'), backgroundColor: Colors.red));
+              } catch (e) {
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطا: $e'), backgroundColor: Colors.red));
+              } finally {
+                if (mounted) setState(() => _isProcessing = false);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE64A19), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            child: const Text('پاک کن', style: TextStyle(color: Colors.white)),
+          ),
         ],
       ),
     );
