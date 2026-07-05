@@ -24,13 +24,16 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
 
+  static const _fontFamily = 'YekanBakh';
+
   InputDecoration _decoration(BuildContext context, String label) => InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: AppColors.textSecondary(context), fontFamily: _fontFamily),
+        hintStyle: TextStyle(color: AppColors.textMuted(context), fontFamily: _fontFamily),
         filled: true,
         fillColor: AppColors.card(context),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.all(14),
-        labelStyle: TextStyle(color: AppColors.textSecondary(context)),
       );
 
   String _formatDateToJalali(DateTime date) {
@@ -58,29 +61,37 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF00C6A9), Color(0xFF00897B)]), borderRadius: BorderRadius.circular(16)),
-                  child: const Row(children: [Icon(Icons.info_outline, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('برای وقتی که یک مخاطب پول به حساب بانکی تو واریز می‌کنه', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)))]),
+                  child: const Row(children: [Icon(Icons.info_outline, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('برای وقتی که یک مخاطب پول به حساب بانکی تو واریز می‌کنه', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600, fontFamily: _fontFamily)))]),
                 ),
                 const SizedBox(height: 20),
-                DropdownButtonFormField<Contact>(isExpanded: true, hint: const Text('انتخاب کنید'), value: selectedContact, items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(), onChanged: (c) => setState(() => selectedContact = c), decoration: _decoration(context, 'واریزکننده (مخاطب) *'), style: TextStyle(color: AppColors.text(context))),
+                DropdownButtonFormField<Contact>(
+                  isExpanded: true,
+                  hint: Text('انتخاب کنید', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
+                  value: selectedContact,
+                  items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName, style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
+                  onChanged: (c) => setState(() => selectedContact = c),
+                  decoration: _decoration(context, 'واریزکننده (مخاطب) *'),
+                  style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                ),
                 const SizedBox(height: 16),
                 Consumer<BankProvider>(
                   builder: (context, bankProvider, _) => DropdownButtonFormField<int>(
                     value: selectedBankId,
-                    hint: const Text('انتخاب بانک'),
-                    items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان'))).toList(),
+                    hint: Text('انتخاب بانک', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
+                    items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان', style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
                     onChanged: (value) => setState(() => selectedBankId = value),
                     decoration: _decoration(context, 'بانک مقصد *'),
-                    style: TextStyle(color: AppColors.text(context)),
+                    style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextField(controller: amountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'مبلغ (تومان) *')),
+                TextField(controller: amountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'مبلغ (تومان) *')),
                 const SizedBox(height: 16),
-                TextField(controller: feeController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'کارمزد (تومان) - اختیاری')),
+                TextField(controller: feeController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'کارمزد (تومان) - اختیاری')),
                 const SizedBox(height: 16),
-                TextField(controller: trackingCodeController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'کد رهگیری *')),
+                TextField(controller: trackingCodeController, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'کد رهگیری *')),
                 const SizedBox(height: 16),
-                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'یادداشت (اختیاری)')),
+                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'یادداشت (اختیاری)')),
                 const SizedBox(height: 16),
                 _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate, color: const Color(0xFF00897B)),
                 const SizedBox(height: 30),
@@ -116,14 +127,24 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
 
     await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount - fee));
 
-    final description = noteController.text.isNotEmpty ? 'واریز به بانک - ${noteController.text}' : 'واریز به بانک';
-    transProvider.addTransaction(Transaction(title: 'واریز به بانک', description: '${selectedContact!.fullName} - $description', amount: amount, type: TransactionType.income, category: 'واریز بانکی', date: selectedDate, bankId: bank.id));
+    final ledgerDescription = noteController.text.isNotEmpty ? 'واریز به بانک - ${noteController.text}' : 'واریز به بانک';
+
+    transProvider.addTransaction(Transaction(
+      title: 'واریز به بانک',
+      description: 'واریز به بانک',
+      amount: amount,
+      type: TransactionType.income,
+      category: 'واریز بانکی',
+      date: selectedDate,
+      bankId: bank.id,
+      contactName: selectedContact!.fullName,
+    ));
 
     if (fee > 0) {
       transProvider.addTransaction(Transaction(title: 'کارمزد واریز', description: 'کارمزد واریز از ${selectedContact!.fullName}', amount: fee, type: TransactionType.expense, category: 'کارمزد', date: selectedDate, bankId: bank.id));
     }
 
-    await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: description, creditAmount: amount, bankId: bank.id, trackingCode: trackingCodeController.text));
+    await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: ledgerDescription, creditAmount: amount, bankId: bank.id, trackingCode: trackingCodeController.text));
 
     if (mounted) {
       Navigator.pop(context);
