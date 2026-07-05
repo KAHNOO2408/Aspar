@@ -21,6 +21,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
   DateTime? selectedStartDate;
   DateTime? selectedEndDate;
+  bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
 
@@ -96,10 +97,14 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  onTap: _addLoan,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(child: Text('اضافه کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16))),
+                  onTap: _isSubmitting ? null : _addLoan,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: _isSubmitting
+                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                          : const Text('اضافه کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                    ),
                   ),
                 ),
               ),
@@ -110,7 +115,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     );
   }
 
-  void _addLoan() {
+  void _addLoan() async {
+    if (_isSubmitting) return;
     if (bankNameController.text.isEmpty || totalAmountController.text.isEmpty || monthlyPaymentController.text.isEmpty || selectedStartDate == null || selectedEndDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمام فیلدهای الزامی را پر کنید!')));
       return;
@@ -131,6 +137,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
       return;
     }
 
+    setState(() => _isSubmitting = true);
+
     final loan = Loan(
       bankName: bankNameController.text,
       totalAmount: totalAmount,
@@ -142,9 +150,12 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
       paidAmount: initialPaidAmount,
     );
 
-    context.read<LoanProvider>().addLoan(loan);
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('وام اضافه شد ✅')));
+    await context.read<LoanProvider>().addLoan(loan);
+
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('وام اضافه شد ✅')));
+    }
   }
 
   @override
