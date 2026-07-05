@@ -4,6 +4,7 @@ import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/contact_model.dart';
 import '../models/ledger_model.dart';
+import '../utils/app_colors.dart';
 
 class TransferBetweenAccountsScreen extends StatefulWidget {
   const TransferBetweenAccountsScreen({Key? key}) : super(key: key);
@@ -18,12 +19,13 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
   Contact? receiverContact;
   DateTime selectedDate = DateTime.now();
 
-  InputDecoration _decoration(String label) => InputDecoration(
+  InputDecoration _decoration(BuildContext context, String label) => InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.card(context),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.all(14),
+        labelStyle: TextStyle(color: AppColors.textSecondary(context)),
       );
 
   String _formatDateToJalali(DateTime date) {
@@ -32,19 +34,14 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
   }
 
   Future<void> _pickDate() async {
-    final picked = await showPersianDatePicker(
-      context: context,
-      initialDate: Jalali.fromDateTime(selectedDate),
-      firstDate: Jalali(1390, 1),
-      lastDate: Jalali(1420, 12, 29),
-    );
+    final picked = await showPersianDatePicker(context: context, initialDate: Jalali.fromDateTime(selectedDate), firstDate: Jalali(1390, 1), lastDate: Jalali(1420, 12, 29));
     if (picked != null) setState(() => selectedDate = picked.toDateTime());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(title: const Text('دریافت و پرداخت بین حساب‌ها')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -55,22 +52,8 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.white, size: 20),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'برای وقتی که یک نفر به‌جای تو، مستقیم به شخص دیگه‌ای پول پرداخت می‌کنه',
-                          style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ],
-                  ),
+                  decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]), borderRadius: BorderRadius.circular(16)),
+                  child: const Row(children: [Icon(Icons.info_outline, color: Colors.white, size: 20), SizedBox(width: 10), Expanded(child: Text('برای وقتی که یک نفر به‌جای تو، مستقیم به شخص دیگه‌ای پول پرداخت می‌کنه', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)))]),
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<Contact>(
@@ -79,7 +62,8 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
                   value: payerContact,
                   items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
                   onChanged: (c) => setState(() => payerContact = c),
-                  decoration: _decoration('پرداخت‌کننده *'),
+                  decoration: _decoration(context, 'پرداخت‌کننده *'),
+                  style: TextStyle(color: AppColors.text(context)),
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<Contact>(
@@ -88,33 +72,20 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
                   value: receiverContact,
                   items: contactProvider.contacts.map((c) => DropdownMenuItem(value: c, child: Text(c.fullName))).toList(),
                   onChanged: (c) => setState(() => receiverContact = c),
-                  decoration: _decoration('دریافت‌کننده *'),
+                  decoration: _decoration(context, 'دریافت‌کننده *'),
+                  style: TextStyle(color: AppColors.text(context)),
                 ),
                 const SizedBox(height: 16),
-                TextField(controller: amountController, keyboardType: TextInputType.number, decoration: _decoration('مبلغ (تومان) *')),
+                TextField(controller: amountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'مبلغ (تومان) *')),
                 const SizedBox(height: 16),
-                TextField(controller: noteController, decoration: _decoration('یادداشت (اختیاری)')),
+                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'یادداشت (اختیاری)')),
                 const SizedBox(height: 16),
                 _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate),
                 const SizedBox(height: 30),
                 Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]),
-                    boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: _submit,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Center(child: Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16))),
-                      ),
-                    ),
-                  ),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]), boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
+                  child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(16), onTap: _submit, child: const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))),
                 ),
               ],
             );
@@ -142,21 +113,8 @@ class _TransferBetweenAccountsScreenState extends State<TransferBetweenAccountsS
     final ledgerProvider = context.read<LedgerProvider>();
     final note = noteController.text.isNotEmpty ? noteController.text : 'انتقال واسطه‌ای';
 
-    await ledgerProvider.addEntry(LedgerEntry(
-      personName: payerContact!.firstName,
-      personFamily: payerContact!.lastName,
-      date: selectedDate,
-      description: 'پرداخت واسطه‌ای به ${receiverContact!.fullName} - $note',
-      creditAmount: amount,
-    ));
-
-    await ledgerProvider.addEntry(LedgerEntry(
-      personName: receiverContact!.firstName,
-      personFamily: receiverContact!.lastName,
-      date: selectedDate,
-      description: 'دریافت واسطه‌ای از ${payerContact!.fullName} - $note',
-      debitAmount: amount,
-    ));
+    await ledgerProvider.addEntry(LedgerEntry(personName: payerContact!.firstName, personFamily: payerContact!.lastName, date: selectedDate, description: 'پرداخت واسطه‌ای به ${receiverContact!.fullName} - $note', creditAmount: amount));
+    await ledgerProvider.addEntry(LedgerEntry(personName: receiverContact!.firstName, personFamily: receiverContact!.lastName, date: selectedDate, description: 'دریافت واسطه‌ای از ${payerContact!.fullName} - $note', debitAmount: amount));
 
     if (mounted) {
       Navigator.pop(context);
@@ -181,7 +139,7 @@ class _DateButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -194,7 +152,7 @@ class _DateButton extends StatelessWidget {
               children: [
                 const Icon(Icons.calendar_today, size: 16, color: Color(0xFF6A3DE8)),
                 const SizedBox(width: 8),
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context))),
               ],
             ),
           ),
