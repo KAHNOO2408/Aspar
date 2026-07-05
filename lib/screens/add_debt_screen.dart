@@ -282,7 +282,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final laborFee = showLaborFee ? (double.tryParse(laborFeeController.text) ?? 0) : 0;
 
     final baseAmount = quantity * price;
-    final totalAmount = baseAmount + laborFee; // دستمزد به مبلغ کل اضافه میشه، ولی توی محاسبه‌ی سود محصول اثر نمی‌کنه
+    final totalAmount = baseAmount + laborFee;
     final paidNow = double.tryParse(paidNowController.text) ?? 0;
     final fee = double.tryParse(feeController.text) ?? 0;
     if (paidNow > totalAmount) {
@@ -303,17 +303,24 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('موجودی «${selectedProduct!.name}» کافی نیست (موجودی: ${productProvider.getStock(selectedProduct!.id!).toStringAsFixed(0)})')));
         return;
       }
-      await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate);
+      await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, laborFee: laborFee);
     }
 
     final unitLabel = selectedUnit == 'ml' ? 'میل' : 'عدد';
-    final laborText = laborFee > 0 ? ' + دستمزد ${formatAmount(laborFee)}' : '';
     final itemDescription = noteController.text.isNotEmpty
-        ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel)$laborText - ${noteController.text}'
-        : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel)$laborText';
+        ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel) - ${noteController.text}'
+        : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel)';
 
     final ledgerProvider = context.read<LedgerProvider>();
-    await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: itemDescription, creditAmount: isPurchase ? totalAmount : 0, debitAmount: isPurchase ? 0 : totalAmount));
+    await ledgerProvider.addEntry(LedgerEntry(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
+      date: selectedDate,
+      description: itemDescription,
+      creditAmount: isPurchase ? totalAmount : 0,
+      debitAmount: isPurchase ? 0 : totalAmount,
+      laborFee: laborFee,
+    ));
 
     if (paidNow > 0) {
       final bankProvider = context.read<BankProvider>();
@@ -323,10 +330,28 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: isPurchase ? bank.balance - paidNow - fee : bank.balance + paidNow - fee);
       await bankProvider.updateBank(updatedBank);
 
-      transProvider.addTransaction(Transaction(title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب', description: '${selectedContact!.fullName} - $itemDescription', amount: paidNow, type: isPurchase ? TransactionType.expense : TransactionType.income, category: 'معامله با مخاطب', date: selectedDate, bankId: bank.id));
+      transProvider.addTransaction(Transaction(
+        title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
+        description: itemDescription,
+        amount: paidNow,
+        type: isPurchase ? TransactionType.expense : TransactionType.income,
+        category: 'معامله با مخاطب',
+        date: selectedDate,
+        bankId: bank.id,
+        contactName: selectedContact!.fullName,
+        laborFee: laborFee,
+      ));
 
       if (fee > 0) {
-        transProvider.addTransaction(Transaction(title: 'کارمزد تراکنش', description: 'کارمزد ${isPurchase ? 'پرداخت به' : 'دریافت از'} ${selectedContact!.fullName}', amount: fee, type: TransactionType.expense, category: 'کارمزد', date: selectedDate, bankId: bank.id));
+        transProvider.addTransaction(Transaction(
+          title: 'کارمزد تراکنش',
+          description: 'کارمزد ${isPurchase ? 'پرداخت به' : 'دریافت از'} ${selectedContact!.fullName}',
+          amount: fee,
+          type: TransactionType.expense,
+          category: 'کارمزد',
+          date: selectedDate,
+          bankId: bank.id,
+        ));
       }
 
       await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: isPurchase ? 'پرداخت نقدی بابت: ${selectedProduct!.name}' : 'دریافت نقدی بابت: ${selectedProduct!.name}', debitAmount: isPurchase ? paidNow : 0, creditAmount: isPurchase ? 0 : paidNow, bankId: bank.id));
