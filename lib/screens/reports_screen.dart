@@ -157,12 +157,15 @@ class _TransactionReportsTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _row(context, 'عنوان', trans.title),
+              if (trans.contactName != null && trans.contactName!.isNotEmpty) _row(context, 'مخاطب', trans.contactName!),
               _row(context, 'توضیح', trans.description.isNotEmpty ? trans.description : '-'),
               _row(context, 'نوع', isIncome ? 'درآمد' : 'خرج'),
               _row(context, 'دسته‌بندی', trans.category),
               _row(context, 'بانک', bankName),
               _row(context, 'مبلغ', '${formatAmount(trans.amount)} تومان'),
+              if (trans.laborFee > 0) _row(context, 'دستمزد', '${formatAmount(trans.laborFee)} تومان'),
               _row(context, 'تاریخ', formatDate(trans.date)),
+              _row(context, 'ساعت', '${trans.date.hour.toString().padLeft(2, '0')}:${trans.date.minute.toString().padLeft(2, '0')}'),
             ],
           ),
         ),
@@ -255,7 +258,7 @@ class _TransactionReportsTab extends StatelessWidget {
                     } catch (e) {}
                   }
 
-                  final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId);
+                  final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId, contactName: trans.contactName, laborFee: trans.laborFee);
                   await context.read<TransactionProvider>().editTransaction(updated);
 
                   Navigator.pop(dialogContext);
