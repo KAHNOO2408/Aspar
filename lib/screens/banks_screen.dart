@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/bank_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
+import '../utils/app_colors.dart';
 import 'add_bank_screen.dart';
 
 class BanksScreen extends StatelessWidget {
@@ -19,7 +20,7 @@ class BanksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: buildCustomAppBar(title: 'بانک', context: context),
       floatingActionButton: Container(
         decoration: BoxDecoration(
@@ -34,14 +35,7 @@ class BanksScreen extends StatelessWidget {
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                ],
-              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.add, color: Colors.white), SizedBox(width: 8), Text('بانک جدید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))]),
             ),
           ),
         ),
@@ -57,14 +51,8 @@ class BanksScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(26),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF11998E), Color(0xFF38EF7D)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(color: const Color(0xFF11998E).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10)),
-                      ],
+                      gradient: const LinearGradient(colors: [Color(0xFF11998E), Color(0xFF38EF7D)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                      boxShadow: [BoxShadow(color: const Color(0xFF11998E).withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 10))],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -74,29 +62,18 @@ class BanksScreen extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                                  child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 20),
-                                ),
+                                Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 20)),
                                 const SizedBox(width: 10),
                                 const Text('کل موجودی', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                               ],
                             ),
                             const SizedBox(height: 18),
-                            Text(
-                              formatAmount(provider.getTotalBalance()),
-                              style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 0.5),
-                            ),
+                            Text(formatAmount(provider.getTotalBalance()), style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                             const SizedBox(height: 4),
                             const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
-                          child: const Icon(Icons.savings_rounded, color: Colors.white, size: 34),
-                        ),
+                        Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle), child: const Icon(Icons.savings_rounded, color: Colors.white, size: 34)),
                       ],
                     ),
                   ),
@@ -105,13 +82,7 @@ class BanksScreen extends StatelessWidget {
                 if (provider.banks.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'حساب‌های بانکی',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.grey.shade700),
-                      ),
-                    ),
+                    child: Align(alignment: Alignment.centerRight, child: Text('حساب‌های بانکی', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textSecondary(context)))),
                   ),
 
                 if (provider.banks.isEmpty)
@@ -119,15 +90,11 @@ class BanksScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(60),
                     child: Column(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                          child: Icon(Icons.account_balance_rounded, size: 60, color: Colors.grey.shade300),
-                        ),
+                        Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.card(context), shape: BoxShape.circle), child: Icon(Icons.account_balance_rounded, size: 60, color: AppColors.textMuted(context))),
                         const SizedBox(height: 20),
-                        Text('هنوز بانکی اضافه نکردی', style: TextStyle(color: Colors.grey.shade500, fontSize: 15, fontWeight: FontWeight.w600)),
+                        Text('هنوز بانکی اضافه نکردی', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 15, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 6),
-                        Text('با دکمه‌ی پایین صفحه شروع کن', style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                        Text('با دکمه‌ی پایین صفحه شروع کن', style: TextStyle(color: AppColors.textMuted(context), fontSize: 12)),
                       ],
                     ),
                   )
@@ -147,21 +114,11 @@ class BanksScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(22),
                             gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-                            boxShadow: [
-                              BoxShadow(color: gradient[1].withOpacity(0.35), blurRadius: 18, offset: const Offset(0, 8)),
-                            ],
+                            boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.35), blurRadius: 18, offset: const Offset(0, 8))],
                           ),
                           child: Stack(
                             children: [
-                              Positioned(
-                                left: -20,
-                                top: -20,
-                                child: Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.06)),
-                                ),
-                              ),
+                              Positioned(left: -20, top: -20, child: Container(width: 100, height: 100, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.06)))),
                               Padding(
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
@@ -172,11 +129,7 @@ class BanksScreen extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(10),
-                                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(14)),
-                                              child: const Icon(Icons.account_balance_rounded, color: Colors.white, size: 22),
-                                            ),
+                                            Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.account_balance_rounded, color: Colors.white, size: 22)),
                                             const SizedBox(width: 12),
                                             Text(bank.bankName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: Colors.white)),
                                           ],
@@ -196,23 +149,14 @@ class BanksScreen extends StatelessWidget {
                                       ],
                                     ),
                                     const SizedBox(height: 22),
-                                    Text(
-                                      bank.accountNumber,
-                                      style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.85), letterSpacing: 1.2, fontWeight: FontWeight.w500),
-                                    ),
+                                    Text(bank.accountNumber, style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.85), letterSpacing: 1.2, fontWeight: FontWeight.w500)),
                                     const SizedBox(height: 18),
                                     Row(
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
-                                        Text(
-                                          formatAmount(bank.balance),
-                                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white),
-                                        ),
+                                        Text(formatAmount(bank.balance), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white)),
                                         const SizedBox(width: 6),
-                                        Padding(
-                                          padding: const EdgeInsets.only(bottom: 3),
-                                          child: Text('تومان', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75))),
-                                        ),
+                                        Padding(padding: const EdgeInsets.only(bottom: 3), child: Text('تومان', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75)))),
                                       ],
                                     ),
                                   ],
@@ -241,28 +185,24 @@ class BanksScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('ویرایش بانک', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text('ویرایش بانک', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameController, decoration: InputDecoration(labelText: 'نام بانک', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            TextField(controller: nameController, style: TextStyle(color: AppColors.text(context)), decoration: InputDecoration(labelText: 'نام بانک', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
             const SizedBox(height: 16),
-            TextField(controller: accountController, decoration: InputDecoration(labelText: 'شماره حساب', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            TextField(controller: accountController, style: TextStyle(color: AppColors.text(context)), decoration: InputDecoration(labelText: 'شماره حساب', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
             const SizedBox(height: 16),
-            TextField(controller: balanceController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'موجودی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            TextField(controller: balanceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: InputDecoration(labelText: 'موجودی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
           ElevatedButton(
             onPressed: () {
-              final updatedBank = Bank(
-                id: bank.id,
-                bankName: nameController.text,
-                accountNumber: accountController.text,
-                balance: double.tryParse(balanceController.text) ?? 0,
-              );
+              final updatedBank = Bank(id: bank.id, bankName: nameController.text, accountNumber: accountController.text, balance: double.tryParse(balanceController.text) ?? 0);
               provider.updateBank(updatedBank);
               Navigator.pop(context);
             },
@@ -278,9 +218,10 @@ class BanksScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('حذف بانک', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-        content: const Text('آیا مطمئن‌اید؟'),
+        content: Text('آیا مطمئن‌اید؟', style: TextStyle(color: AppColors.text(context))),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
           ElevatedButton(
