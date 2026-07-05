@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product_model.dart';
 import '../widgets/custom_app_bar.dart';
+import '../utils/app_colors.dart';
 
 class ProductsScreen extends StatelessWidget {
   const ProductsScreen({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class ProductsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: buildCustomAppBar(title: 'انبار محصولات', context: context),
       body: Consumer<ProductProvider>(
         builder: (context, provider, _) {
@@ -28,13 +29,13 @@ class ProductsScreen extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                    child: Icon(Icons.inventory_2_outlined, size: 55, color: Colors.grey.shade300),
+                    decoration: BoxDecoration(color: AppColors.card(context), shape: BoxShape.circle),
+                    child: Icon(Icons.inventory_2_outlined, size: 55, color: AppColors.textMuted(context)),
                   ),
                   const SizedBox(height: 20),
-                  Text('هنوز محصولی ثبت نشده', style: TextStyle(color: Colors.grey.shade500, fontSize: 15, fontWeight: FontWeight.w600)),
+                  Text('هنوز محصولی ثبت نشده', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 15, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
-                  Text('از صفحه‌ی «خرید/فروش» محصول اضافه کن', style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                  Text('از صفحه‌ی «خرید/فروش» محصول اضافه کن', style: TextStyle(color: AppColors.textMuted(context), fontSize: 12)),
                 ],
               ),
             );
@@ -52,7 +53,7 @@ class ProductsScreen extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Material(
-                  color: Colors.white,
+                  color: AppColors.card(context),
                   borderRadius: BorderRadius.circular(18),
                   elevation: 2,
                   shadowColor: Colors.black12,
@@ -71,7 +72,7 @@ class ProductsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 14),
                         Expanded(
-                          child: Text(product.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                          child: Text(product.name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text(context))),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
