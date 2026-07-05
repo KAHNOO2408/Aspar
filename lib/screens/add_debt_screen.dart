@@ -279,7 +279,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
     final isPurchase = widget.type == DebtType.owed;
     final showLaborFee = selectedUnit == 'ml' && !isPurchase;
-    final laborFee = showLaborFee ? (double.tryParse(laborFeeController.text) ?? 0) : 0;
+    final laborFee = showLaborFee ? (double.tryParse(laborFeeController.text) ?? 0.0) : 0.0;
 
     final baseAmount = quantity * price;
     final totalAmount = baseAmount + laborFee;
