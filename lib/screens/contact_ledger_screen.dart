@@ -5,6 +5,7 @@ import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/ledger_model.dart';
 import '../models/bank_model.dart';
 import '../utils/formatters.dart';
+import '../utils/app_colors.dart';
 
 class ContactLedgerScreen extends StatefulWidget {
   final String personName;
@@ -28,12 +29,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
   String _formatTime(DateTime date) => '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
   Future<void> _pickDate(bool isStart) async {
-    final picked = await showPersianDatePicker(
-      context: context,
-      initialDate: Jalali.now(),
-      firstDate: Jalali(1390, 1),
-      lastDate: Jalali(1420, 12, 29),
-    );
+    final picked = await showPersianDatePicker(context: context, initialDate: Jalali.now(), firstDate: Jalali(1390, 1), lastDate: Jalali(1420, 12, 29));
     if (picked != null) {
       setState(() {
         if (isStart) {
@@ -66,20 +62,21 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('جزئیات فاکتور', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: Text('جزئیات فاکتور', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _detailRow('شرح', entry.description),
-              _detailRow('بانک', bankName),
-              _detailRow('مبلغ', '${formatAmount(amount)} تومان'),
-              if (entry.trackingCode != null && entry.trackingCode!.isNotEmpty) _detailRow('کد پیگیری', entry.trackingCode!),
-              _detailRow('مانده نهایی', '${formatAmount(balanceAfter.abs())} تومان'),
-              _detailRow('تاریخ', _formatJalali(entry.date)),
-              _detailRow('ساعت', _formatTime(entry.date)),
+              _detailRow(context, 'شرح', entry.description),
+              _detailRow(context, 'بانک', bankName),
+              _detailRow(context, 'مبلغ', '${formatAmount(amount)} تومان'),
+              if (entry.trackingCode != null && entry.trackingCode!.isNotEmpty) _detailRow(context, 'کد پیگیری', entry.trackingCode!),
+              _detailRow(context, 'مانده نهایی', '${formatAmount(balanceAfter.abs())} تومان'),
+              _detailRow(context, 'تاریخ', _formatJalali(entry.date)),
+              _detailRow(context, 'ساعت', _formatTime(entry.date)),
             ],
           ),
         ),
@@ -94,14 +91,14 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     );
   }
 
-  Widget _detailRow(String label, String value) {
+  Widget _detailRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 100, child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.grey))),
-          Expanded(child: Text(value)),
+          SizedBox(width: 100, child: Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textSecondary(context)))),
+          Expanded(child: Text(value, style: TextStyle(color: AppColors.text(context)))),
         ],
       ),
     );
@@ -118,26 +115,22 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) {
           return AlertDialog(
+            backgroundColor: AppColors.card(dialogContext),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('ویرایش فاکتور', style: TextStyle(fontWeight: FontWeight.w700)),
+            title: Text('ویرایش فاکتور', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext))),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(controller: descController, decoration: InputDecoration(labelText: 'شرح', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+                  TextField(controller: descController, style: TextStyle(color: AppColors.text(dialogContext)), decoration: InputDecoration(labelText: 'شرح', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
-                  TextField(controller: debitController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'پرداختی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+                  TextField(controller: debitController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(dialogContext)), decoration: InputDecoration(labelText: 'پرداختی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
-                  TextField(controller: creditController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'دریافتی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+                  TextField(controller: creditController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(dialogContext)), decoration: InputDecoration(labelText: 'دریافتی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
                     onPressed: () async {
-                      final picked = await showPersianDatePicker(
-                        context: dialogContext,
-                        initialDate: Jalali.fromDateTime(selectedDate),
-                        firstDate: Jalali(1390, 1),
-                        lastDate: Jalali(1420, 12, 29),
-                      );
+                      final picked = await showPersianDatePicker(context: dialogContext, initialDate: Jalali.fromDateTime(selectedDate), firstDate: Jalali(1390, 1), lastDate: Jalali(1420, 12, 29));
                       if (picked != null) setState(() => selectedDate = picked.toDateTime());
                     },
                     icon: const Icon(Icons.calendar_today, size: 16),
@@ -180,9 +173,10 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.card(dialogContext),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('حذف فاکتور', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-        content: Text('آیا از حذف «${entry.description}» مطمئن هستید؟'),
+        content: Text('آیا از حذف «${entry.description}» مطمئن هستید؟', style: TextStyle(color: AppColors.text(dialogContext))),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
           ElevatedButton(
@@ -202,7 +196,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(title: Text('${widget.personName} ${widget.personFamily}')),
       body: Consumer<LedgerProvider>(
         builder: (context, provider, _) {
@@ -238,11 +232,12 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                 child: TextField(
                   controller: searchController,
                   onChanged: (_) => setState(() {}),
+                  style: TextStyle(color: AppColors.text(context)),
                   decoration: InputDecoration(
                     hintText: 'جستجوی محصول...',
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.card(context),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     isDense: true,
                   ),
@@ -252,23 +247,10 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _pickDate(true),
-                        icon: const Icon(Icons.calendar_today, size: 16),
-                        label: Text(startDate != null ? 'از: ${_formatJalali(startDate!)}' : 'از تاریخ'),
-                      ),
-                    ),
+                    Expanded(child: OutlinedButton.icon(onPressed: () => _pickDate(true), icon: const Icon(Icons.calendar_today, size: 16), label: Text(startDate != null ? 'از: ${_formatJalali(startDate!)}' : 'از تاریخ'))),
                     const SizedBox(width: 10),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _pickDate(false),
-                        icon: const Icon(Icons.calendar_today, size: 16),
-                        label: Text(endDate != null ? 'تا: ${_formatJalali(endDate!)}' : 'تا تاریخ'),
-                      ),
-                    ),
-                    if (startDate != null || endDate != null)
-                      IconButton(onPressed: () => setState(() { startDate = null; endDate = null; }), icon: const Icon(Icons.clear, color: Colors.red)),
+                    Expanded(child: OutlinedButton.icon(onPressed: () => _pickDate(false), icon: const Icon(Icons.calendar_today, size: 16), label: Text(endDate != null ? 'تا: ${_formatJalali(endDate!)}' : 'تا تاریخ'))),
+                    if (startDate != null || endDate != null) IconButton(onPressed: () => setState(() { startDate = null; endDate = null; }), icon: const Icon(Icons.clear, color: Colors.red)),
                   ],
                 ),
               ),
@@ -287,28 +269,14 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Column(
-                            children: [
-                              const Text('دریافتی', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                              const SizedBox(height: 6),
-                              Text('${formatAmount(totalCredit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800)),
-                            ],
-                          ),
+                          Column(children: [const Text('دریافتی', style: TextStyle(color: Colors.white70, fontSize: 12)), const SizedBox(height: 6), Text('${formatAmount(totalCredit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800))]),
                           Container(width: 1, height: 30, color: Colors.white24),
-                          Column(
-                            children: [
-                              const Text('پرداختی', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                              const SizedBox(height: 6),
-                              Text('${formatAmount(totalDebit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800)),
-                            ],
-                          ),
+                          Column(children: [const Text('پرداختی', style: TextStyle(color: Colors.white70, fontSize: 12)), const SizedBox(height: 6), Text('${formatAmount(totalDebit)} تومان', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800))]),
                         ],
                       ),
                       const Divider(color: Colors.white24, height: 24),
                       Text(
-                        finalBalance >= 0
-                            ? 'در حال حاضر ${widget.personName} به شما ${formatAmount(finalBalance)} تومان بدهکار است'
-                            : 'در حال حاضر شما به ${widget.personName} ${formatAmount(finalBalance.abs())} تومان بدهکارید',
+                        finalBalance >= 0 ? 'در حال حاضر ${widget.personName} به شما ${formatAmount(finalBalance)} تومان بدهکار است' : 'در حال حاضر شما به ${widget.personName} ${formatAmount(finalBalance.abs())} تومان بدهکارید',
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
                         textAlign: TextAlign.center,
                       ),
@@ -325,13 +293,9 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                              child: Icon(Icons.receipt_long, size: 50, color: Colors.grey.shade300),
-                            ),
+                            Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.card(context), shape: BoxShape.circle), child: Icon(Icons.receipt_long, size: 50, color: AppColors.textMuted(context))),
                             const SizedBox(height: 18),
-                            Text('موردی برای نمایش وجود ندارد', style: TextStyle(color: Colors.grey.shade500, fontSize: 15)),
+                            Text('موردی برای نمایش وجود ندارد', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 15)),
                           ],
                         ),
                       )
@@ -347,7 +311,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
                             child: Material(
-                              color: Colors.white,
+                              color: AppColors.card(context),
                               borderRadius: BorderRadius.circular(16),
                               elevation: 2,
                               shadowColor: Colors.black12,
@@ -362,11 +326,11 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Expanded(child: Text(entry.description, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14))),
-                                          Text(_formatJalali(entry.date), style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                          Expanded(child: Text(entry.description, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context)))),
+                                          Text(_formatJalali(entry.date), style: TextStyle(fontSize: 11, color: AppColors.textMuted(context))),
                                           PopupMenuButton<String>(
                                             padding: EdgeInsets.zero,
-                                            icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+                                            icon: Icon(Icons.more_vert, color: AppColors.textMuted(context), size: 20),
                                             onSelected: (value) {
                                               final provider = context.read<LedgerProvider>();
                                               if (value == 'edit') _showEditDialog(context, provider, entry);
@@ -383,28 +347,13 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              const Text('دریافتی', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                              Text(hasCredit ? formatAmount(entry.creditAmount) : '-', style: const TextStyle(fontSize: 13, color: Colors.orange, fontWeight: FontWeight.w700)),
-                                            ],
-                                          ),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              const Text('پرداختی', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                              Text(hasDebit ? formatAmount(entry.debitAmount) : '-', style: const TextStyle(fontSize: 13, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700)),
-                                            ],
-                                          ),
+                                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('دریافتی', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))), Text(hasCredit ? formatAmount(entry.creditAmount) : '-', style: const TextStyle(fontSize: 13, color: Colors.orange, fontWeight: FontWeight.w700))]),
+                                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('پرداختی', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))), Text(hasDebit ? formatAmount(entry.debitAmount) : '-', style: const TextStyle(fontSize: 13, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700))]),
                                           Column(
                                             crossAxisAlignment: CrossAxisAlignment.end,
                                             children: [
-                                              const Text('مانده', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                              Text(
-                                                formatAmount(row.balanceAfter.abs()),
-                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: row.balanceAfter >= 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19)),
-                                              ),
+                                              Text('مانده', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))),
+                                              Text(formatAmount(row.balanceAfter.abs()), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: row.balanceAfter >= 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19))),
                                             ],
                                           ),
                                         ],
