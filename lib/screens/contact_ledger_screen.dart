@@ -70,7 +70,9 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _detailRow(context, 'شرح', entry.description),
+              _detailRow(context, 'مخاطب', '${widget.personName} ${widget.personFamily}'),
+              _detailRow(context, 'کالا', entry.description),
+              _detailRow(context, 'شرح', entry.debitAmount > 0 ? 'بدهکار شدن (خرید/دریافت کالا)' : 'بستانکار شدن (فروش/تحویل کالا)'),
               _detailRow(context, 'بانک', bankName),
               _detailRow(context, 'مبلغ', '${formatAmount(amount)} تومان'),
               if (entry.laborFee > 0) _detailRow(context, 'دستمزد', '${formatAmount(entry.laborFee)} تومان'),
