@@ -16,19 +16,23 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   final bankNameController = TextEditingController();
   final totalAmountController = TextEditingController();
   final monthlyPaymentController = TextEditingController();
+  final paidInstallmentsController = TextEditingController();
   final descriptionController = TextEditingController();
 
   DateTime? selectedStartDate;
   DateTime? selectedEndDate;
 
+  static const _fontFamily = 'YekanBakh';
+
   InputDecoration _decoration(BuildContext context, String label, IconData icon) => InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: AppColors.textSecondary(context), fontFamily: _fontFamily),
+        hintStyle: TextStyle(color: AppColors.textMuted(context), fontFamily: _fontFamily),
         prefixIcon: Icon(icon, color: const Color(0xFF9B6DFF)),
         filled: true,
         fillColor: AppColors.card(context),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.all(14),
-        labelStyle: TextStyle(color: AppColors.textSecondary(context)),
       );
 
   String _formatDateToJalali(DateTime? date) {
@@ -56,17 +60,30 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(controller: bankNameController, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'نام وام/بانک *', Icons.account_balance)),
+            TextField(controller: bankNameController, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'نام وام/بانک *', Icons.account_balance)),
             const SizedBox(height: 16),
-            TextField(controller: totalAmountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'مبلغ کل وام (تومان) *', Icons.payments_outlined)),
+            TextField(controller: totalAmountController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'مبلغ کل وام (تومان) *', Icons.payments_outlined)),
             const SizedBox(height: 16),
-            TextField(controller: monthlyPaymentController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'قسط ماهیانه (تومان) *', Icons.calendar_month)),
+            TextField(controller: monthlyPaymentController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'قسط ماهیانه (تومان) *', Icons.calendar_month)),
             const SizedBox(height: 16),
             _DateButton(icon: Icons.calendar_today, label: selectedStartDate == null ? 'انتخاب تاریخ شروع *' : _formatDateToJalali(selectedStartDate), onTap: _pickStartDate),
             const SizedBox(height: 16),
             _DateButton(icon: Icons.event_available, label: selectedEndDate == null ? 'انتخاب تاریخ پایان *' : _formatDateToJalali(selectedEndDate), onTap: _pickEndDate),
             const SizedBox(height: 16),
-            TextField(controller: descriptionController, maxLines: 2, style: TextStyle(color: AppColors.text(context)), decoration: _decoration(context, 'توضیح', Icons.description_outlined)),
+
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: const Color(0xFF9B6DFF).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              child: Text(
+                'اگه از قبل چند قسط این وام رو پرداخت کردی (مثلاً وامی که چند ماهه دستته)، تعدادشون رو اینجا بنویس تا مانده و ماه‌های باقی درست محاسبه بشه.',
+                style: TextStyle(fontSize: 12, color: AppColors.text(context), fontWeight: FontWeight.w600),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(controller: paidInstallmentsController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'تعداد قسط‌های پرداخت‌شده تاکنون (اختیاری)', Icons.check_circle_outline)),
+
+            const SizedBox(height: 16),
+            TextField(controller: descriptionController, maxLines: 2, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'توضیح', Icons.description_outlined)),
             const SizedBox(height: 30),
             Container(
               width: double.infinity,
@@ -95,12 +112,24 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
   void _addLoan() {
     if (bankNameController.text.isEmpty || totalAmountController.text.isEmpty || monthlyPaymentController.text.isEmpty || selectedStartDate == null || selectedEndDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمام فیلدها الزامی هستند!')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمام فیلدهای الزامی را پر کنید!')));
       return;
     }
 
     final totalAmount = double.tryParse(totalAmountController.text) ?? 0;
     final monthlyPayment = double.tryParse(monthlyPaymentController.text) ?? 0;
+    final paidInstallmentsCount = int.tryParse(paidInstallmentsController.text) ?? 0;
+
+    if (paidInstallmentsCount < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعداد قسط‌های پرداخت‌شده نمی‌تواند منفی باشد')));
+      return;
+    }
+
+    double initialPaidAmount = paidInstallmentsCount * monthlyPayment;
+    if (initialPaidAmount > totalAmount) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ اقساط پرداخت‌شده نمی‌تواند بیشتر از مبلغ کل وام باشد')));
+      return;
+    }
 
     final loan = Loan(
       bankName: bankNameController.text,
@@ -110,6 +139,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
       endDate: selectedEndDate!,
       bankId: 0,
       description: descriptionController.text,
+      paidAmount: initialPaidAmount,
     );
 
     context.read<LoanProvider>().addLoan(loan);
@@ -122,6 +152,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     bankNameController.dispose();
     totalAmountController.dispose();
     monthlyPaymentController.dispose();
+    paidInstallmentsController.dispose();
     descriptionController.dispose();
     super.dispose();
   }
