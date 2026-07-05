@@ -23,6 +23,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
   Contact? selectedContact;
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
+  bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
 
@@ -98,7 +99,21 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: const LinearGradient(colors: [Color(0xFFFF7A59), Color(0xFFE64A19)]), boxShadow: [BoxShadow(color: const Color(0xFFE64A19).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
-                  child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(16), onTap: _submit, child: const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Center(child: Text('ثبت برداشت', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: _isSubmitting ? null : _submit,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: _isSubmitting
+                              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                              : const Text('ثبت برداشت', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             );
@@ -109,6 +124,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
   }
 
   void _submit() async {
+    if (_isSubmitting) return;
     if (selectedContact == null || selectedBankId == null || amountController.text.isEmpty || trackingCodeController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، بانک، مبلغ و کد رهگیری الزامی هستند')));
       return;
@@ -127,6 +143,8 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('موجودی بانک کافی نیست (با احتساب کارمزد)')));
       return;
     }
+
+    setState(() => _isSubmitting = true);
 
     final transProvider = context.read<TransactionProvider>();
     final ledgerProvider = context.read<LedgerProvider>();
