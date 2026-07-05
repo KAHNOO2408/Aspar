@@ -170,9 +170,13 @@ class DatabaseHelper {
     await paymentBox.delete(id);
   }
 
-  static Future<void> updateProduct(Product product) async {
-    await productBox.put(product.id, product.toMap());
-  }
+  static Future<void> insertProduct(Product product) async {
+  await productBox.put(product.id, product.toMap());
+}
+
+static Future<void> updateProduct(Product product) async {
+  await productBox.put(product.id, product.toMap());
+}
 
   static Future<List<Product>> getProducts() async {
     final products = <Product>[];
