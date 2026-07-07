@@ -153,6 +153,16 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
 
     final ledgerDescription = noteController.text.isNotEmpty ? 'برداشت از بانک - ${noteController.text}' : 'برداشت از بانک';
 
+    final ledgerEntryId = await ledgerProvider.addEntry(LedgerEntry(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
+      date: selectedDate,
+      description: ledgerDescription,
+      debitAmount: amount,
+      bankId: bank.id,
+      trackingCode: trackingCodeController.text,
+    ));
+
     await transProvider.addTransaction(Transaction(
       title: 'برداشت از بانک',
       description: 'برداشت از بانک',
@@ -162,6 +172,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
       date: selectedDate,
       bankId: bank.id,
       contactName: selectedContact!.fullName,
+      ledgerEntryId: ledgerEntryId,
     ));
 
     if (fee > 0) {
@@ -175,8 +186,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
         bankId: bank.id,
       ));
     }
-
-    await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: ledgerDescription, debitAmount: amount, bankId: bank.id, trackingCode: trackingCodeController.text));
 
     if (mounted) {
       Navigator.pop(context);
