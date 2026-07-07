@@ -274,3 +274,21 @@ static Future<void> updateProduct(Product product) async {
     await loanBox.delete(id);
   }
 }
+
+// ============ SAVINGS GOALS ============
+  Future<void> insertSavingsGoal(SavingsGoal goal) async {
+    await _db.insert('savings_goals', goal.toMap());
+  }
+
+  Future<void> updateSavingsGoal(SavingsGoal goal) async {
+    await _db.update('savings_goals', goal.toMap(), where: 'id = ?', whereArgs: [goal.id]);
+  }
+
+  Future<void> deleteSavingsGoal(int id) async {
+    await _db.delete('savings_goals', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<SavingsGoal>> getSavingsGoals() async {
+    final data = await _db.query('savings_goals', orderBy: 'createdDate DESC');
+    return data.map((map) => SavingsGoal.fromMap(map)).toList();
+  }
