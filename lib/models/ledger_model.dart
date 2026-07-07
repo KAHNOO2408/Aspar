@@ -65,23 +65,23 @@ class LedgerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addEntry(LedgerEntry entry) async {
-    final toSave = entry.id == null
-        ? LedgerEntry(
-            id: DateTime.now().millisecondsSinceEpoch,
-            personName: entry.personName,
-            personFamily: entry.personFamily,
-            date: entry.date,
-            description: entry.description,
-            debitAmount: entry.debitAmount,
-            creditAmount: entry.creditAmount,
-            bankId: entry.bankId,
-            trackingCode: entry.trackingCode,
-            laborFee: entry.laborFee,
-          )
-        : entry;
+  Future<int> addEntry(LedgerEntry entry) async {
+    final id = entry.id ?? DateTime.now().millisecondsSinceEpoch;
+    final toSave = LedgerEntry(
+      id: id,
+      personName: entry.personName,
+      personFamily: entry.personFamily,
+      date: entry.date,
+      description: entry.description,
+      debitAmount: entry.debitAmount,
+      creditAmount: entry.creditAmount,
+      bankId: entry.bankId,
+      trackingCode: entry.trackingCode,
+      laborFee: entry.laborFee,
+    );
     await DatabaseHelper.insertLedgerEntry(toSave);
     await loadEntries();
+    return id;
   }
 
   Future<void> updateEntry(LedgerEntry entry) async {
