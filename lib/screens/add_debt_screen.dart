@@ -275,7 +275,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     );
   }
 
-void _submit() async {
+  void _submit() async {
     if (_isSubmitting) return;
     if (selectedContact == null || selectedProduct == null || quantityController.text.isEmpty || priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، محصول، تعداد و قیمت الزامی هستند')));
@@ -389,6 +389,18 @@ void _submit() async {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ثبت شد ✅')));
     }
   }
+
+  @override
+  void dispose() {
+    quantityController.dispose();
+    priceController.dispose();
+    noteController.dispose();
+    paidNowController.dispose();
+    feeController.dispose();
+    laborFeeController.dispose();
+    super.dispose();
+  }
+}
 
 class _UnitButton extends StatelessWidget {
   final String label;
