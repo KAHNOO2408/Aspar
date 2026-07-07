@@ -15,6 +15,7 @@ class Transaction {
   final String? contactName;
   final String? productInfo;
   final double laborFee;
+  final int? ledgerEntryId;
 
   Transaction({
     this.id,
@@ -28,6 +29,7 @@ class Transaction {
     this.contactName,
     this.productInfo,
     this.laborFee = 0,
+    this.ledgerEntryId,
   });
 
   Map<String, dynamic> toMap() {
@@ -43,6 +45,7 @@ class Transaction {
       'contactName': contactName,
       'productInfo': productInfo,
       'laborFee': laborFee,
+      'ledgerEntryId': ledgerEntryId,
     };
   }
 
@@ -59,6 +62,7 @@ class Transaction {
       contactName: map['contactName'],
       productInfo: map['productInfo'],
       laborFee: (map['laborFee'] ?? 0 as num).toDouble(),
+      ledgerEntryId: map['ledgerEntryId'],
     );
   }
 }
@@ -90,6 +94,7 @@ class TransactionProvider extends ChangeNotifier {
             contactName: transaction.contactName,
             productInfo: transaction.productInfo,
             laborFee: transaction.laborFee,
+            ledgerEntryId: transaction.ledgerEntryId,
           )
         : transaction;
     await DatabaseHelper.insertTransaction(toSave);
