@@ -147,33 +147,49 @@ class _TransactionReportsTab extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card(context),
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.card(dialogContext),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('جزئیات تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
+        title: Text('جزئیات تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext))),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _row(context, 'عنوان', trans.title),
-              if (trans.contactName != null && trans.contactName!.isNotEmpty) _row(context, 'مخاطب', trans.contactName!),
-              if (trans.productInfo != null && trans.productInfo!.isNotEmpty) _row(context, 'کالا', trans.productInfo!),
-              _row(context, 'توضیح', trans.description.isNotEmpty ? trans.description : '-'),
-              _row(context, 'نوع', isIncome ? 'درآمد' : 'خرج'),
-              _row(context, 'دسته‌بندی', trans.category),
-              _row(context, 'بانک', bankName),
-              _row(context, 'مبلغ', '${formatAmount(trans.amount)} تومان'),
-              if (trans.laborFee > 0) _row(context, 'دستمزد', '${formatAmount(trans.laborFee)} تومان'),
-              _row(context, 'تاریخ', formatDate(trans.date)),
-              _row(context, 'ساعت', '${trans.date.hour.toString().padLeft(2, '0')}:${trans.date.minute.toString().padLeft(2, '0')}'),
+              _row(dialogContext, 'عنوان', trans.title),
+              if (trans.contactName != null && trans.contactName!.isNotEmpty) _row(dialogContext, 'مخاطب', trans.contactName!),
+              if (trans.productInfo != null && trans.productInfo!.isNotEmpty) _row(dialogContext, 'کالا', trans.productInfo!),
+              _row(dialogContext, 'توضیح', trans.description.isNotEmpty ? trans.description : '-'),
+              _row(dialogContext, 'نوع', isIncome ? 'درآمد' : 'خرج'),
+              _row(dialogContext, 'دسته‌بندی', trans.category),
+              _row(dialogContext, 'بانک', bankName),
+              _row(dialogContext, 'مبلغ', '${formatAmount(trans.amount)} تومان'),
+              if (trans.laborFee > 0) _row(dialogContext, 'دستمزد', '${formatAmount(trans.laborFee)} تومان'),
+              _row(dialogContext, 'تاریخ', formatDate(trans.date)),
+              _row(dialogContext, 'ساعت', '${trans.date.hour.toString().padLeft(2, '0')}:${trans.date.minute.toString().padLeft(2, '0')}'),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () { Navigator.pop(context); _showEditDialog(context, trans); }, child: const Text('ویرایش', style: TextStyle(color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700))),
-          TextButton(onPressed: () { Navigator.pop(context); _showDeleteConfirm(context, trans); }, child: const Text('حذف', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700))),
-          ElevatedButton(onPressed: () => Navigator.pop(context), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text('بستن', style: TextStyle(color: Colors.white))),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _showEditDialog(context, trans);
+            },
+            child: const Text('ویرایش', style: TextStyle(color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _showDeleteConfirm(context, trans);
+            },
+            child: const Text('حذف', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            child: const Text('بستن', style: TextStyle(color: Colors.white)),
+          ),
         ],
       ),
     );
@@ -192,6 +208,7 @@ class _TransactionReportsTab extends StatelessWidget {
     final amountController = TextEditingController(text: trans.amount.toStringAsFixed(0));
     DateTime selectedDate = trans.date;
     int? selectedBankId = trans.bankId;
+    bool isSubmitting = false;
 
     showDialog(
       context: context,
@@ -237,36 +254,43 @@ class _TransactionReportsTab extends StatelessWidget {
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
+              TextButton(onPressed: isSubmitting ? null : () => Navigator.pop(dialogContext), child: const Text('انصراف')),
               ElevatedButton(
-                onPressed: () async {
-                  final newAmount = double.tryParse(amountController.text) ?? trans.amount;
-                  final bankProvider = context.read<BankProvider>();
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        setState(() => isSubmitting = true);
+                        final newAmount = double.tryParse(amountController.text) ?? trans.amount;
+                        final bankProvider = context.read<BankProvider>();
 
-                  if (trans.bankId != null) {
-                    try {
-                      final oldBank = bankProvider.banks.firstWhere((b) => b.id == trans.bankId);
-                      final reversedBalance = trans.type == TransactionType.income ? oldBank.balance - trans.amount : oldBank.balance + trans.amount;
-                      await bankProvider.updateBank(Bank(id: oldBank.id, bankName: oldBank.bankName, accountNumber: oldBank.accountNumber, balance: reversedBalance));
-                    } catch (e) {}
-                  }
+                        if (trans.bankId != null) {
+                          try {
+                            final oldBank = bankProvider.banks.firstWhere((b) => b.id == trans.bankId);
+                            final reversedBalance = trans.type == TransactionType.income ? oldBank.balance - trans.amount : oldBank.balance + trans.amount;
+                            await bankProvider.updateBank(Bank(id: oldBank.id, bankName: oldBank.bankName, accountNumber: oldBank.accountNumber, balance: reversedBalance));
+                          } catch (e) {}
+                        }
 
-                  if (selectedBankId != null) {
-                    try {
-                      final newBank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
-                      final appliedBalance = trans.type == TransactionType.income ? newBank.balance + newAmount : newBank.balance - newAmount;
-                      await bankProvider.updateBank(Bank(id: newBank.id, bankName: newBank.bankName, accountNumber: newBank.accountNumber, balance: appliedBalance));
-                    } catch (e) {}
-                  }
+                        if (selectedBankId != null) {
+                          try {
+                            final newBank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
+                            final appliedBalance = trans.type == TransactionType.income ? newBank.balance + newAmount : newBank.balance - newAmount;
+                            await bankProvider.updateBank(Bank(id: newBank.id, bankName: newBank.bankName, accountNumber: newBank.accountNumber, balance: appliedBalance));
+                          } catch (e) {}
+                        }
 
-                  final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId, contactName: trans.contactName, productInfo: trans.productInfo, laborFee: trans.laborFee);
-                  await context.read<TransactionProvider>().editTransaction(updated);
+                        final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId, contactName: trans.contactName, productInfo: trans.productInfo, laborFee: trans.laborFee);
+                        await context.read<TransactionProvider>().editTransaction(updated);
 
-                  Navigator.pop(dialogContext);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ویرایش شد ✅')));
-                },
+                        if (dialogContext.mounted) {
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ویرایش شد ✅')));
+                        }
+                      },
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: const Text('ذخیره', style: TextStyle(color: Colors.white)),
+                child: isSubmitting
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('ذخیره', style: TextStyle(color: Colors.white)),
               ),
             ],
           );
@@ -276,34 +300,47 @@ class _TransactionReportsTab extends StatelessWidget {
   }
 
   void _showDeleteConfirm(BuildContext context, Transaction trans) {
+    bool isSubmitting = false;
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.card(dialogContext),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('حذف تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-        content: Text('آیا از حذف «${trans.title}» مطمئن هستید؟\n\nموجودی بانک هم به‌صورت خودکار اصلاح میشه.', style: TextStyle(color: AppColors.text(dialogContext))),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
-          ElevatedButton(
-            onPressed: () async {
-              if (trans.bankId != null) {
-                final bankProvider = context.read<BankProvider>();
-                try {
-                  final bank = bankProvider.banks.firstWhere((b) => b.id == trans.bankId);
-                  final reversedBalance = trans.type == TransactionType.income ? bank.balance - trans.amount : bank.balance + trans.amount;
-                  await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: reversedBalance));
-                } catch (e) {}
-              }
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setState) {
+          return AlertDialog(
+            backgroundColor: AppColors.card(dialogContext),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('حذف تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
+            content: Text('آیا از حذف «${trans.title}» مطمئن هستید؟\n\nموجودی بانک هم به‌صورت خودکار اصلاح میشه.', style: TextStyle(color: AppColors.text(dialogContext))),
+            actions: [
+              TextButton(onPressed: isSubmitting ? null : () => Navigator.pop(dialogContext), child: const Text('انصراف')),
+              ElevatedButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        setState(() => isSubmitting = true);
+                        if (trans.bankId != null) {
+                          final bankProvider = context.read<BankProvider>();
+                          try {
+                            final bank = bankProvider.banks.firstWhere((b) => b.id == trans.bankId);
+                            final reversedBalance = trans.type == TransactionType.income ? bank.balance - trans.amount : bank.balance + trans.amount;
+                            await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: reversedBalance));
+                          } catch (e) {}
+                        }
 
-              await context.read<TransactionProvider>().deleteTransaction(trans.id!);
-              Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حذف شد'), backgroundColor: Colors.red));
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('حذف', style: TextStyle(color: Colors.white)),
-          ),
-        ],
+                        await context.read<TransactionProvider>().deleteTransaction(trans.id!);
+
+                        if (dialogContext.mounted) {
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حذف شد'), backgroundColor: Colors.red));
+                        }
+                      },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: isSubmitting
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('حذف', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
