@@ -275,7 +275,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     );
   }
 
-  void _submit() async {
+void _submit() async {
     if (_isSubmitting) return;
     if (selectedContact == null || selectedProduct == null || quantityController.text.isEmpty || priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، محصول، تعداد و قیمت الزامی هستند')));
@@ -347,6 +347,16 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: isPurchase ? bank.balance - paidNow - fee : bank.balance + paidNow - fee);
       await bankProvider.updateBank(updatedBank);
 
+      final cashLedgerId = await ledgerProvider.addEntry(LedgerEntry(
+        personName: selectedContact!.firstName,
+        personFamily: selectedContact!.lastName,
+        date: selectedDate,
+        description: isPurchase ? 'پرداخت نقدی بابت: ${selectedProduct!.name}' : 'دریافت نقدی بابت: ${selectedProduct!.name}',
+        debitAmount: isPurchase ? paidNow : 0,
+        creditAmount: isPurchase ? 0 : paidNow,
+        bankId: bank.id,
+      ));
+
       await transProvider.addTransaction(Transaction(
         title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
         description: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
@@ -358,6 +368,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         contactName: selectedContact!.fullName,
         productInfo: productInfo,
         laborFee: laborFee,
+        ledgerEntryId: cashLedgerId,
       ));
 
       if (fee > 0) {
@@ -371,8 +382,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
           bankId: bank.id,
         ));
       }
-
-      await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: isPurchase ? 'پرداخت نقدی بابت: ${selectedProduct!.name}' : 'دریافت نقدی بابت: ${selectedProduct!.name}', debitAmount: isPurchase ? paidNow : 0, creditAmount: isPurchase ? 0 : paidNow, bankId: bank.id));
     }
 
     if (mounted) {
@@ -380,18 +389,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ثبت شد ✅')));
     }
   }
-
-  @override
-  void dispose() {
-    quantityController.dispose();
-    priceController.dispose();
-    noteController.dispose();
-    paidNowController.dispose();
-    feeController.dispose();
-    laborFeeController.dispose();
-    super.dispose();
-  }
-}
 
 class _UnitButton extends StatelessWidget {
   final String label;
