@@ -5,6 +5,7 @@ import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
+import '../models/ledger_model.dart';
 import '../models/profit_model.dart' hide TransactionType;
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
@@ -202,6 +203,27 @@ class _TransactionReportsTab extends StatelessWidget {
     );
   }
 
+  Future<void> _syncLedgerAfterEdit(BuildContext context, Transaction trans, double newAmount, DateTime newDate, int? newBankId) async {
+    if (trans.ledgerEntryId == null) return;
+    final ledgerProvider = context.read<LedgerProvider>();
+    try {
+      final entry = ledgerProvider.entries.firstWhere((e) => e.id == trans.ledgerEntryId);
+      final updatedEntry = LedgerEntry(
+        id: entry.id,
+        personName: entry.personName,
+        personFamily: entry.personFamily,
+        date: newDate,
+        description: entry.description,
+        debitAmount: trans.type == TransactionType.expense ? newAmount : 0,
+        creditAmount: trans.type == TransactionType.income ? newAmount : 0,
+        bankId: newBankId ?? entry.bankId,
+        trackingCode: entry.trackingCode,
+        laborFee: entry.laborFee,
+      );
+      await ledgerProvider.updateEntry(updatedEntry);
+    } catch (e) {}
+  }
+
   void _showEditDialog(BuildContext context, Transaction trans) {
     final titleController = TextEditingController(text: trans.title);
     final descController = TextEditingController(text: trans.description);
@@ -222,7 +244,7 @@ class _TransactionReportsTab extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF2B3FBE).withOpacity(0.08), borderRadius: BorderRadius.circular(10)), child: const Text('اگه مبلغ یا بانک رو عوض کنی، موجودی بانک هم خودکار تصحیح میشه', style: TextStyle(fontSize: 11, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w600))),
+                  Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF2B3FBE).withOpacity(0.08), borderRadius: BorderRadius.circular(10)), child: const Text('موجودی بانک و دفتر حساب مخاطب هم خودکار همگام میشن', style: TextStyle(fontSize: 11, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w600))),
                   const SizedBox(height: 12),
                   TextField(controller: titleController, style: TextStyle(color: AppColors.text(dialogContext)), decoration: InputDecoration(labelText: 'عنوان', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
                   const SizedBox(height: 12),
@@ -279,8 +301,10 @@ class _TransactionReportsTab extends StatelessWidget {
                           } catch (e) {}
                         }
 
-                        final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId, contactName: trans.contactName, productInfo: trans.productInfo, laborFee: trans.laborFee);
+                        final updated = Transaction(id: trans.id, title: titleController.text, description: descController.text, amount: newAmount, type: trans.type, category: trans.category, date: selectedDate, bankId: selectedBankId, contactName: trans.contactName, productInfo: trans.productInfo, laborFee: trans.laborFee, ledgerEntryId: trans.ledgerEntryId);
                         await context.read<TransactionProvider>().editTransaction(updated);
+
+                        await _syncLedgerAfterEdit(context, trans, newAmount, selectedDate, selectedBankId);
 
                         if (dialogContext.mounted) {
                           Navigator.pop(dialogContext);
@@ -309,7 +333,7 @@ class _TransactionReportsTab extends StatelessWidget {
             backgroundColor: AppColors.card(dialogContext),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: const Text('حذف تراکنش', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-            content: Text('آیا از حذف «${trans.title}» مطمئن هستید؟\n\nموجودی بانک هم به‌صورت خودکار اصلاح میشه.', style: TextStyle(color: AppColors.text(dialogContext))),
+            content: Text('آیا از حذف «${trans.title}» مطمئن هستید؟\n\nموجودی بانک و دفتر حساب مخاطب هم به‌صورت خودکار اصلاح میشن.', style: TextStyle(color: AppColors.text(dialogContext))),
             actions: [
               TextButton(onPressed: isSubmitting ? null : () => Navigator.pop(dialogContext), child: const Text('انصراف')),
               ElevatedButton(
@@ -324,6 +348,10 @@ class _TransactionReportsTab extends StatelessWidget {
                             final reversedBalance = trans.type == TransactionType.income ? bank.balance - trans.amount : bank.balance + trans.amount;
                             await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: reversedBalance));
                           } catch (e) {}
+                        }
+
+                        if (trans.ledgerEntryId != null) {
+                          await context.read<LedgerProvider>().deleteEntry(trans.ledgerEntryId!);
                         }
 
                         await context.read<TransactionProvider>().deleteTransaction(trans.id!);
