@@ -147,6 +147,16 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
 
     final ledgerDescription = noteController.text.isNotEmpty ? 'واریز به بانک - ${noteController.text}' : 'واریز به بانک';
 
+    final ledgerEntryId = await ledgerProvider.addEntry(LedgerEntry(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
+      date: selectedDate,
+      description: ledgerDescription,
+      creditAmount: amount,
+      bankId: bank.id,
+      trackingCode: trackingCodeController.text,
+    ));
+
     await transProvider.addTransaction(Transaction(
       title: 'واریز به بانک',
       description: 'واریز به بانک',
@@ -156,6 +166,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       date: selectedDate,
       bankId: bank.id,
       contactName: selectedContact!.fullName,
+      ledgerEntryId: ledgerEntryId,
     ));
 
     if (fee > 0) {
@@ -169,8 +180,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
         bankId: bank.id,
       ));
     }
-
-    await ledgerProvider.addEntry(LedgerEntry(personName: selectedContact!.firstName, personFamily: selectedContact!.lastName, date: selectedDate, description: ledgerDescription, creditAmount: amount, bankId: bank.id, trackingCode: trackingCodeController.text));
 
     if (mounted) {
       Navigator.pop(context);
