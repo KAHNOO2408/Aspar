@@ -1,294 +1,331 @@
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import '../models/transaction_model.dart';
-import '../models/debt_model.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 import '../models/bank_model.dart';
-import '../models/payment_model.dart';
+import '../models/transaction_model.dart';
+import '../models/contact_model.dart';
+import '../models/debt_model.dart';
 import '../models/product_model.dart';
 import '../models/ledger_model.dart';
-import '../models/contact_model.dart';
 import '../models/loan_model.dart';
+import '../models/savings_model.dart';
 
 class DatabaseHelper {
-  static late Box<dynamic> transactionBox;
-  static late Box<dynamic> debtBox;
-  static late Box<dynamic> bankBox;
-  static late Box<dynamic> paymentBox;
-  static late Box<dynamic> authBox;
-  static late Box<dynamic> productBox;
-  static late Box<dynamic> productBatchBox;
-  static late Box<dynamic> productTransactionBox;
-  static late Box<dynamic> ledgerBox;
-  static late Box<dynamic> contactBox;
-  static late Box<dynamic> loanBox;
+  static const String _dbName = 'accounting_app.db';
+  static const int _dbVersion = 1;
+  static Database? _db;
 
-  static Future<void> init() async {
-    if (!Hive.isBoxOpen('transactions')) {
-      transactionBox = await Hive.openBox('transactions');
-    } else {
-      transactionBox = Hive.box('transactions');
-    }
-
-    if (!Hive.isBoxOpen('debts')) {
-      debtBox = await Hive.openBox('debts');
-    } else {
-      debtBox = Hive.box('debts');
-    }
-
-    if (!Hive.isBoxOpen('banks')) {
-      bankBox = await Hive.openBox('banks');
-    } else {
-      bankBox = Hive.box('banks');
-    }
-
-    if (!Hive.isBoxOpen('payments')) {
-      paymentBox = await Hive.openBox('payments');
-    } else {
-      paymentBox = Hive.box('payments');
-    }
-
-    if (!Hive.isBoxOpen('auth')) {
-      authBox = await Hive.openBox('auth');
-    } else {
-      authBox = Hive.box('auth');
-    }
-
-    if (!Hive.isBoxOpen('products')) {
-      productBox = await Hive.openBox('products');
-    } else {
-      productBox = Hive.box('products');
-    }
-
-    if (!Hive.isBoxOpen('productBatches')) {
-      productBatchBox = await Hive.openBox('productBatches');
-    } else {
-      productBatchBox = Hive.box('productBatches');
-    }
-
-    if (!Hive.isBoxOpen('productTransactions')) {
-      productTransactionBox = await Hive.openBox('productTransactions');
-    } else {
-      productTransactionBox = Hive.box('productTransactions');
-    }
-
-    if (!Hive.isBoxOpen('ledger')) {
-      ledgerBox = await Hive.openBox('ledger');
-    } else {
-      ledgerBox = Hive.box('ledger');
-    }
-
-    if (!Hive.isBoxOpen('contacts')) {
-      contactBox = await Hive.openBox('contacts');
-    } else {
-      contactBox = Hive.box('contacts');
-    }
-
-    if (!Hive.isBoxOpen('loans')) {
-      loanBox = await Hive.openBox('loans');
-    } else {
-      loanBox = Hive.box('loans');
-    }
+  static Future<Database> get database async {
+    _db ??= await _initDatabase();
+    return _db!;
   }
 
-  static Future<void> insertTransaction(Transaction transaction) async {
-    await transactionBox.put(transaction.id, transaction.toMap());
+  static Future<Database> _initDatabase() async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, _dbName);
+    return openDatabase(path, version: _dbVersion, onCreate: _createTables);
   }
 
-  static Future<List<Transaction>> getTransactions() async {
-    final transactions = <Transaction>[];
-    for (var value in transactionBox.values) {
-      transactions.add(Transaction.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return transactions;
+  static Future<void> _createTables(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS banks (
+        id INTEGER PRIMARY KEY,
+        bankName TEXT NOT NULL,
+        accountNumber TEXT NOT NULL,
+        balance REAL NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        amount REAL NOT NULL,
+        type TEXT NOT NULL,
+        category TEXT NOT NULL,
+        date TEXT NOT NULL,
+        bankId INTEGER,
+        contactName TEXT,
+        productInfo TEXT,
+        laborFee REAL DEFAULT 0,
+        ledgerEntryId INTEGER
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER PRIMARY KEY,
+        firstName TEXT NOT NULL,
+        lastName TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS debts (
+        id INTEGER PRIMARY KEY,
+        personName TEXT NOT NULL,
+        personFamily TEXT NOT NULL,
+        description TEXT,
+        amount REAL NOT NULL,
+        type TEXT NOT NULL,
+        date TEXT NOT NULL,
+        paidAmount REAL DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS products (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        currentStock REAL DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS product_transactions (
+        id INTEGER PRIMARY KEY,
+        productId INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        type TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        pricePerUnit REAL NOT NULL,
+        profit REAL DEFAULT 0,
+        costOfGoods REAL DEFAULT 0,
+        laborFee REAL DEFAULT 0,
+        contactName TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS ledger_entries (
+        id INTEGER PRIMARY KEY,
+        personName TEXT NOT NULL,
+        personFamily TEXT NOT NULL,
+        date TEXT NOT NULL,
+        description TEXT NOT NULL,
+        debitAmount REAL DEFAULT 0,
+        creditAmount REAL DEFAULT 0,
+        bankId INTEGER,
+        trackingCode TEXT,
+        laborFee REAL DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS loans (
+        id INTEGER PRIMARY KEY,
+        bankName TEXT NOT NULL,
+        totalAmount REAL NOT NULL,
+        principalAmount REAL NOT NULL,
+        interestPercent REAL DEFAULT 0,
+        monthlyPayment REAL NOT NULL,
+        months INTEGER NOT NULL,
+        startDate TEXT NOT NULL,
+        endDate TEXT NOT NULL,
+        bankId INTEGER,
+        description TEXT,
+        paidAmount REAL DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS savings_goals (
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        targetAmount REAL NOT NULL,
+        currentAmount REAL DEFAULT 0,
+        createdDate TEXT NOT NULL,
+        targetDate TEXT
+      )
+    ''');
   }
 
-  static Future<void> updateTransaction(Transaction transaction) async {
-    await transactionBox.put(transaction.id, transaction.toMap());
-  }
-
-  static Future<void> deleteTransaction(int id) async {
-    await transactionBox.delete(id);
-  }
-
-  static Future<void> insertDebt(Debt debt) async {
-    await debtBox.put(debt.id, debt.toMap());
-  }
-
-  static Future<List<Debt>> getDebts() async {
-    final debts = <Debt>[];
-    for (var value in debtBox.values) {
-      debts.add(Debt.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return debts;
-  }
-
-  static Future<void> updateDebt(Debt debt) async {
-    await debtBox.put(debt.id, debt.toMap());
-  }
-
-  static Future<void> deleteDebt(int id) async {
-    await debtBox.delete(id);
-  }
-
+  // ============ BANKS ============
   static Future<void> insertBank(Bank bank) async {
-    await bankBox.put(bank.id, bank.toMap());
-  }
-
-  static Future<List<Bank>> getBanks() async {
-    final banks = <Bank>[];
-    for (var value in bankBox.values) {
-      banks.add(Bank.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return banks;
+    final db = await database;
+    await db.insert('banks', bank.toMap());
   }
 
   static Future<void> updateBank(Bank bank) async {
-    await bankBox.put(bank.id, bank.toMap());
+    final db = await database;
+    await db.update('banks', bank.toMap(), where: 'id = ?', whereArgs: [bank.id]);
   }
 
   static Future<void> deleteBank(int id) async {
-    await bankBox.delete(id);
+    final db = await database;
+    await db.delete('banks', where: 'id = ?', whereArgs: [id]);
   }
 
-  static Future<void> insertPayment(Payment payment) async {
-    await paymentBox.put(payment.id, payment.toMap());
+  static Future<List<Bank>> getBanks() async {
+    final db = await database;
+    final data = await db.query('banks');
+    return data.map((map) => Bank.fromMap(map)).toList();
   }
 
-  static Future<List<Payment>> getPayments() async {
-    final payments = <Payment>[];
-    for (var value in paymentBox.values) {
-      payments.add(Payment.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return payments;
+  // ============ TRANSACTIONS ============
+  static Future<void> insertTransaction(Transaction trans) async {
+    final db = await database;
+    await db.insert('transactions', trans.toMap());
   }
 
-  static Future<void> updatePayment(Payment payment) async {
-    await paymentBox.put(payment.id, payment.toMap());
+  static Future<void> updateTransaction(Transaction trans) async {
+    final db = await database;
+    await db.update('transactions', trans.toMap(), where: 'id = ?', whereArgs: [trans.id]);
   }
 
-  static Future<void> deletePayment(int id) async {
-    await paymentBox.delete(id);
+  static Future<void> deleteTransaction(int id) async {
+    final db = await database;
+    await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
   }
 
-  static Future<void> insertProduct(Product product) async {
-  await productBox.put(product.id, product.toMap());
-}
-
-static Future<void> updateProduct(Product product) async {
-  await productBox.put(product.id, product.toMap());
-}
-
-  static Future<List<Product>> getProducts() async {
-    final products = <Product>[];
-    for (var value in productBox.values) {
-      products.add(Product.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return products;
+  static Future<List<Transaction>> getTransactions() async {
+    final db = await database;
+    final data = await db.query('transactions', orderBy: 'date DESC');
+    return data.map((map) => Transaction.fromMap(map)).toList();
   }
 
-  static Future<void> insertProductBatch(ProductBatch batch) async {
-    await productBatchBox.put(batch.id, batch.toMap());
-  }
-
-  static Future<List<ProductBatch>> getProductBatches() async {
-    final batches = <ProductBatch>[];
-    for (var value in productBatchBox.values) {
-      batches.add(ProductBatch.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return batches;
-  }
-
-  static Future<void> updateProductBatch(ProductBatch batch) async {
-    await productBatchBox.put(batch.id, batch.toMap());
-  }
-
-  static Future<void> insertProductTransaction(ProductTransaction tx) async {
-    await productTransactionBox.put(tx.id, tx.toMap());
-  }
-
-  static Future<List<ProductTransaction>> getProductTransactions() async {
-    final txs = <ProductTransaction>[];
-    for (var value in productTransactionBox.values) {
-      txs.add(ProductTransaction.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return txs;
-  }
-
-  static Future<void> insertLedgerEntry(LedgerEntry entry) async {
-    await ledgerBox.put(entry.id, entry.toMap());
-  }
-
-  static Future<List<LedgerEntry>> getLedgerEntries() async {
-    final entries = <LedgerEntry>[];
-    for (var value in ledgerBox.values) {
-      entries.add(LedgerEntry.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return entries;
-  }
-
-  static Future<void> updateLedgerEntry(LedgerEntry entry) async {
-    await ledgerBox.put(entry.id, entry.toMap());
-  }
-
-  static Future<void> deleteLedgerEntry(int id) async {
-    await ledgerBox.delete(id);
-  }
-
+  // ============ CONTACTS ============
   static Future<void> insertContact(Contact contact) async {
-    await contactBox.put(contact.id, contact.toMap());
-  }
-
-  static Future<List<Contact>> getContacts() async {
-    final contacts = <Contact>[];
-    for (var value in contactBox.values) {
-      contacts.add(Contact.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return contacts;
+    final db = await database;
+    await db.insert('contacts', contact.toMap());
   }
 
   static Future<void> updateContact(Contact contact) async {
-    await contactBox.put(contact.id, contact.toMap());
+    final db = await database;
+    await db.update('contacts', contact.toMap(), where: 'id = ?', whereArgs: [contact.id]);
   }
 
   static Future<void> deleteContact(int id) async {
-    await contactBox.delete(id);
+    final db = await database;
+    await db.delete('contacts', where: 'id = ?', whereArgs: [id]);
   }
 
+  static Future<List<Contact>> getContacts() async {
+    final db = await database;
+    final data = await db.query('contacts', orderBy: 'firstName ASC');
+    return data.map((map) => Contact.fromMap(map)).toList();
+  }
+
+  // ============ DEBTS ============
+  static Future<void> insertDebt(Debt debt) async {
+    final db = await database;
+    await db.insert('debts', debt.toMap());
+  }
+
+  static Future<void> updateDebt(Debt debt) async {
+    final db = await database;
+    await db.update('debts', debt.toMap(), where: 'id = ?', whereArgs: [debt.id]);
+  }
+
+  static Future<void> deleteDebt(int id) async {
+    final db = await database;
+    await db.delete('debts', where: 'id = ?', whereArgs: [id]);
+  }
+
+  static Future<List<Debt>> getDebts() async {
+    final db = await database;
+    final data = await db.query('debts', orderBy: 'date DESC');
+    return data.map((map) => Debt.fromMap(map)).toList();
+  }
+
+  // ============ PRODUCTS ============
+  static Future<void> insertProduct(Product product) async {
+    final db = await database;
+    await db.insert('products', product.toMap());
+  }
+
+  static Future<void> updateProduct(Product product) async {
+    final db = await database;
+    await db.update('products', product.toMap(), where: 'id = ?', whereArgs: [product.id]);
+  }
+
+  static Future<void> deleteProduct(int id) async {
+    final db = await database;
+    await db.delete('products', where: 'id = ?', whereArgs: [id]);
+  }
+
+  static Future<List<Product>> getProducts() async {
+    final db = await database;
+    final data = await db.query('products', orderBy: 'name ASC');
+    return data.map((map) => Product.fromMap(map)).toList();
+  }
+
+  // ============ PRODUCT TRANSACTIONS ============
+  static Future<void> insertProductTransaction(ProductTransaction pt) async {
+    final db = await database;
+    await db.insert('product_transactions', pt.toMap());
+  }
+
+  static Future<List<ProductTransaction>> getProductTransactions() async {
+    final db = await database;
+    final data = await db.query('product_transactions', orderBy: 'date DESC');
+    return data.map((map) => ProductTransaction.fromMap(map)).toList();
+  }
+
+  // ============ LEDGER ENTRIES ============
+  static Future<void> insertLedgerEntry(LedgerEntry entry) async {
+    final db = await database;
+    await db.insert('ledger_entries', entry.toMap());
+  }
+
+  static Future<void> updateLedgerEntry(LedgerEntry entry) async {
+    final db = await database;
+    await db.update('ledger_entries', entry.toMap(), where: 'id = ?', whereArgs: [entry.id]);
+  }
+
+  static Future<void> deleteLedgerEntry(int id) async {
+    final db = await database;
+    await db.delete('ledger_entries', where: 'id = ?', whereArgs: [id]);
+  }
+
+  static Future<List<LedgerEntry>> getLedgerEntries() async {
+    final db = await database;
+    final data = await db.query('ledger_entries', orderBy: 'date DESC');
+    return data.map((map) => LedgerEntry.fromMap(map)).toList();
+  }
+
+  // ============ LOANS ============
   static Future<void> insertLoan(Loan loan) async {
-    await loanBox.put(loan.id, loan.toMap());
-  }
-
-  static Future<List<Loan>> getLoans() async {
-    final loans = <Loan>[];
-    for (var value in loanBox.values) {
-      loans.add(Loan.fromMap(Map<String, dynamic>.from(value)));
-    }
-    return loans;
+    final db = await database;
+    await db.insert('loans', loan.toMap());
   }
 
   static Future<void> updateLoan(Loan loan) async {
-    await loanBox.put(loan.id, loan.toMap());
+    final db = await database;
+    await db.update('loans', loan.toMap(), where: 'id = ?', whereArgs: [loan.id]);
   }
 
   static Future<void> deleteLoan(int id) async {
-    await loanBox.delete(id);
-  }
-}
-
-// ============ SAVINGS GOALS ============
-  Future<void> insertSavingsGoal(SavingsGoal goal) async {
-    await _db.insert('savings_goals', goal.toMap());
+    final db = await database;
+    await db.delete('loans', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> updateSavingsGoal(SavingsGoal goal) async {
-    await _db.update('savings_goals', goal.toMap(), where: 'id = ?', whereArgs: [goal.id]);
+  static Future<List<Loan>> getLoans() async {
+    final db = await database;
+    final data = await db.query('loans', orderBy: 'startDate DESC');
+    return data.map((map) => Loan.fromMap(map)).toList();
   }
 
-  Future<void> deleteSavingsGoal(int id) async {
-    await _db.delete('savings_goals', where: 'id = ?', whereArgs: [id]);
+  // ============ SAVINGS GOALS ============
+  static Future<void> insertSavingsGoal(SavingsGoal goal) async {
+    final db = await database;
+    await db.insert('savings_goals', goal.toMap());
   }
 
-  Future<List<SavingsGoal>> getSavingsGoals() async {
-    final data = await _db.query('savings_goals', orderBy: 'createdDate DESC');
+  static Future<void> updateSavingsGoal(SavingsGoal goal) async {
+    final db = await database;
+    await db.update('savings_goals', goal.toMap(), where: 'id = ?', whereArgs: [goal.id]);
+  }
+
+  static Future<void> deleteSavingsGoal(int id) async {
+    final db = await database;
+    await db.delete('savings_goals', where: 'id = ?', whereArgs: [id]);
+  }
+
+  static Future<List<SavingsGoal>> getSavingsGoals() async {
+    final db = await database;
+    final data = await db.query('savings_goals', orderBy: 'createdDate DESC');
     return data.map((map) => SavingsGoal.fromMap(map)).toList();
   }
+}
