@@ -308,10 +308,10 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('قیمت واحد (تومان) *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
+                      Text('تعداد *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
                       const SizedBox(height: 8),
                       TextField(
-                        controller: priceController,
+                        controller: quantityController,
                         keyboardType: TextInputType.number,
                         onChanged: (_) => setState(() {}),
                         style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
@@ -323,16 +323,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                           hintText: '0',
                         ),
                       ),
-                      if (price > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                            child: Text('${formatAmount(price)} تومان', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 11, color: gradient[1], fontFamily: _fontFamily)),
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -341,10 +331,10 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('تعداد *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
+                      Text('قیمت واحد (تومان) *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
                       const SizedBox(height: 8),
                       TextField(
-                        controller: quantityController,
+                        controller: priceController,
                         keyboardType: TextInputType.number,
                         onChanged: (_) => setState(() {}),
                         style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
@@ -366,36 +356,41 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: AppColors.card(context).withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('مبلغ کل:', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 11, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
-                        const SizedBox(height: 4),
-                        Text('${formatAmount(baseAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
-                      ],
-                    ),
-                  ),
+                  child: _UnitButton(label: 'عدد', selected: selectedUnit == 'count', gradient: gradient, onTap: () => setState(() => selectedUnit = 'count')),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: AppColors.card(context).withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('کل:', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 11, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
-                        const SizedBox(height: 4),
-                        Text('${formatAmount(totalAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
-                      ],
-                    ),
+                const SizedBox(width: 10),
+                if (!isPurchase)
+                  Expanded(
+                    child: _UnitButton(label: 'میل', selected: selectedUnit == 'ml', gradient: gradient, onTap: () => setState(() => selectedUnit = 'ml')),
                   ),
-                ),
               ],
             ),
+            const SizedBox(height: 16),
+
+            if (price > 0)
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
+                      child: Center(
+                        child: Text('${formatAmount(price)} تومان', style: TextStyle(color: gradient[1], fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(12)),
+                      child: Center(
+                        child: Text('${formatAmount(totalAmount)} تومان', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 16),
 
             if (showLaborFee) ...[
