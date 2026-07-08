@@ -31,7 +31,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
   String selectedUnit = 'count';
-  String? selectedPaymentMethod; // 'cash' یا 'card'
+  String? selectedPaymentMethod;
   bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
@@ -231,7 +231,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final laborFee = showLaborFee ? (double.tryParse(laborFeeController.text) ?? 0.0) : 0.0;
     final baseAmount = quantity * price;
     final totalAmount = baseAmount + laborFee;
-    final paidNow = double.tryParse(paidNowController.text) ?? 0;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -363,7 +362,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
                       child: Center(
-                        child: Text('${formatAmount(price)} تومان', style: TextStyle(color: gradient[1], fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                        child: Text('مبلغ: ${formatAmount(price)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                       ),
                     ),
                   ),
@@ -373,13 +372,33 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
                       child: Center(
-                        child: Text('${formatAmount(totalAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                        child: Text('مبلغ کل: ${formatAmount(totalAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                       ),
                     ),
                   ),
                 ],
               ),
             const SizedBox(height: 16),
+
+            if (showLaborFee) ...[
+              TextField(
+                controller: laborFeeController,
+                keyboardType: TextInputType.number,
+                onChanged: (_) => setState(() {}),
+                style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                decoration: _decoration(context, 'کارمزد'),
+              ),
+              const SizedBox(height: 16),
+              if (laborFee > 0)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
+                  child: Center(
+                    child: Text('${formatAmount(laborFee)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                  ),
+                ),
+              const SizedBox(height: 16),
+            ],
 
             TextField(
               controller: noteController,
@@ -505,26 +524,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                 ],
               ),
 
-            if (showLaborFee) ...[
-              TextField(
-                controller: laborFeeController,
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-                style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                decoration: _decoration(context, 'کارمزد'),
-              ),
-              const SizedBox(height: 16),
-              if (laborFee > 0)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
-                  child: Center(
-                    child: Text('${formatAmount(laborFee)} تومان', style: TextStyle(color: gradient[1], fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
-                  ),
-                ),
-              const SizedBox(height: 16),
-            ],
-
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -542,7 +541,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     child: Center(
                       child: _isSubmitting
                           ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : Text(isPurchase ? 'ثبت خرید' : 'ثبت فروش', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16, fontFamily: _fontFamily)),
+                          : Text(widget.type == DebtType.owed ? 'ثبت خرید' : 'ثبت فروش', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16, fontFamily: _fontFamily)),
                     ),
                   ),
                 ),
@@ -639,17 +638,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         cashBox: bank.cashBox,
       );
       await bankProvider.updateBank(updatedBank);
-
-      await ledgerProvider.addEntry(LedgerEntry(
-        id: DateTime.now().millisecondsSinceEpoch + 1,
-        personName: selectedContact!.firstName,
-        personFamily: selectedContact!.lastName,
-        date: selectedDate,
-        description: isPurchase ? 'پرداخت کارت بابت: ${selectedProduct!.name}' : 'دریافت کارت بابت: ${selectedProduct!.name}',
-        debitAmount: isPurchase ? paidNow : 0,
-        creditAmount: isPurchase ? 0 : paidNow,
-        bankId: bank.id,
-      ));
 
       await transProvider.addTransaction(Transaction(
         id: DateTime.now().millisecondsSinceEpoch,
