@@ -55,6 +55,60 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     if (picked != null) setState(() => selectedDate = picked.toDateTime());
   }
 
+  Future<void> _pickContact() async {
+    final contactProvider = context.read<ContactProvider>();
+    final searchController = TextEditingController();
+
+    final result = await showDialog<Contact>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final query = searchController.text.trim().toLowerCase();
+            final filtered = contactProvider.contacts.where((c) => c.fullName.toLowerCase().contains(query)).toList();
+
+            return AlertDialog(
+              backgroundColor: AppColors.card(dialogContext),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text('انتخاب مخاطب', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext))),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 300,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: searchController,
+                      onChanged: (_) => setDialogState(() {}),
+                      style: TextStyle(color: AppColors.text(dialogContext), fontFamily: _fontFamily),
+                      decoration: InputDecoration(hintText: 'جستجو...', hintStyle: const TextStyle(fontFamily: _fontFamily), prefixIcon: const Icon(Icons.search), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? Center(child: Text('مخاطبی یافت نشد', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontWeight: FontWeight.w600, fontFamily: _fontFamily)))
+                          : ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final contact = filtered[index];
+                                return ListTile(
+                                  title: Text(contact.fullName, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
+                                  onTap: () => Navigator.pop(dialogContext, contact),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) setState(() => selectedContact = result);
+  }
+
   Future<void> _pickProduct() async {
     final productProvider = context.read<ProductProvider>();
     final searchController = TextEditingController();
@@ -140,136 +194,174 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final productProvider = context.watch<ProductProvider>();
     final stock = selectedProduct != null ? productProvider.getStock(selectedProduct!.id!) : null;
     final showLaborFee = selectedUnit == 'ml' && !isPurchase;
+    
+    final quantity = double.tryParse(quantityController.text) ?? 0;
+    final price = double.tryParse(priceController.text) ?? 0;
+    final laborFee = showLaborFee ? (double.tryParse(laborFeeController.text) ?? 0.0) : 0.0;
+    final baseAmount = quantity * price;
+    final totalAmount = baseAmount + laborFee;
+    final paidNow = double.tryParse(paidNowController.text) ?? 0;
+    final fee = double.tryParse(feeController.text) ?? 0;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(title: Text(isPurchase ? 'ثبت خرید' : 'ثبت فروش')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Consumer<ContactProvider>(
-          builder: (context, contactProvider, child) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DropdownButtonFormField<Contact>(
-                  isExpanded: true,
-                  hint: Text('مخاطب را انتخاب کنید', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
-                  value: selectedContact,
-                  items: contactProvider.contacts.map((contact) => DropdownMenuItem(value: contact, child: Text(contact.fullName, style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
-                  onChanged: (contact) => setState(() => selectedContact = contact),
-                  decoration: _decoration(context, 'مخاطب *'),
-                  style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: _pickContact,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), border: Border.all(color: selectedContact == null ? AppColors.divider(context) : gradient[0], width: 2)),
+                child: Row(
+                  children: [
+                    Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.person, color: Colors.white, size: 18)),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(selectedContact?.fullName ?? 'انتخاب مخاطب *', style: TextStyle(color: selectedContact != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily))),
+                    Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
+                  ],
                 ),
-                const SizedBox(height: 16),
+              ),
+            ),
+            const SizedBox(height: 16),
 
-                InkWell(
-                  onTap: _pickProduct,
-                  borderRadius: BorderRadius.circular(14),
+            InkWell(
+              onTap: _pickProduct,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
+                child: Row(
+                  children: [
+                    Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.inventory_2_outlined, color: Colors.white, size: 18)),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(selectedProduct?.name ?? 'انتخاب محصول...', style: TextStyle(color: selectedProduct != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily))),
+                    if (selectedProduct != null && !isPurchase)
+                      Text(stock! > 0 ? 'موجودی: ${stock.toStringAsFixed(0)}' : 'موجود نیست', style: TextStyle(fontSize: 12, color: stock > 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Text('واحد اندازه‌گیری', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textSecondary(context))),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: _UnitButton(label: 'تعداد', selected: selectedUnit == 'count', gradient: gradient, onTap: () => setState(() => selectedUnit = 'count'))),
+                const SizedBox(width: 10),
+                Expanded(child: _UnitButton(label: 'میل', selected: selectedUnit == 'ml', gradient: gradient, onTap: () => setState(() => selectedUnit = 'ml'))),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                Expanded(child: TextField(controller: quantityController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, selectedUnit == 'ml' ? 'مقدار (میل) *' : 'تعداد *'))),
+                const SizedBox(width: 10),
+                Expanded(child: TextField(controller: priceController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, selectedUnit == 'ml' ? 'قیمت هر میل *' : 'قیمت واحد *'))),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              child: Text('مبلغ کل: ${formatAmount(baseAmount)} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1])),
+            ),
+
+            if (showLaborFee) ...[
+              const SizedBox(height: 16),
+              TextField(controller: laborFeeController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'دستمزد (تومان) - اختیاری')),
+              if (laborFee > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
                   child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
-                    child: Row(
-                      children: [
-                        Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.inventory_2_outlined, color: Colors.white, size: 18)),
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(selectedProduct?.name ?? 'انتخاب محصول...', style: TextStyle(color: selectedProduct != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily))),
-                        if (selectedProduct != null && !isPurchase)
-                          Text(stock! > 0 ? 'موجودی: ${stock.toStringAsFixed(0)}' : 'موجود نیست', style: TextStyle(fontSize: 12, color: stock > 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
-                      ],
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                    child: Text('${formatAmount(laborFee)} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1])),
                   ),
                 ),
-                const SizedBox(height: 16),
+            ],
 
-                Text('واحد اندازه‌گیری', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textSecondary(context))),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: _UnitButton(label: 'تعداد', selected: selectedUnit == 'count', gradient: gradient, onTap: () => setState(() => selectedUnit = 'count'))),
-                    const SizedBox(width: 10),
-                    Expanded(child: _UnitButton(label: 'میل', selected: selectedUnit == 'ml', gradient: gradient, onTap: () => setState(() => selectedUnit = 'ml'))),
-                  ],
-                ),
-                const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            TextField(controller: noteController, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'یادداشت (اختیاری)')),
+            const SizedBox(height: 16),
 
-                Row(
-                  children: [
-                    Expanded(child: TextField(controller: quantityController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, selectedUnit == 'ml' ? 'مقدار (میل) *' : 'تعداد *'))),
-                    const SizedBox(width: 10),
-                    Expanded(child: TextField(controller: priceController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, selectedUnit == 'ml' ? 'قیمت هر میل *' : 'قیمت واحد *'))),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Container(
+            _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate),
+
+            const SizedBox(height: 25),
+            Row(
+              children: [
+                Container(width: 4, height: 18, decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(4))),
+                const SizedBox(width: 8),
+                Text(isPurchase ? 'پرداخت فوری (اختیاری)' : 'دریافت فوری (اختیاری)', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textSecondary(context))),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            TextField(controller: paidNowController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, isPurchase ? 'مبلغ پرداخت شده الان' : 'مبلغ دریافت شده الان')),
+            if (paidNow > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Text('مبلغ کل: ${formatAmount((double.tryParse(quantityController.text) ?? 0) * (double.tryParse(priceController.text) ?? 0))} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1])),
+                  child: Text('${formatAmount(paidNow)} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1])),
                 ),
+              ),
 
-                if (showLaborFee) ...[
-                  const SizedBox(height: 16),
-                  TextField(controller: laborFeeController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'دستمزد (تومان) - اختیاری')),
-                ],
-
-                const SizedBox(height: 16),
-                TextField(controller: noteController, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'یادداشت (اختیاری)')),
-                const SizedBox(height: 16),
-
-                _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate),
-
-                const SizedBox(height: 25),
-                Row(
-                  children: [
-                    Container(width: 4, height: 18, decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(4))),
-                    const SizedBox(width: 8),
-                    Text(isPurchase ? 'پرداخت فوری (اختیاری)' : 'دریافت فوری (اختیاری)', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textSecondary(context))),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                TextField(controller: paidNowController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, isPurchase ? 'مبلغ پرداخت شده الان' : 'مبلغ دریافت شده الان')),
-
-                if ((double.tryParse(paidNowController.text) ?? 0) > 0) ...[
-                  const SizedBox(height: 15),
-                  TextField(controller: feeController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'کارمزد بانکی (تومان) - اختیاری')),
-                  const SizedBox(height: 15),
-                  Consumer<BankProvider>(
-                    builder: (context, bankProvider, _) {
-                      return DropdownButtonFormField<int>(
-                        value: selectedBankId,
-                        hint: Text('انتخاب بانک *', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
-                        items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان', style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
-                        onChanged: (value) => setState(() => selectedBankId = value),
-                        decoration: _decoration(context, 'بانک *'),
-                        style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                      );
-                    },
+            if ((double.tryParse(paidNowController.text) ?? 0) > 0) ...[
+              const SizedBox(height: 15),
+              TextField(controller: feeController, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily), decoration: _decoration(context, 'کارمزد بانکی (تومان) - اختیاری')),
+              if (fee > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                    child: Text('${formatAmount(fee)} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1])),
                   ),
-                ],
+                ),
+              const SizedBox(height: 15),
+              Consumer<BankProvider>(
+                builder: (context, bankProvider, _) {
+                  return DropdownButtonFormField<int>(
+                    value: selectedBankId,
+                    hint: Text('انتخاب بانک *', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
+                    items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان', style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
+                    onChanged: (value) => setState(() => selectedBankId = value),
+                    decoration: _decoration(context, 'بانک *'),
+                    style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                  );
+                },
+              ),
+            ],
 
-                const SizedBox(height: 30),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: LinearGradient(colors: gradient), boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: _isSubmitting ? null : _submit,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Center(
-                          child: _isSubmitting
-                              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                              : const Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
-                        ),
-                      ),
+            const SizedBox(height: 30),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: LinearGradient(colors: gradient), boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))]),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: _isSubmitting ? null : _submit,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: _isSubmitting
+                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                          : const Text('ثبت کن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
                     ),
                   ),
                 ),
-              ],
-            );
-          },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -330,6 +422,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
     final ledgerProvider = context.read<LedgerProvider>();
     await ledgerProvider.addEntry(LedgerEntry(
+      id: DateTime.now().millisecondsSinceEpoch,
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
       date: selectedDate,
@@ -347,7 +440,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       final updatedBank = Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: isPurchase ? bank.balance - paidNow - fee : bank.balance + paidNow - fee);
       await bankProvider.updateBank(updatedBank);
 
-      final cashLedgerId = await ledgerProvider.addEntry(LedgerEntry(
+      await ledgerProvider.addEntry(LedgerEntry(
+        id: DateTime.now().millisecondsSinceEpoch + 1,
         personName: selectedContact!.firstName,
         personFamily: selectedContact!.lastName,
         date: selectedDate,
@@ -358,6 +452,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       ));
 
       await transProvider.addTransaction(Transaction(
+        id: DateTime.now().millisecondsSinceEpoch,
         title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
         description: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
         amount: paidNow,
@@ -368,11 +463,11 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         contactName: selectedContact!.fullName,
         productInfo: productInfo,
         laborFee: laborFee,
-        ledgerEntryId: cashLedgerId,
       ));
 
       if (fee > 0) {
         await transProvider.addTransaction(Transaction(
+          id: DateTime.now().millisecondsSinceEpoch + 2,
           title: 'کارمزد تراکنش',
           description: 'کارمزد ${isPurchase ? 'پرداخت به' : 'دریافت از'} ${selectedContact!.fullName}',
           amount: fee,
@@ -424,7 +519,7 @@ class _UnitButton extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-          child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Center(child: Text(label, style: TextStyle(color: selected ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700)))),
+          child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Center(child: Text(label, style: TextStyle(color: selected ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')))),
         ),
       ),
     );
@@ -448,7 +543,7 @@ class _DateButton extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.calendar_today, size: 16, color: Color(0xFF4F6BF5)), const SizedBox(width: 8), Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context)))]),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.calendar_today, size: 16, color: Color(0xFF4F6BF5)), const SizedBox(width: 8), Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context), fontFamily: 'YekanBakh'))]),
           ),
         ),
       ),
