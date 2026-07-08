@@ -4,11 +4,12 @@ import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
 import '../models/debt_model.dart';
-import '../models/savings_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 import 'add_transaction_screen.dart';
+import 'return_from_purchase_screen.dart';
+import 'return_from_sale_screen.dart';
 import 'add_debt_screen.dart';
 import 'add_bank_screen.dart';
 import 'debts_screen.dart';
@@ -24,7 +25,6 @@ import 'bank_deposit_screen.dart';
 import 'bank_withdrawal_screen.dart';
 import 'cash_deposit_screen.dart';
 import 'cash_withdrawal_screen.dart';
-import 'savings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -47,11 +47,15 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   SvgPicture.asset('assets/logo.svg', width: 80, height: 80),
                   const SizedBox(height: 10),
-                  const Text('آسپار', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
+                  const Text('آسپار', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
                 ],
               ),
             ),
-            ListTile(leading: const Icon(Icons.home, color: Colors.blue), title: const Text('خانه', style: TextStyle(fontFamily: 'YekanBakh')), onTap: () => Navigator.pop(context)),
+            ListTile(
+              leading: const Icon(Icons.home, color: Colors.blue),
+              title: const Text('خانه', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () => Navigator.pop(context),
+            ),
             ListTile(
               leading: const Icon(Icons.shopping_cart, color: Colors.red),
               title: const Text('ثبت خرید', style: TextStyle(fontFamily: 'YekanBakh')),
@@ -66,6 +70,14 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.receivable)));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_circle, color: Colors.blue),
+              title: const Text('تراکنش جدید', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTransactionScreen()));
               },
             ),
             ListTile(
@@ -85,14 +97,6 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.savings_rounded, color: Color(0xFF9B6DFF)),
-              title: const Text('پس انداز', style: TextStyle(fontFamily: 'YekanBakh')),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const SavingsScreen()));
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.call_received, color: Colors.teal),
               title: const Text('واریز به بانک', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
@@ -109,7 +113,7 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.payments, color: Colors.teal),
+              leading: const Icon(Icons.money, color: Colors.purple),
               title: const Text('دریافت نقدی', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
@@ -117,7 +121,7 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.paid, color: Colors.deepOrange),
+              leading: const Icon(Icons.money_off, color: Colors.deepPurple),
               title: const Text('پرداخت نقدی', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
@@ -138,6 +142,22 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const TransferBetweenAccountsScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.undo, color: Colors.red),
+              title: const Text('برگشت از خرید', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ReturnFromPurchaseScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.undo, color: Colors.green),
+              title: const Text('برگشت از فروش', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ReturnFromSaleScreen()));
               },
             ),
             ListTile(
@@ -212,62 +232,58 @@ class HomeScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
-                      child: const Icon(Icons.trending_up_rounded, color: Colors.white, size: 40),
+                      child: const Icon(Icons.insights_rounded, color: Colors.white, size: 34),
                     ),
                   ],
                 ),
               ),
             ),
-
-            Consumer3<TransactionProvider, BankProvider, SavingsProvider>(
-              builder: (context, transProvider, bankProvider, savingsProvider, _) {
+            Consumer3<TransactionProvider, BankProvider, DebtProvider>(
+              builder: (context, transProvider, bankProvider, debtProvider, _) {
                 final income = transProvider.getTotalIncome(null, null);
                 final expense = transProvider.getTotalExpense(null, null);
-                final totalBalance = bankProvider.getTotalBalanceWithCashBox();
-                final totalSavings = savingsProvider.getTotalSavings();
+                final balance = transProvider.getNetBalance();
+                final bankBalance = bankProvider.getTotalBalance();
 
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _StatCard(
-                              icon: Icons.arrow_upward_rounded,
-                              label: 'درآمد',
-                              value: formatAmount(income),
-                              gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _StatCard(
-                              icon: Icons.arrow_downward_rounded,
-                              label: 'خرج',
-                              value: formatAmount(expense),
-                              gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
-                            ),
-                          ),
-                        ],
+                      _StatCard(
+                        icon: Icons.trending_up,
+                        label: 'درآمد',
+                        value: formatAmount(income),
+                        gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
+                      ),
+                      _StatCard(
+                        icon: Icons.trending_down,
+                        label: 'خرج',
+                        value: formatAmount(expense),
+                        gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
+                      ),
+                      _StatCard(
+                        icon: Icons.account_balance_wallet,
+                        label: 'موجودی بانک',
+                        value: formatAmount(bankBalance),
+                        gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
                         child: _StatCard(
-                          icon: Icons.account_balance_wallet_rounded,
-                          label: 'کل موجودی (بانک + صندوق)',
-                          value: formatAmount(totalBalance),
-                          gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
+                          icon: Icons.analytics,
+                          label: 'خالص',
+                          value: formatAmount(balance),
+                          gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
                           fullWidth: true,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
                         child: _StatCard(
-                          icon: Icons.savings_rounded,
-                          label: 'کل پس انداز',
-                          value: formatAmount(totalSavings),
-                          gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
+                          icon: Icons.account_balance_rounded,
+                          label: 'تعداد بانک',
+                          value: '${bankProvider.banks.length}',
+                          gradient: const [Color(0xFFFF5C8A), Color(0xFFD81B60)],
                           fullWidth: true,
                         ),
                       ),
@@ -276,7 +292,6 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-
             const SizedBox(height: 30),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -320,10 +335,10 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _QuickAction(
-                          icon: Icons.savings_rounded,
-                          label: 'پس انداز',
+                          icon: Icons.account_balance_rounded,
+                          label: 'بانک جدید',
                           gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SavingsScreen())),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
                         ),
                       ),
                     ],
