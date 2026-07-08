@@ -294,7 +294,7 @@ class SavingsScreen extends StatelessWidget {
               final savingsProvider = context.read<SavingsProvider>();
               final amount = double.tryParse(amountController.text) ?? 0;
               if (amount > 0) {
-                savingsProvider.addToSavingsGoal(goal.id, amount);
+                savingsProvider.addToSavingsGoal(goal.id ?? 0, amount);
                 Navigator.pop(context);
               }
             },
@@ -378,7 +378,7 @@ class SavingsScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               final savingsProvider = context.read<SavingsProvider>();
-              savingsProvider.deleteSavingsGoal(goal.id);
+              savingsProvider.deleteSavingsGoal(goal.id ?? 0);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
