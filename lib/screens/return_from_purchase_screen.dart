@@ -79,7 +79,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
                                 final product = filtered[index];
                                 return ListTile(
                                   title: Text(product.name, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
-                                  subtitle: Text('${formatAmount(product.pricePerUnit)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
+                                  subtitle: Text('${formatAmount(product.price)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
                                   onTap: () => Navigator.pop(dialogContext, product),
                                 );
                               },
@@ -100,7 +100,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
   @override
   Widget build(BuildContext context) {
     final quantity = double.tryParse(quantityController.text) ?? 0;
-    final totalReturn = quantity * (selectedProduct?.pricePerUnit ?? 0);
+    final totalReturn = quantity * (selectedProduct?.price ?? 0);
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -229,7 +229,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     setState(() => _isSubmitting = true);
 
     final transProvider = context.read<TransactionProvider>();
-    final totalReturn = quantity * selectedProduct!.pricePerUnit;
+    final totalReturn = quantity * selectedProduct!.price;
 
     await transProvider.addTransaction(Transaction(
       id: DateTime.now().millisecondsSinceEpoch,
