@@ -83,7 +83,7 @@ class SavingsScreen extends StatelessWidget {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: LinearProgressIndicator(
-                                value: totalTarget > 0 ? totalSavings / totalTarget : 0,
+                                value: totalTarget > 0 ? (totalSavings / totalTarget).clamp(0.0, 1.0) : 0,
                                 minHeight: 6,
                                 backgroundColor: Colors.white.withOpacity(0.2),
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
@@ -179,7 +179,7 @@ class SavingsScreen extends StatelessWidget {
                                                     ClipRRect(
                                                       borderRadius: BorderRadius.circular(6),
                                                       child: LinearProgressIndicator(
-                                                        value: progress.clamp(0.0, 1.0),
+                                                        value: (progress as double).clamp(0.0, 1.0),
                                                         minHeight: 6,
                                                         backgroundColor: Colors.white.withOpacity(0.2),
                                                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
