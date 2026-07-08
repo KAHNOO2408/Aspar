@@ -121,7 +121,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
             ),
             const SizedBox(height: 20),
 
-            // مخاطب (دکمه)
             InkWell(
               onTap: _pickContact,
               borderRadius: BorderRadius.circular(14),
@@ -140,7 +139,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
             ),
             const SizedBox(height: 16),
 
-            // بانک
             Consumer<BankProvider>(
               builder: (context, bankProvider, _) => DropdownButtonFormField<int>(
                 value: selectedBankId,
@@ -153,7 +151,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
             ),
             const SizedBox(height: 16),
 
-            // مبلغ
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
@@ -172,7 +169,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
               ),
             const SizedBox(height: 16),
 
-            // کارمزد
             TextField(
               controller: feeController,
               keyboardType: TextInputType.number,
@@ -191,7 +187,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
               ),
             const SizedBox(height: 16),
 
-            // کد رهگیری
             TextField(
               controller: trackingCodeController,
               style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
@@ -199,7 +194,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
             ),
             const SizedBox(height: 16),
 
-            // یادداشت
             TextField(
               controller: noteController,
               style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
@@ -207,7 +201,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
             ),
             const SizedBox(height: 16),
 
-            // تاریخ
             Container(
               width: double.infinity,
               decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
@@ -232,7 +225,6 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
             ),
             const SizedBox(height: 30),
 
-            // دکمه ثبت
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -294,7 +286,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
 
     final ledgerDescription = noteController.text.isNotEmpty ? 'برداشت از بانک - ${noteController.text}' : 'برداشت از بانک';
 
-    await ledgerProvider.insertLedgerEntry(LedgerEntry(
+    await ledgerProvider.addEntry(LedgerEntry(
       id: DateTime.now().millisecondsSinceEpoch,
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
@@ -305,7 +297,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
       trackingCode: trackingCodeController.text,
     ));
 
-    await transProvider.insertTransaction(Transaction(
+    await transProvider.addTransaction(Transaction(
       id: DateTime.now().millisecondsSinceEpoch,
       title: 'برداشت از بانک',
       description: 'برداشت از بانک',
@@ -318,7 +310,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
     ));
 
     if (fee > 0) {
-      await transProvider.insertTransaction(Transaction(
+      await transProvider.addTransaction(Transaction(
         id: DateTime.now().millisecondsSinceEpoch + 1,
         title: 'کارمزد برداشت',
         description: 'کارمزد برداشت به ${selectedContact!.fullName}',
