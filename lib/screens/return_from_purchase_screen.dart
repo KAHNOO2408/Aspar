@@ -79,7 +79,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
                                 final product = filtered[index];
                                 return ListTile(
                                   title: Text(product.name, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
-                                  subtitle: Text('${formatAmount(product.unitPrice)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
+                                  subtitle: Text('${formatAmount(product.pricePerUnit)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
                                   onTap: () => Navigator.pop(dialogContext, product),
                                 );
                               },
@@ -99,8 +99,8 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final quantity = int.tryParse(quantityController.text) ?? 0;
-    final totalReturn = quantity * (selectedProduct?.unitPrice ?? 0);
+    final quantity = double.tryParse(quantityController.text) ?? 0;
+    final totalReturn = quantity * (selectedProduct?.pricePerUnit ?? 0);
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -220,7 +220,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
       return;
     }
 
-    final quantity = int.tryParse(quantityController.text) ?? 0;
+    final quantity = double.tryParse(quantityController.text) ?? 0;
     if (quantity <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعداد باید بزرگتر از صفر باشد', style: TextStyle(fontFamily: _fontFamily))));
       return;
@@ -229,7 +229,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     setState(() => _isSubmitting = true);
 
     final transProvider = context.read<TransactionProvider>();
-    final totalReturn = quantity * selectedProduct!.unitPrice;
+    final totalReturn = quantity * selectedProduct!.pricePerUnit;
 
     await transProvider.addTransaction(Transaction(
       id: DateTime.now().millisecondsSinceEpoch,
