@@ -309,7 +309,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('تعداد *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
+                      Text('${selectedUnit == 'ml' ? 'میل' : 'تعداد'} *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
                       const SizedBox(height: 8),
                       TextField(
                         controller: quantityController,
@@ -354,30 +354,29 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            if (price > 0)
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
-                      child: Center(
-                        child: Text('مبلغ: ${formatAmount(price)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
-                      ),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
+                    child: Center(
+                      child: Text('مبلغ کل: ${formatAmount(totalAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
-                      child: Center(
-                        child: Text('مبلغ کل: ${formatAmount(totalAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
-                      ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
+                    child: Center(
+                      child: Text('مبلغ: ${formatAmount(baseAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             if (showLaborFee) ...[
