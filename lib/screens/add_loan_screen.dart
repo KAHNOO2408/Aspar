@@ -22,7 +22,6 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   final paidAmountController = TextEditingController();
   final descController = TextEditingController();
   
-  int? selectedBankId;
   DateTime selectedStartDate = DateTime.now();
   bool _isSubmitting = false;
 
@@ -59,7 +58,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
-      appBar: AppBar(title: const Text('ثبت وام جدید')),
+      appBar: AppBar(title: const Text('ثبت وام جدید', style: TextStyle(fontFamily: _fontFamily))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -68,18 +67,6 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
               controller: bankNameController,
               style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
               decoration: _decoration(context, 'نام بانک/مؤسسه *'),
-            ),
-            const SizedBox(height: 16),
-
-            Consumer<BankProvider>(
-              builder: (context, bankProvider, _) => DropdownButtonFormField<int>(
-                value: selectedBankId,
-                hint: Text('انتخاب حساب بانکی (اختیاری)', style: TextStyle(fontFamily: _fontFamily, color: AppColors.textMuted(context))),
-                items: bankProvider.banks.map((bank) => DropdownMenuItem<int>(value: bank.id, child: Text('${bank.bankName} - ${formatAmount(bank.balance)} تومان', style: TextStyle(fontFamily: _fontFamily, color: AppColors.text(context))))).toList(),
-                onChanged: (value) => setState(() => selectedBankId = value),
-                decoration: _decoration(context, 'حساب بانکی'),
-                style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-              ),
             ),
             const SizedBox(height: 16),
 
@@ -203,7 +190,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     child: Center(
                       child: _isSubmitting
                           ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : const Text('ثبت وام', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                          : const Text('ثبت وام', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16, fontFamily: _fontFamily)),
                     ),
                   ),
                 ),
@@ -218,7 +205,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   void _submit() async {
     if (_isSubmitting) return;
     if (bankNameController.text.isEmpty || principalController.text.isEmpty || monthsController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نام بانک، اصل وام و تعداد ماه الزامی هستند')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نام بانک، اصل وام و تعداد ماه الزامی هستند', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
 
@@ -226,7 +213,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     final months = int.tryParse(monthsController.text) ?? 0;
     
     if (principal <= 0 || months <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مقادیر باید بزرگتر از صفر باشند')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مقادیر باید بزرگتر از صفر باشند', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
 
@@ -248,7 +235,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
       months: months,
       startDate: selectedStartDate,
       endDate: endDate,
-      bankId: selectedBankId ?? -1,
+      bankId: -1,
       description: descController.text,
       paidAmount: paidAmount,
     );
@@ -257,7 +244,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
     if (mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('وام ثبت شد ✅')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('وام ثبت شد ✅', style: TextStyle(fontFamily: _fontFamily))));
     }
   }
 
