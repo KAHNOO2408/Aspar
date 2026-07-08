@@ -265,7 +265,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     if (mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تراکنش ثبت شد ✅', style: TextStyle(fontFamily: _fontFamily'))));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تراکنش ثبت شد ✅', style: TextStyle(fontFamily: _fontFamily))));
     }
   }
 
