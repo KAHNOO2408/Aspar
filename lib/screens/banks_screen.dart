@@ -44,67 +44,141 @@ class BanksScreen extends StatelessWidget {
       body: Consumer2<BankProvider, SavingsProvider>(
         builder: (context, bankProvider, savingsProvider, _) {
           final totalBalance = bankProvider.getTotalBalance();
+          final totalCashBox = bankProvider.getTotalCashBox();
+          final totalWithCashBox = bankProvider.getTotalBalanceWithCashBox();
           final totalSavings = savingsProvider.getTotalSavings();
 
           return SingleChildScrollView(
             child: Column(
               children: [
-                // دو کارت خلاصه
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: const LinearGradient(colors: [Color(0xFF11998E), Color(0xFF38EF7D)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                            boxShadow: [BoxShadow(color: const Color(0xFF11998E).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 8))],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 16)),
-                                  const SizedBox(width: 8),
-                                  const Text('موجودی بانک‌ها', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(formatAmount(totalBalance), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 2),
-                              const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 10)),
-                            ],
-                          ),
+                      // کل موجودی
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                          boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.4), blurRadius: 18, offset: const Offset(0, 10))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 20)),
+                                const SizedBox(width: 10),
+                                const Text('کل موجودی', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(formatAmount(totalWithCashBox), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
+                            const SizedBox(height: 2),
+                            const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'YekanBakh')),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                            boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 8))],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+
+                      const SizedBox(height: 12),
+
+                      // دو کارت موجودی بانک و صندوق
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                gradient: const LinearGradient(colors: [Color(0xFF11998E), Color(0xFF38EF7D)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                                boxShadow: [BoxShadow(color: const Color(0xFF11998E).withOpacity(0.3), blurRadius: 14, offset: const Offset(0, 7))],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.savings_rounded, color: Colors.white, size: 16)),
-                                  const SizedBox(width: 8),
-                                  const Text('کل پس انداز', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                                  Row(
+                                    children: [
+                                      Container(padding: const EdgeInsets.all(5), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.account_balance_rounded, color: Colors.white, size: 16)),
+                                      const SizedBox(width: 8),
+                                      const Text('موجودی بانک', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(formatAmount(totalBalance), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
+                                  const SizedBox(height: 1),
+                                  const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 9, fontFamily: 'YekanBakh')),
                                 ],
                               ),
-                              const SizedBox(height: 12),
-                              Text(formatAmount(totalSavings), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 2),
-                              const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 10)),
-                            ],
+                            ),
                           ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                gradient: const LinearGradient(colors: [Color(0xFFE67E22), Color(0xFFD35400)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                                boxShadow: [BoxShadow(color: const Color(0xFFD35400).withOpacity(0.3), blurRadius: 14, offset: const Offset(0, 7))],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(padding: const EdgeInsets.all(5), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.savings_rounded, color: Colors.white, size: 16)),
+                                      const SizedBox(width: 8),
+                                      const Text('صندوق', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(formatAmount(totalCashBox), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
+                                  const SizedBox(height: 1),
+                                  const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 9, fontFamily: 'YekanBakh')),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // پس انداز
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                          boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.3), blurRadius: 14, offset: const Offset(0, 7))],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(padding: const EdgeInsets.all(5), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.savings_rounded, color: Colors.white, size: 16)),
+                                    const SizedBox(width: 8),
+                                    const Text('کل پس انداز', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(formatAmount(totalSavings), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
+                                const SizedBox(height: 1),
+                                const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 9, fontFamily: 'YekanBakh')),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(12)),
+                              child: const Icon(Icons.savings_rounded, color: Colors.white, size: 20),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -163,7 +237,7 @@ class BanksScreen extends StatelessWidget {
                                           children: [
                                             Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.account_balance_rounded, color: Colors.white, size: 22)),
                                             const SizedBox(width: 12),
-                                            Text(bank.bankName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: Colors.white)),
+                                            Text(bank.bankName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: Colors.white, fontFamily: 'YekanBakh')),
                                           ],
                                         ),
                                         PopupMenuButton<String>(
@@ -174,21 +248,30 @@ class BanksScreen extends StatelessWidget {
                                             if (value == 'delete') _showDeleteDialog(context, bankProvider, bank);
                                           },
                                           itemBuilder: (context) => [
-                                            const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 18, color: Colors.blue), SizedBox(width: 8), Text('ویرایش')])),
-                                            const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: Colors.red), SizedBox(width: 8), Text('حذف')])),
+                                            const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 18, color: Colors.blue), SizedBox(width: 8), Text('ویرایش', style: TextStyle(fontFamily: 'YekanBakh'))])),
+                                            const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: Colors.red), SizedBox(width: 8), Text('حذف', style: TextStyle(fontFamily: 'YekanBakh'))])),
                                           ],
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 22),
-                                    Text(bank.accountNumber, style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.85), letterSpacing: 1.2, fontWeight: FontWeight.w500)),
+                                    Text(bank.accountNumber, style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.85), letterSpacing: 1.2, fontWeight: FontWeight.w500, fontFamily: 'YekanBakh')),
                                     const SizedBox(height: 18),
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(formatAmount(bank.balance), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white)),
-                                        const SizedBox(width: 6),
-                                        Padding(padding: const EdgeInsets.only(bottom: 3), child: Text('تومان', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75)))),
+                                        Text('موجودی: ${formatAmount(bank.balance)} تومان', style: const TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'YekanBakh')),
+                                        const SizedBox(height: 6),
+                                        Text('صندوق: ${formatAmount(bank.cashBox)} تومان', style: const TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'YekanBakh')),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(formatAmount(bank.totalBalance), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white, fontFamily: 'YekanBakh')),
+                                            const SizedBox(width: 6),
+                                            Padding(padding: const EdgeInsets.only(bottom: 3), child: Text('تومان', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75), fontFamily: 'YekanBakh'))),
+                                          ],
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -213,33 +296,36 @@ class BanksScreen extends StatelessWidget {
     final nameController = TextEditingController(text: bank.bankName);
     final accountController = TextEditingController(text: bank.accountNumber);
     final balanceController = TextEditingController(text: bank.balance.toString());
+    final cashBoxController = TextEditingController(text: bank.cashBox.toString());
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('ویرایش بانک', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context))),
+        title: Text('ویرایش بانک', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context), fontFamily: 'YekanBakh')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameController, style: TextStyle(color: AppColors.text(context)), decoration: InputDecoration(labelText: 'نام بانک', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            TextField(controller: nameController, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'نام بانک', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
             const SizedBox(height: 16),
-            TextField(controller: accountController, style: TextStyle(color: AppColors.text(context)), decoration: InputDecoration(labelText: 'شماره حساب', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            TextField(controller: accountController, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'شماره حساب', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
             const SizedBox(height: 16),
-            TextField(controller: balanceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context)), decoration: InputDecoration(labelText: 'موجودی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            TextField(controller: balanceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'موجودی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            const SizedBox(height: 16),
+            TextField(controller: cashBoxController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'صندوق (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
           ElevatedButton(
             onPressed: () {
-              final updatedBank = Bank(id: bank.id, bankName: nameController.text, accountNumber: accountController.text, balance: double.tryParse(balanceController.text) ?? 0);
+              final updatedBank = Bank(id: bank.id, bankName: nameController.text, accountNumber: accountController.text, balance: double.tryParse(balanceController.text) ?? 0, cashBox: double.tryParse(cashBoxController.text) ?? 0);
               provider.updateBank(updatedBank);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('ذخیره', style: TextStyle(color: Colors.white)),
+            child: const Text('ذخیره', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
           ),
         ],
       ),
@@ -252,17 +338,17 @@ class BanksScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('حذف بانک', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-        content: Text('آیا مطمئن‌اید؟', style: TextStyle(color: AppColors.text(context))),
+        title: const Text('حذف بانک', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red, fontFamily: 'YekanBakh')),
+        content: Text('آیا مطمئن‌اید؟', style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
           ElevatedButton(
             onPressed: () {
-              provider.deleteBank(bank.id!);
+              provider.deleteBank(bank.id);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('حذف', style: TextStyle(color: Colors.white)),
+            child: const Text('حذف', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
           ),
         ],
       ),
