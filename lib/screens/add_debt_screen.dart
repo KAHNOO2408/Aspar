@@ -31,6 +31,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   int? selectedBankId;
   DateTime selectedDate = DateTime.now();
   String selectedUnit = 'count';
+  String? selectedPaymentMethod; // 'cash' یا 'card'
   bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
@@ -230,6 +231,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final laborFee = showLaborFee ? (double.tryParse(laborFeeController.text) ?? 0.0) : 0.0;
     final baseAmount = quantity * price;
     final totalAmount = baseAmount + laborFee;
+    final paidNow = double.tryParse(paidNowController.text) ?? 0;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -353,20 +355,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            Row(
-              children: [
-                Expanded(
-                  child: _UnitButton(label: 'عدد', selected: selectedUnit == 'count', gradient: gradient, onTap: () => setState(() => selectedUnit = 'count')),
-                ),
-                const SizedBox(width: 10),
-                if (!isPurchase)
-                  Expanded(
-                    child: _UnitButton(label: 'میل', selected: selectedUnit == 'ml', gradient: gradient, onTap: () => setState(() => selectedUnit = 'ml')),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
             if (price > 0)
               Row(
                 children: [
@@ -383,26 +371,15 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(12)),
+                      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
                       child: Center(
-                        child: Text('${formatAmount(totalAmount)} تومان', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                        child: Text('${formatAmount(totalAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                       ),
                     ),
                   ),
                 ],
               ),
             const SizedBox(height: 16),
-
-            if (showLaborFee) ...[
-              TextField(
-                controller: laborFeeController,
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-                style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                decoration: _decoration(context, 'دستمزد/کارگر (تومان)'),
-              ),
-              const SizedBox(height: 16),
-            ],
 
             TextField(
               controller: noteController,
@@ -435,45 +412,116 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            Text('پرداخت نقدی (اختیاری)', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
-            const SizedBox(height: 10),
-            TextField(
-              controller: paidNowController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-              decoration: _decoration(context, 'مبلغ پرداختی (تومان)'),
-            ),
-            const SizedBox(height: 10),
-
-            if (paidNowController.text.isNotEmpty && double.tryParse(paidNowController.text)! > 0) ...[
-              InkWell(
-                onTap: _pickBank,
-                borderRadius: BorderRadius.circular(14),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), border: Border.all(color: selectedBankId == null ? Colors.red : gradient[1], width: 2)),
-                  child: Row(
-                    children: [
-                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), shape: BoxShape.circle), child: const Icon(Icons.account_balance, color: Colors.white, size: 18)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          selectedBankId == null ? 'انتخاب بانک *' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
-                          style: TextStyle(color: selectedBankId != null ? AppColors.text(context) : Colors.red, fontWeight: FontWeight.w600, fontFamily: _fontFamily),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: selectedPaymentMethod == 'cash' ? gradient[0].withOpacity(0.2) : AppColors.card(context),
+                      border: Border.all(color: selectedPaymentMethod == 'cash' ? gradient[1] : AppColors.divider(context), width: 2),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => setState(() => selectedPaymentMethod = 'cash'),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Center(
+                            child: Text('نقدی', style: TextStyle(color: selectedPaymentMethod == 'cash' ? gradient[1] : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                          ),
                         ),
                       ),
-                      Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
-                    ],
+                    ),
                   ),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: selectedPaymentMethod == 'card' ? gradient[0].withOpacity(0.2) : AppColors.card(context),
+                      border: Border.all(color: selectedPaymentMethod == 'card' ? gradient[1] : AppColors.divider(context), width: 2),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => setState(() => selectedPaymentMethod = 'card'),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Center(
+                            child: Text('کارت', style: TextStyle(color: selectedPaymentMethod == 'card' ? gradient[1] : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            if (selectedPaymentMethod == 'cash')
+              Column(
+                children: [
+                  TextField(
+                    controller: paidNowController,
+                    keyboardType: TextInputType.number,
+                    onChanged: (_) => setState(() {}),
+                    style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                    decoration: _decoration(context, 'دریافت نقدی (تومان)'),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 10),
+
+            if (selectedPaymentMethod == 'card')
+              Column(
+                children: [
+                  InkWell(
+                    onTap: _pickBank,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), border: Border.all(color: selectedBankId == null ? Colors.red : gradient[1], width: 2)),
+                      child: Row(
+                        children: [
+                          Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), shape: BoxShape.circle), child: const Icon(Icons.account_balance, color: Colors.white, size: 18)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              selectedBankId == null ? 'انتخاب بانک *' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
+                              style: TextStyle(color: selectedBankId != null ? AppColors.text(context) : Colors.red, fontWeight: FontWeight.w600, fontFamily: _fontFamily),
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+
+            if (showLaborFee) ...[
               TextField(
-                controller: feeController,
+                controller: laborFeeController,
                 keyboardType: TextInputType.number,
+                onChanged: (_) => setState(() {}),
                 style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                decoration: _decoration(context, 'کارمزد (اختیاری)'),
+                decoration: _decoration(context, 'کارمزد'),
               ),
+              const SizedBox(height: 16),
+              if (laborFee > 0)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
+                  child: Center(
+                    child: Text('${formatAmount(laborFee)} تومان', style: TextStyle(color: gradient[1], fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                  ),
+                ),
               const SizedBox(height: 16),
             ],
 
@@ -525,8 +573,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ پرداختی نمی‌تواند بیشتر از مبلغ کل باشد', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
-    if (paidNow > 0 && selectedBankId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('برای مبلغ پرداختی، انتخاب بانک الزامی است', style: TextStyle(fontFamily: _fontFamily))));
+    if (selectedPaymentMethod == 'card' && selectedBankId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('برای پرداخت کارت، انتخاب بانک الزامی است', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
 
@@ -564,7 +612,21 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       laborFee: laborFee,
     ));
 
-    if (paidNow > 0) {
+    if (paidNow > 0 && selectedPaymentMethod == 'cash') {
+      final transProvider = context.read<TransactionProvider>();
+      await transProvider.addTransaction(Transaction(
+        id: DateTime.now().millisecondsSinceEpoch,
+        title: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
+        description: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
+        amount: paidNow,
+        type: isPurchase ? TransactionType.expense : TransactionType.income,
+        category: 'معامله نقدی',
+        date: selectedDate,
+        contactName: selectedContact!.fullName,
+      ));
+    }
+
+    if (paidNow > 0 && selectedPaymentMethod == 'card') {
       final bankProvider = context.read<BankProvider>();
       final transProvider = context.read<TransactionProvider>();
       final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
@@ -583,7 +645,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         personName: selectedContact!.firstName,
         personFamily: selectedContact!.lastName,
         date: selectedDate,
-        description: isPurchase ? 'پرداخت نقدی بابت: ${selectedProduct!.name}' : 'دریافت نقدی بابت: ${selectedProduct!.name}',
+        description: isPurchase ? 'پرداخت کارت بابت: ${selectedProduct!.name}' : 'دریافت کارت بابت: ${selectedProduct!.name}',
         debitAmount: isPurchase ? paidNow : 0,
         creditAmount: isPurchase ? 0 : paidNow,
         bankId: bank.id,
@@ -592,10 +654,10 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       await transProvider.addTransaction(Transaction(
         id: DateTime.now().millisecondsSinceEpoch,
         title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
-        description: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
+        description: isPurchase ? 'پرداخت کارتی' : 'دریافت کارتی',
         amount: paidNow,
         type: isPurchase ? TransactionType.expense : TransactionType.income,
-        category: 'معامله با مخاطب',
+        category: 'معامله کارتی',
         date: selectedDate,
         contactName: selectedContact!.fullName,
       ));
