@@ -34,11 +34,11 @@ class DebtsScreen extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             onSelected: (value) {
               if (value == 'owed') Navigator.push(context, MaterialPageRoute(builder: (_) => const AddSimpleDebtScreen(type: DebtType.owed)));
-              if (value == 'owing') Navigator.push(context, MaterialPageRoute(builder: (_) => const AddSimpleDebtScreen(type: DebtType.owing)));
+              if (value == 'receivable') Navigator.push(context, MaterialPageRoute(builder: (_) => const AddSimpleDebtScreen(type: DebtType.receivable)));
             },
             itemBuilder: (BuildContext context) => [
               const PopupMenuItem(value: 'owed', child: Row(children: [Icon(Icons.arrow_upward, size: 16), SizedBox(width: 8), Text('ثبت دهی', style: TextStyle(fontFamily: 'YekanBakh'))])),
-              const PopupMenuItem(value: 'owing', child: Row(children: [Icon(Icons.arrow_downward, size: 16), SizedBox(width: 8), Text('ثبت طلب', style: TextStyle(fontFamily: 'YekanBakh'))])),
+              const PopupMenuItem(value: 'receivable', child: Row(children: [Icon(Icons.arrow_downward, size: 16), SizedBox(width: 8), Text('ثبت طلب', style: TextStyle(fontFamily: 'YekanBakh'))])),
             ],
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -50,10 +50,10 @@ class DebtsScreen extends StatelessWidget {
       body: Consumer<DebtProvider>(
         builder: (context, provider, _) {
           final owedDebts = provider.debts.where((d) => d.type == DebtType.owed).toList();
-          final owingDebts = provider.debts.where((d) => d.type == DebtType.owing).toList();
+          final receivableDebts = provider.debts.where((d) => d.type == DebtType.receivable).toList();
 
-          final totalOwed = owedDebts.fold(0.0, (sum, d) => sum + (d.amount - d.paidAmount));
-          final totalOwing = owingDebts.fold(0.0, (sum, d) => sum + (d.amount - d.paidAmount));
+          final totalOwed = owedDebts.fold(0.0, (sum, d) => sum + d.remainder);
+          final totalReceivable = receivableDebts.fold(0.0, (sum, d) => sum + d.remainder);
 
           return SingleChildScrollView(
             child: Column(
@@ -75,7 +75,7 @@ class DebtsScreen extends StatelessWidget {
                         child: _SummaryCard(
                           icon: Icons.arrow_downward_rounded,
                           label: 'طلبکاری',
-                          value: formatAmount(totalOwing),
+                          value: formatAmount(totalReceivable),
                           gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
                         ),
                       ),
@@ -83,8 +83,7 @@ class DebtsScreen extends StatelessWidget {
                   ),
                 ),
 
-                // طلب‌ها
-                if (owingDebts.isEmpty && owedDebts.isEmpty)
+                if (owedDebts.isEmpty && receivableDebts.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(60),
                     child: Column(
@@ -98,7 +97,7 @@ class DebtsScreen extends StatelessWidget {
                 else
                   Column(
                     children: [
-                      if (owingDebts.isNotEmpty) ...[
+                      if (receivableDebts.isNotEmpty) ...[
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
                           child: Align(alignment: Alignment.centerRight, child: Text('طلب‌های من', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context), fontFamily: 'YekanBakh'))),
@@ -107,13 +106,12 @@ class DebtsScreen extends StatelessWidget {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: owingDebts.length,
+                          itemCount: receivableDebts.length,
                           itemBuilder: (context, index) {
-                            final debt = owingDebts[index];
-                            final remaining = debt.amount - debt.paidAmount;
+                            final debt = receivableDebts[index];
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: _DebtCard(debt: debt, remaining: remaining, formatDate: _formatDateToJalali, gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)]),
+                              child: _DebtCard(debt: debt, formatDate: _formatDateToJalali, gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)]),
                             );
                           },
                         ),
@@ -132,10 +130,9 @@ class DebtsScreen extends StatelessWidget {
                           itemCount: owedDebts.length,
                           itemBuilder: (context, index) {
                             final debt = owedDebts[index];
-                            final remaining = debt.amount - debt.paidAmount;
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: _DebtCard(debt: debt, remaining: remaining, formatDate: _formatDateToJalali, gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)]),
+                              child: _DebtCard(debt: debt, formatDate: _formatDateToJalali, gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)]),
                             );
                           },
                         ),
@@ -197,21 +194,19 @@ class _SummaryCard extends StatelessWidget {
 
 class _DebtCard extends StatelessWidget {
   final Debt debt;
-  final double remaining;
   final String Function(DateTime) formatDate;
   final List<Color> gradient;
 
   const _DebtCard({
     required this.debt,
-    required this.remaining,
     required this.formatDate,
     required this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isOwing = debt.type == DebtType.owing;
-    final isCompleted = remaining <= 0;
+    final isOwed = debt.type == DebtType.owed;
+    final isCompleted = debt.remainder <= 0;
 
     return Material(
       color: AppColors.card(context),
@@ -229,11 +224,11 @@ class _DebtCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${formatAmount(debt.amount)} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context), fontFamily: 'YekanBakh')),
+                Text('${formatAmount(debt.totalAmount)} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context), fontFamily: 'YekanBakh')),
                 if (!isCompleted)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text('باقی: ${formatAmount(remaining)} تومان', style: TextStyle(fontSize: 11, color: gradient[1], fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
+                    child: Text('باقی: ${formatAmount(debt.remainder)} تومان', style: TextStyle(fontSize: 11, color: gradient[1], fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
                   ),
               ],
             ),
@@ -244,10 +239,10 @@ class _DebtCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDetailRow(context, 'نوع', isOwing ? 'طلب' : 'بدهی'),
-                  _buildDetailRow(context, 'مبلغ کل', '${formatAmount(debt.amount)} تومان'),
+                  _buildDetailRow(context, 'نوع', isOwed ? 'دهی' : 'طلب'),
+                  _buildDetailRow(context, 'مبلغ کل', '${formatAmount(debt.totalAmount)} تومان'),
                   _buildDetailRow(context, 'پرداخت‌شده', '${formatAmount(debt.paidAmount)} تومان'),
-                  _buildDetailRow(context, 'باقی مانده', '${formatAmount(remaining)} تومان', isCompleted ? const Color(0xFF11998E) : gradient[1]),
+                  _buildDetailRow(context, 'باقی مانده', '${formatAmount(debt.remainder)} تومان', isCompleted ? const Color(0xFF11998E) : gradient[1]),
                   if (debt.description.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
@@ -281,7 +276,7 @@ class _DebtCard extends StatelessWidget {
                             icon: Icons.check_circle_outline,
                             label: 'پرداخت',
                             gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
-                            onTap: () => _showPaymentDialog(context, debt, remaining),
+                            onTap: () => _showPaymentDialog(context, debt),
                           ),
                         ),
                       ],
@@ -310,7 +305,7 @@ class _DebtCard extends StatelessWidget {
   }
 
   void _showEditDialog(BuildContext context, Debt debt) {
-    final amountController = TextEditingController(text: debt.amount.toStringAsFixed(0));
+    final amountController = TextEditingController(text: debt.totalAmount.toStringAsFixed(0));
     final descController = TextEditingController(text: debt.description);
     bool isSubmitting = false;
 
@@ -333,7 +328,7 @@ class _DebtCard extends StatelessWidget {
                     keyboardType: TextInputType.number,
                     onChanged: (_) => setState(() {}),
                     style: TextStyle(color: AppColors.text(dialogContext), fontFamily: 'YekanBakh'),
-                    decoration: InputDecoration(labelText: 'مبلغ (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                    decoration: InputDecoration(labelText: 'مبلغ (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), labelStyle: TextStyle(fontFamily: 'YekanBakh')),
                   ),
                   if (amount > 0)
                     Padding(
@@ -349,7 +344,7 @@ class _DebtCard extends StatelessWidget {
                     controller: descController,
                     maxLines: 2,
                     style: TextStyle(color: AppColors.text(dialogContext), fontFamily: 'YekanBakh'),
-                    decoration: InputDecoration(labelText: 'یادداشت', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                    decoration: InputDecoration(labelText: 'یادداشت', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), labelStyle: TextStyle(fontFamily: 'YekanBakh')),
                   ),
                 ],
               ),
@@ -365,13 +360,13 @@ class _DebtCard extends StatelessWidget {
                           id: debt.id,
                           personName: debt.personName,
                           personFamily: debt.personFamily,
+                          totalAmount: amount,
                           description: descController.text,
-                          amount: amount,
-                          type: debt.type,
                           date: debt.date,
+                          type: debt.type,
                           paidAmount: debt.paidAmount,
                         );
-                        await context.read<DebtProvider>().updateDebt(updated);
+                        await context.read<DebtProvider>().editDebt(updated);
                         Navigator.pop(dialogContext);
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ویرایش شد ✅')));
                       },
@@ -387,7 +382,7 @@ class _DebtCard extends StatelessWidget {
     );
   }
 
-  void _showPaymentDialog(BuildContext context, Debt debt, double remaining) {
+  void _showPaymentDialog(BuildContext context, Debt debt) {
     final paymentController = TextEditingController();
     bool isSubmitting = false;
 
@@ -397,7 +392,7 @@ class _DebtCard extends StatelessWidget {
         builder: (dialogContext, setState) {
           final payment = double.tryParse(paymentController.text) ?? 0;
           final totalAfter = debt.paidAmount + payment;
-          final canPay = payment > 0 && totalAfter <= debt.amount;
+          final canPay = payment > 0 && totalAfter <= debt.totalAmount;
 
           return AlertDialog(
             backgroundColor: AppColors.card(dialogContext),
@@ -406,14 +401,14 @@ class _DebtCard extends StatelessWidget {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('باقی مانده: ${formatAmount(remaining)} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(dialogContext), fontFamily: 'YekanBakh')),
+                Text('باقی مانده: ${formatAmount(debt.remainder)} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(dialogContext), fontFamily: 'YekanBakh')),
                 const SizedBox(height: 15),
                 TextField(
                   controller: paymentController,
                   keyboardType: TextInputType.number,
                   onChanged: (_) => setState(() {}),
                   style: TextStyle(color: AppColors.text(dialogContext), fontFamily: 'YekanBakh'),
-                  decoration: InputDecoration(hintText: 'مبلغ پرداخت', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                  decoration: InputDecoration(hintText: 'مبلغ پرداخت', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), hintStyle: TextStyle(fontFamily: 'YekanBakh')),
                 ),
                 if (payment > 0)
                   Padding(
@@ -427,7 +422,7 @@ class _DebtCard extends StatelessWidget {
                         children: [
                           Text('${formatAmount(payment)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontFamily: 'YekanBakh')),
                           const SizedBox(height: 6),
-                          Text('باقی جدید: ${formatAmount((remaining - payment).clamp(0, double.infinity))} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(dialogContext), fontFamily: 'YekanBakh')),
+                          Text('باقی جدید: ${formatAmount((debt.remainder - payment).clamp(0, double.infinity))} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(dialogContext), fontFamily: 'YekanBakh')),
                         ],
                       ),
                     ),
@@ -437,22 +432,14 @@ class _DebtCard extends StatelessWidget {
             actions: [
               TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
               ElevatedButton(
-                onPressed: isSubmitting || !canPay ? null : () async {
-                  setState(() => isSubmitting = true);
-                  final updated = Debt(
-                    id: debt.id,
-                    personName: debt.personName,
-                    personFamily: debt.personFamily,
-                    description: debt.description,
-                    amount: debt.amount,
-                    type: debt.type,
-                    date: debt.date,
-                    paidAmount: debt.paidAmount + payment,
-                  );
-                  await context.read<DebtProvider>().updateDebt(updated);
-                  Navigator.pop(dialogContext);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('پرداخت شد ✅')));
-                },
+                onPressed: isSubmitting || !canPay
+                    ? null
+                    : () async {
+                        setState(() => isSubmitting = true);
+                        await context.read<DebtProvider>().payDebt(debt.id!, payment);
+                        Navigator.pop(dialogContext);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('پرداخت شد ✅')));
+                      },
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF11998E), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 child: isSubmitting
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
