@@ -25,6 +25,7 @@ import 'bank_deposit_screen.dart';
 import 'bank_withdrawal_screen.dart';
 import 'cash_deposit_screen.dart';
 import 'cash_withdrawal_screen.dart';
+import 'savings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -134,6 +135,14 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactsScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.savings_rounded, color: Colors.purple),
+              title: const Text('پس انداز', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const SavingsScreen()));
               },
             ),
             ListTile(
