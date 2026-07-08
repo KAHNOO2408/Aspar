@@ -176,7 +176,7 @@ class ContactsScreen extends StatelessWidget {
                 address: addressController.text.isEmpty ? null : addressController.text,
               );
 
-              context.read<ContactProvider>().insertContact(newContact);
+              context.read<ContactProvider>().addContact(newContact);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب اضافه شد ✅', style: TextStyle(fontFamily: _fontFamily))));
             },
