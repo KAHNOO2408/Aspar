@@ -22,6 +22,8 @@ import 'settings_screen.dart';
 import 'transfer_between_accounts_screen.dart';
 import 'bank_deposit_screen.dart';
 import 'bank_withdrawal_screen.dart';
+import 'cash_deposit_screen.dart';
+import 'cash_withdrawal_screen.dart';
 import 'savings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -45,14 +47,14 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   SvgPicture.asset('assets/logo.svg', width: 80, height: 80),
                   const SizedBox(height: 10),
-                  const Text('آسپار', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
+                  const Text('آسپار', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
                 ],
               ),
             ),
-            ListTile(leading: const Icon(Icons.home, color: Colors.blue), title: const Text('خانه'), onTap: () => Navigator.pop(context)),
+            ListTile(leading: const Icon(Icons.home, color: Colors.blue), title: const Text('خانه', style: TextStyle(fontFamily: 'YekanBakh')), onTap: () => Navigator.pop(context)),
             ListTile(
               leading: const Icon(Icons.shopping_cart, color: Colors.red),
-              title: const Text('ثبت خرید'),
+              title: const Text('ثبت خرید', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.owed)));
@@ -60,7 +62,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.sell, color: Colors.green),
-              title: const Text('ثبت فروش'),
+              title: const Text('ثبت فروش', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.receivable)));
@@ -68,7 +70,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.account_balance_wallet, color: Colors.orange),
-              title: const Text('بدهی و طلب'),
+              title: const Text('بدهی و طلب', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const DebtsScreen()));
@@ -76,7 +78,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.account_balance, color: Colors.green),
-              title: const Text('بانک'),
+              title: const Text('بانک', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const BanksScreen()));
@@ -84,7 +86,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.savings_rounded, color: Color(0xFF9B6DFF)),
-              title: const Text('پس انداز'),
+              title: const Text('پس انداز', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SavingsScreen()));
@@ -92,7 +94,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.call_received, color: Colors.teal),
-              title: const Text('واریز به بانک'),
+              title: const Text('واریز به بانک', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const BankDepositScreen()));
@@ -100,15 +102,31 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.call_made, color: Colors.deepOrange),
-              title: const Text('برداشت از بانک'),
+              title: const Text('برداشت از بانک', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const BankWithdrawalScreen()));
               },
             ),
             ListTile(
+              leading: const Icon(Icons.payments, color: Colors.teal),
+              title: const Text('دریافت نقدی', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CashDepositScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.paid, color: Colors.deepOrange),
+              title: const Text('پرداخت نقدی', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CashWithdrawalScreen()));
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.contacts, color: Colors.purple),
-              title: const Text('مخاطبین'),
+              title: const Text('مخاطبین', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactsScreen()));
@@ -116,7 +134,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.compare_arrows, color: Colors.deepPurple),
-              title: const Text('دریافت و پرداخت بین حساب‌ها'),
+              title: const Text('دریافت و پرداخت بین حساب‌ها', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const TransferBetweenAccountsScreen()));
@@ -124,7 +142,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.inventory_2, color: Colors.brown),
-              title: const Text('انبار محصولات'),
+              title: const Text('انبار محصولات', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductsScreen()));
@@ -132,7 +150,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.trending_up, color: Colors.blue),
-              title: const Text('سود'),
+              title: const Text('سود', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const InvestmentScreen()));
@@ -140,7 +158,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.handshake, color: Colors.red),
-              title: const Text('وام'),
+              title: const Text('وام', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const LoansScreen()));
@@ -148,7 +166,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.bar_chart, color: Colors.teal),
-              title: const Text('گزارشات'),
+              title: const Text('گزارشات', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
@@ -157,7 +175,7 @@ class HomeScreen extends StatelessWidget {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.settings, color: Colors.grey),
-              title: const Text('تنظیمات'),
+              title: const Text('تنظیمات', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
@@ -184,11 +202,11 @@ class HomeScreen extends StatelessWidget {
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('خوش‌آمدی 👋', style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
+                        Text('خوش‌آمدی 👋', style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500, fontFamily: 'YekanBakh')),
                         SizedBox(height: 8),
-                        Text('آسپار', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
+                        Text('آسپار', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
                         SizedBox(height: 16),
-                        Text('حسابداری شخصی و مدیریت درآمد', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                        Text('حسابداری شخصی و مدیریت درآمد', style: TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'YekanBakh')),
                       ],
                     ),
                     Container(
@@ -205,6 +223,7 @@ class HomeScreen extends StatelessWidget {
               builder: (context, transProvider, bankProvider, savingsProvider, _) {
                 final income = transProvider.getTotalIncome(null, null);
                 final expense = transProvider.getTotalExpense(null, null);
+                final totalBalance = bankProvider.getTotalBalanceWithCashBox();
                 final totalSavings = savingsProvider.getTotalSavings();
 
                 return Padding(
@@ -235,20 +254,20 @@ class HomeScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
                         child: _StatCard(
-                          icon: Icons.savings_rounded,
-                          label: 'کل پس انداز',
-                          value: formatAmount(totalSavings),
-                          gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
+                          icon: Icons.account_balance_wallet_rounded,
+                          label: 'کل موجودی (بانک + صندوق)',
+                          value: formatAmount(totalBalance),
+                          gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
                           fullWidth: true,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
                         child: _StatCard(
-                          icon: Icons.account_balance_rounded,
-                          label: 'تعداد بانک',
-                          value: '${bankProvider.banks.length}',
-                          gradient: const [Color(0xFFFF5C8A), Color(0xFFD81B60)],
+                          icon: Icons.savings_rounded,
+                          label: 'کل پس انداز',
+                          value: formatAmount(totalSavings),
+                          gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
                           fullWidth: true,
                         ),
                       ),
@@ -264,7 +283,7 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('دسترسی های سریع', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.text(context))),
+                  Text('دسترسی های سریع', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.text(context), fontFamily: 'YekanBakh')),
                   const SizedBox(height: 15),
                   Row(
                     children: [
@@ -353,9 +372,9 @@ class _StatCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
                     const SizedBox(height: 6),
-                    Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                    Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
                   ],
                 ),
                 Container(
@@ -371,7 +390,7 @@ class _StatCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(10)),
@@ -380,7 +399,7 @@ class _StatCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-                Text(value, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
+                Text(value, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
               ],
             ),
     );
@@ -418,7 +437,7 @@ class _QuickAction extends StatelessWidget {
                   child: Icon(icon, color: Colors.white, size: 24),
                 ),
                 const SizedBox(height: 10),
-                Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+                Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12, fontFamily: 'YekanBakh')),
               ],
             ),
           ),
