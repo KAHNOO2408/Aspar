@@ -209,7 +209,7 @@ class _AddBankScreenState extends State<AddBankScreen> with TickerProviderStateM
       cashBox: 0,
     );
 
-    await Provider.of<BankProvider>(context, listen: false).insertBank(bank);
+    await Provider.of<BankProvider>(context, listen: false).addBank(bank);
     
     if (mounted) {
       Navigator.pop(context);
@@ -231,7 +231,7 @@ class _AddBankScreenState extends State<AddBankScreen> with TickerProviderStateM
       cashBox: double.tryParse(cashboxAmountController.text) ?? 0,
     );
 
-    await Provider.of<BankProvider>(context, listen: false).insertBank(cashbox);
+    await Provider.of<BankProvider>(context, listen: false).addBank(cashbox);
     
     if (mounted) {
       Navigator.pop(context);
