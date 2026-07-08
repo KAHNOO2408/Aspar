@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/savings_model.dart';
+import '../models/bank_model.dart';
+import '../models/transaction_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
@@ -371,7 +373,7 @@ class SavingsScreen extends StatelessWidget {
 
                   savingsProvider.addToSavingsGoal(goal.id ?? 0, amount);
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('${selectedSource == 'bank' ? 'از بانک' : 'از صندوق'} برداشت شد ✅', style: TextStyle(fontFamily: 'YekanBakh'))));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${selectedSource == 'bank' ? 'از بانک' : 'از صندوق'} برداشت شد ✅', style: const TextStyle(fontFamily: 'YekanBakh'))));
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A3DE8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 child: const Text('اضافه کن', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
