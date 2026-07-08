@@ -130,7 +130,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     Text('${formatAmount(totalPayable)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontSize: 14, fontFamily: _fontFamily)),
                     const SizedBox(height: 8),
                     Text('قسط ماهیانه:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context), fontFamily: _fontFamily)),
-                    Text('${formatAmount(monthlyPayment)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontSize: 14, fontFamily: _fontFamily)),
+                    Text('${formatAmount(monthlyPayment.toDouble())} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontSize: 14, fontFamily: _fontFamily)),
                   ],
                 ),
               ),
@@ -143,7 +143,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
               style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
               decoration: _decoration(context, 'مبلغ پرداخت‌شده تاکنون (اختیاری)'),
             ),
-            if (double.tryParse(paidAmountController.text) ?? 0 > 0)
+            if ((double.tryParse(paidAmountController.text) ?? 0) > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Container(
@@ -248,7 +248,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
       months: months,
       startDate: selectedStartDate,
       endDate: endDate,
-      bankId: selectedBankId,
+      bankId: selectedBankId ?? -1,
       description: descController.text,
       paidAmount: paidAmount,
     );
