@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../models/contact_model.dart';
 import '../widgets/custom_app_bar.dart';
@@ -148,7 +147,7 @@ class ContactsScreen extends StatelessWidget {
                 controller: addressController,
                 style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                 decoration: InputDecoration(
-                  labelText: 'آدرس',
+                  labelText: 'آدرس (اختیاری)',
                   labelStyle: TextStyle(color: AppColors.textSecondary(context), fontFamily: _fontFamily),
                   filled: true,
                   fillColor: AppColors.background(context),
@@ -163,8 +162,8 @@ class ContactsScreen extends StatelessWidget {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: _fontFamily))),
           ElevatedButton(
             onPressed: () {
-              if (firstNameController.text.isEmpty || lastNameController.text.isEmpty || phoneController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نام، نام‌خانوادگی و تلفن الزامی هستند', style: TextStyle(fontFamily: _fontFamily))));
+              if (firstNameController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نام الزامی است', style: TextStyle(fontFamily: _fontFamily))));
                 return;
               }
 
@@ -172,13 +171,12 @@ class ContactsScreen extends StatelessWidget {
                 id: DateTime.now().millisecondsSinceEpoch,
                 firstName: firstNameController.text,
                 lastName: lastNameController.text,
-                phoneNumber: phoneController.text,
+                phoneNumber: phoneController.text.isEmpty ? 'بدون تلفن' : phoneController.text,
                 address: addressController.text.isEmpty ? null : addressController.text,
               );
 
               context.read<ContactProvider>().addContact(newContact);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب اضافه شد ✅', style: TextStyle(fontFamily: _fontFamily))));
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F6BF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('اضافه', style: TextStyle(color: Colors.white, fontFamily: _fontFamily)),
@@ -247,7 +245,7 @@ class ContactsScreen extends StatelessWidget {
                 controller: addressController,
                 style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                 decoration: InputDecoration(
-                  labelText: 'آدرس',
+                  labelText: 'آدرس (اختیاری)',
                   labelStyle: TextStyle(color: AppColors.textSecondary(context), fontFamily: _fontFamily),
                   filled: true,
                   fillColor: AppColors.background(context),
@@ -262,8 +260,8 @@ class ContactsScreen extends StatelessWidget {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: _fontFamily))),
           ElevatedButton(
             onPressed: () {
-              if (firstNameController.text.isEmpty || lastNameController.text.isEmpty || phoneController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نام، نام‌خانوادگی و تلفن الزامی هستند', style: TextStyle(fontFamily: _fontFamily))));
+              if (firstNameController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نام الزامی است', style: TextStyle(fontFamily: _fontFamily))));
                 return;
               }
 
@@ -271,12 +269,11 @@ class ContactsScreen extends StatelessWidget {
                 id: contact.id,
                 firstName: firstNameController.text,
                 lastName: lastNameController.text,
-                phoneNumber: phoneController.text,
+                phoneNumber: phoneController.text.isEmpty ? 'بدون تلفن' : phoneController.text,
                 address: addressController.text.isEmpty ? null : addressController.text,
               );
               provider.updateContact(updated);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب اپدیت شد ✅', style: TextStyle(fontFamily: _fontFamily))));
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F6BF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('ذخیره', style: TextStyle(color: Colors.white, fontFamily: _fontFamily)),
