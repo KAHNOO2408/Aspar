@@ -124,7 +124,6 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
             ),
             const SizedBox(height: 24),
 
-            // مخاطب
             InkWell(
               onTap: _pickContact,
               borderRadius: BorderRadius.circular(14),
@@ -143,7 +142,6 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
             ),
             const SizedBox(height: 20),
 
-            // مبلغ
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
@@ -162,7 +160,6 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
               ),
             const SizedBox(height: 16),
 
-            // یادداشت
             TextField(
               controller: noteController,
               maxLines: 2,
@@ -171,7 +168,6 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            // تاریخ
             Container(
               width: double.infinity,
               decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
@@ -196,7 +192,6 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
             ),
             const SizedBox(height: 30),
 
-            // دکمه ثبت
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -247,10 +242,10 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
     final debt = Debt(
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
+      totalAmount: amount,
       description: description,
-      amount: amount,
-      type: widget.type,
       date: selectedDate,
+      type: widget.type,
     );
 
     await debtProvider.addDebt(debt);
