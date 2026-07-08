@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
 import '../models/debt_model.dart';
+import '../models/savings_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
@@ -21,6 +22,7 @@ import 'settings_screen.dart';
 import 'transfer_between_accounts_screen.dart';
 import 'bank_deposit_screen.dart';
 import 'bank_withdrawal_screen.dart';
+import 'savings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -78,6 +80,14 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const BanksScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.savings_rounded, color: Color(0xFF9B6DFF)),
+              title: const Text('پس انداز'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const SavingsScreen()));
               },
             ),
             ListTile(
@@ -184,29 +194,28 @@ class HomeScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
-                      child: const Icon(Icons.insights_rounded, color: Colors.white, size: 34),
+                      child: const Icon(Icons.trending_up_rounded, color: Colors.white, size: 40),
                     ),
                   ],
                 ),
               ),
             ),
 
-            Consumer3<TransactionProvider, BankProvider, DebtProvider>(
-              builder: (context, transProvider, bankProvider, debtProvider, _) {
+            Consumer3<TransactionProvider, BankProvider, SavingsProvider>(
+              builder: (context, transProvider, bankProvider, savingsProvider, _) {
                 final income = transProvider.getTotalIncome(null, null);
                 final expense = transProvider.getTotalExpense(null, null);
-                final balance = transProvider.getNetBalance();
-                final bankBalance = bankProvider.getTotalBalance();
+                final totalSavings = savingsProvider.getTotalSavings();
 
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      child: Row(
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Column(
+                    children: [
+                      Row(
                         children: [
                           Expanded(
                             child: _StatCard(
-                              icon: Icons.arrow_downward_rounded,
+                              icon: Icons.arrow_upward_rounded,
                               label: 'درآمد',
                               value: formatAmount(income),
                               gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
@@ -215,7 +224,7 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _StatCard(
-                              icon: Icons.arrow_upward_rounded,
+                              icon: Icons.arrow_downward_rounded,
                               label: 'خرج',
                               value: formatAmount(expense),
                               gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
@@ -223,44 +232,29 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _StatCard(
-                              icon: Icons.account_balance_wallet_rounded,
-                              label: 'خالص',
-                              value: formatAmount(balance),
-                              gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _StatCard(
-                              icon: Icons.account_balance_rounded,
-                              label: 'موجودی بانک',
-                              value: formatAmount(bankBalance),
-                              gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
-                            ),
-                          ),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
+                        child: _StatCard(
+                          icon: Icons.savings_rounded,
+                          label: 'کل پس انداز',
+                          value: formatAmount(totalSavings),
+                          gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
+                          fullWidth: true,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      child: _StatCard(
-                        icon: Icons.account_balance_rounded,
-                        label: 'تعداد بانک',
-                        value: '${bankProvider.banks.length}',
-                        gradient: const [Color(0xFFFF5C8A), Color(0xFFD81B60)],
-                        fullWidth: true,
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
+                        child: _StatCard(
+                          icon: Icons.account_balance_rounded,
+                          label: 'تعداد بانک',
+                          value: '${bankProvider.banks.length}',
+                          gradient: const [Color(0xFFFF5C8A), Color(0xFFD81B60)],
+                          fullWidth: true,
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
             ),
 
             const SizedBox(height: 30),
@@ -306,10 +300,10 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _QuickAction(
-                          icon: Icons.account_balance_rounded,
-                          label: 'بانک جدید',
+                          icon: Icons.savings_rounded,
+                          label: 'پس انداز',
                           gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SavingsScreen())),
                         ),
                       ),
                     ],
