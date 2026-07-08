@@ -436,8 +436,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: selectedPaymentMethod == 'cash' ? gradient[0].withOpacity(0.2) : AppColors.card(context),
-                      border: Border.all(color: selectedPaymentMethod == 'cash' ? gradient[1] : AppColors.divider(context), width: 2),
+                      gradient: selectedPaymentMethod == 'cash' ? LinearGradient(colors: gradient) : null,
+                      color: selectedPaymentMethod != 'cash' ? AppColors.card(context) : null,
+                      border: selectedPaymentMethod != 'cash' ? Border.all(color: AppColors.divider(context), width: 2) : null,
                     ),
                     child: Material(
                       color: Colors.transparent,
@@ -447,7 +448,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Center(
-                            child: Text('نقدی', style: TextStyle(color: selectedPaymentMethod == 'cash' ? gradient[1] : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                            child: Text('نقدی', style: TextStyle(color: selectedPaymentMethod == 'cash' ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                           ),
                         ),
                       ),
@@ -459,8 +460,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: selectedPaymentMethod == 'card' ? gradient[0].withOpacity(0.2) : AppColors.card(context),
-                      border: Border.all(color: selectedPaymentMethod == 'card' ? gradient[1] : AppColors.divider(context), width: 2),
+                      gradient: selectedPaymentMethod == 'card' ? LinearGradient(colors: gradient) : null,
+                      color: selectedPaymentMethod != 'card' ? AppColors.card(context) : null,
+                      border: selectedPaymentMethod != 'card' ? Border.all(color: AppColors.divider(context), width: 2) : null,
                     ),
                     child: Material(
                       color: Colors.transparent,
@@ -470,7 +472,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Center(
-                            child: Text('کارت', style: TextStyle(color: selectedPaymentMethod == 'card' ? gradient[1] : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                            child: Text('کارت', style: TextStyle(color: selectedPaymentMethod == 'card' ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                           ),
                         ),
                       ),
@@ -503,18 +505,32 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     borderRadius: BorderRadius.circular(14),
                     child: Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), border: Border.all(color: selectedBankId == null ? Colors.red : gradient[1], width: 2)),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: gradient),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       child: Row(
                         children: [
-                          Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), shape: BoxShape.circle), child: const Icon(Icons.account_balance, color: Colors.white, size: 18)),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white30,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.account_balance, color: Colors.white, size: 18),
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               selectedBankId == null ? 'انتخاب بانک *' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
-                              style: TextStyle(color: selectedBankId != null ? AppColors.text(context) : Colors.red, fontWeight: FontWeight.w600, fontFamily: _fontFamily),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: _fontFamily,
+                              ),
                             ),
                           ),
-                          Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
+                          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white70),
                         ],
                       ),
                     ),
