@@ -1,64 +1,78 @@
-import 'package:flutter/material.dart';
-import '../database/db_helper.dart';
+import 'package:hive/hive.dart';
 
-class Bank {
-  final int? id;
-  final String bankName;
-  final String accountNumber;
-  final double balance;
+part 'bank_model.g.dart';
+
+@HiveType(typeId: 0)
+class Bank extends HiveObject {
+  @HiveField(0)
+  int id;
+
+  @HiveField(1)
+  String bankName;
+
+  @HiveField(2)
+  String accountNumber;
+
+  @HiveField(3)
+  double balance;
+
+  @HiveField(4)
+  double cashBox;
 
   Bank({
-    this.id,
+    required this.id,
     required this.bankName,
     required this.accountNumber,
     required this.balance,
+    this.cashBox = 0,
   });
 
-  Map<String, dynamic> toMap() => {
-    'id': id,
-    'bankName': bankName,
-    'accountNumber': accountNumber,
-    'balance': balance,
-  };
-
-  factory Bank.fromMap(Map<String, dynamic> map) => Bank(
-    id: map['id'],
-    bankName: map['bankName'],
-    accountNumber: map['accountNumber'],
-    balance: (map['balance'] as num).toDouble(),
-  );
+  double get totalBalance => balance + cashBox;
 }
 
 class BankProvider extends ChangeNotifier {
-  List<Bank> _banks = [];
-
-  List<Bank> get banks => _banks;
+  List<Bank> banks = [];
 
   BankProvider() {
     loadBanks();
   }
 
   Future<void> loadBanks() async {
-    _banks = await DatabaseHelper.getBanks();
+    final box = Hive.box<Bank>('banks');
+    banks = box.values.toList();
     notifyListeners();
   }
 
-  Future<void> addBank(Bank bank) async {
-    await DatabaseHelper.insertBank(bank);
-    await loadBanks();
+  Future<void> insertBank(Bank bank) async {
+    final box = Hive.box<Bank>('banks');
+    await box.put(bank.id, bank);
+    banks = box.values.toList();
+    notifyListeners();
   }
 
   Future<void> updateBank(Bank bank) async {
-    await DatabaseHelper.updateBank(bank);
-    await loadBanks();
+    final box = Hive.box<Bank>('banks');
+    await box.put(bank.id, bank);
+    banks = box.values.toList();
+    notifyListeners();
   }
 
   Future<void> deleteBank(int id) async {
-    await DatabaseHelper.deleteBank(id);
-    await loadBanks();
+    final box = Hive.box<Bank>('banks');
+    await box.delete(id);
+    banks = box.values.toList();
+    notifyListeners();
   }
 
   double getTotalBalance() {
-    return _banks.fold(0, (sum, b) => sum + b.balance);
+    return banks.fold(0.0, (sum, bank) => sum + bank.balance);
+  }
+
+  double getTotalCashBox() {
+    return banks.fold(0.0, (sum, bank) => sum + bank.cashBox);
+  }
+
+  double getTotalBalanceWithCashBox() {
+    return banks.fold(0.0, (sum, bank) => sum + bank.totalBalance);
   }
 }
