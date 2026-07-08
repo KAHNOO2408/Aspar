@@ -274,34 +274,111 @@ class SavingsScreen extends StatelessWidget {
 
   void _showAddAmountDialog(BuildContext context, SavingsGoal goal) {
     final amountController = TextEditingController();
+    String? selectedSource; // 'bank' یا 'cashbox'
+    int? selectedBankId;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('اضافه کردن مبلغ', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')),
-        content: TextField(
-          controller: amountController,
-          keyboardType: TextInputType.number,
-          style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
-          decoration: InputDecoration(labelText: 'مبلغ (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
-          ElevatedButton(
-            onPressed: () {
-              final savingsProvider = context.read<SavingsProvider>();
-              final amount = double.tryParse(amountController.text) ?? 0;
-              if (amount > 0) {
-                savingsProvider.addToSavingsGoal(goal.id ?? 0, amount);
-                Navigator.pop(context);
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A3DE8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('اضافه کن', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
-          ),
-        ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final bankProvider = context.read<BankProvider>();
+          final selectedBank = selectedBankId != null ? bankProvider.banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)) : null;
+
+          return AlertDialog(
+            backgroundColor: AppColors.card(context),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('اضافه کردن مبلغ', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
+                    decoration: InputDecoration(labelText: 'مبلغ (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('برداشت از:', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => selectedSource = 'bank'),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: selectedSource == 'bank' ? const Color(0xFF4F6BF5).withOpacity(0.1) : AppColors.background(context),
+                              border: Border.all(color: selectedSource == 'bank' ? const Color(0xFF4F6BF5) : AppColors.divider(context), width: 2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(child: Text('بانک', style: TextStyle(color: selectedSource == 'bank' ? const Color(0xFF4F6BF5) : AppColors.textSecondary(context), fontWeight: FontWeight.w600, fontFamily: 'YekanBakh'))),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => selectedSource = 'cashbox'),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: selectedSource == 'cashbox' ? const Color(0xFFE67E22).withOpacity(0.1) : AppColors.background(context),
+                              border: Border.all(color: selectedSource == 'cashbox' ? const Color(0xFFE67E22) : AppColors.divider(context), width: 2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(child: Text('صندوق', style: TextStyle(color: selectedSource == 'cashbox' ? const Color(0xFFE67E22) : AppColors.textSecondary(context), fontWeight: FontWeight.w600, fontFamily: 'YekanBakh'))),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (selectedSource == 'bank') ...[
+                    const SizedBox(height: 12),
+                    DropdownButton<int>(
+                      isExpanded: true,
+                      value: selectedBankId,
+                      hint: Text('انتخاب بانک', style: TextStyle(color: AppColors.textMuted(context), fontFamily: 'YekanBakh')),
+                      items: bankProvider.banks.map((bank) => DropdownMenuItem(value: bank.id, child: Text('${bank.bankName} (${formatAmount(bank.balance)} تومان)', style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh')))).toList(),
+                      onChanged: (value) => setState(() => selectedBankId = value),
+                      dropdownColor: AppColors.card(context),
+                      style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
+                      underline: const SizedBox(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
+              ElevatedButton(
+                onPressed: () {
+                  final savingsProvider = context.read<SavingsProvider>();
+                  final amount = double.tryParse(amountController.text) ?? 0;
+                  if (amount <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ باید بزرگتر از صفر باشد', style: TextStyle(fontFamily: 'YekanBakh'))));
+                    return;
+                  }
+                  if (selectedSource == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('انتخاب کن از کجا برداشت کنی', style: TextStyle(fontFamily: 'YekanBakh'))));
+                    return;
+                  }
+                  if (selectedSource == 'bank' && selectedBankId == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('بانک رو انتخاب کن', style: TextStyle(fontFamily: 'YekanBakh'))));
+                    return;
+                  }
+
+                  savingsProvider.addToSavingsGoal(goal.id ?? 0, amount);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('${selectedSource == 'bank' ? 'از بانک' : 'از صندوق'} برداشت شد ✅', style: TextStyle(fontFamily: 'YekanBakh'))));
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A3DE8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: const Text('اضافه کن', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
