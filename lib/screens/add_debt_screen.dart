@@ -252,7 +252,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 20),
 
-            // مخاطب
             InkWell(
               onTap: _pickContact,
               borderRadius: BorderRadius.circular(14),
@@ -271,7 +270,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            // محصول
             InkWell(
               onTap: _pickProduct,
               borderRadius: BorderRadius.circular(14),
@@ -290,36 +288,67 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            // قیمت واحد
-            TextField(
-              controller: priceController,
-              keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}),
-              style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-              decoration: _decoration(context, 'قیمت واحد (تومان) *'),
-            ),
-            if (price > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Text('${formatAmount(price)} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1], fontFamily: _fontFamily)),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('قیمت واحد (تومان) *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: priceController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => setState(() {}),
+                        style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: AppColors.card(context),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.all(12),
+                          hintText: '0',
+                        ),
+                      ),
+                      if (price > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                            child: Text('${formatAmount(price)} تومان', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 11, color: gradient[1], fontFamily: _fontFamily)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            const SizedBox(height: 16),
-
-            // تعداد
-            TextField(
-              controller: quantityController,
-              keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}),
-              style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-              decoration: _decoration(context, 'تعداد *'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('تعداد *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: quantityController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => setState(() {}),
+                        style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: AppColors.card(context),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.all(12),
+                          hintText: '0',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
 
-            // واحد شمارش
             Row(
               children: [
                 Expanded(
@@ -334,7 +363,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Labor fee (فقط فروش و ml)
             if (showLaborFee) ...[
               TextField(
                 controller: laborFeeController,
@@ -346,7 +374,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               const SizedBox(height: 16),
             ],
 
-            // مبلغ کل
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.divider(context))),
@@ -363,7 +390,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            // توضیح
             TextField(
               controller: noteController,
               style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
@@ -371,11 +397,30 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 16),
 
-            // تاریخ
-            _DateButton(label: _formatDateToJalali(selectedDate), onTap: _pickDate),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: _pickDate,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.calendar_today, size: 16, color: gradient[1]),
+                        const SizedBox(width: 8),
+                        Text(_formatDateToJalali(selectedDate), style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context), fontFamily: _fontFamily)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
 
-            // پرداخت نقدی
             Text('پرداخت نقدی (اختیاری)', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 13, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
             const SizedBox(height: 10),
             TextField(
@@ -386,7 +431,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ),
             const SizedBox(height: 10),
 
-            // بانک (اگر پرداختی داشت)
             if (paidNowController.text.isNotEmpty && double.tryParse(paidNowController.text)! > 0) ...[
               InkWell(
                 onTap: _pickBank,
@@ -419,7 +463,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               const SizedBox(height: 16),
             ],
 
-            // دکمه ثبت
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -598,31 +641,6 @@ class _UnitButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Center(child: Text(label, style: TextStyle(color: selected ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')))),
-        ),
-      ),
-    );
-  }
-}
-
-class _DateButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  const _DateButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.calendar_today, size: 16, color: Color(0xFF4F6BF5)), const SizedBox(width: 8), Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.text(context), fontFamily: 'YekanBakh'))]),
-          ),
         ),
       ),
     );
