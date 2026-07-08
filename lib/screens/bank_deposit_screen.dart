@@ -121,7 +121,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
             ),
             const SizedBox(height: 20),
 
-            // مخاطب (دکمه)
             InkWell(
               onTap: _pickContact,
               borderRadius: BorderRadius.circular(14),
@@ -140,7 +139,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
             ),
             const SizedBox(height: 16),
 
-            // بانک
             Consumer<BankProvider>(
               builder: (context, bankProvider, _) => DropdownButtonFormField<int>(
                 value: selectedBankId,
@@ -153,7 +151,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
             ),
             const SizedBox(height: 16),
 
-            // مبلغ
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
@@ -172,7 +169,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
               ),
             const SizedBox(height: 16),
 
-            // کارمزد
             TextField(
               controller: feeController,
               keyboardType: TextInputType.number,
@@ -191,7 +187,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
               ),
             const SizedBox(height: 16),
 
-            // کد رهگیری
             TextField(
               controller: trackingCodeController,
               style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
@@ -199,7 +194,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
             ),
             const SizedBox(height: 16),
 
-            // یادداشت
             TextField(
               controller: noteController,
               style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
@@ -207,7 +201,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
             ),
             const SizedBox(height: 16),
 
-            // تاریخ
             Container(
               width: double.infinity,
               decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14)),
@@ -232,7 +225,6 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
             ),
             const SizedBox(height: 30),
 
-            // دکمه ثبت
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -288,7 +280,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
 
     final ledgerDescription = noteController.text.isNotEmpty ? 'واریز به بانک - ${noteController.text}' : 'واریز به بانک';
 
-    await ledgerProvider.insertLedgerEntry(LedgerEntry(
+    await ledgerProvider.addEntry(LedgerEntry(
       id: DateTime.now().millisecondsSinceEpoch,
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
@@ -299,7 +291,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       trackingCode: trackingCodeController.text,
     ));
 
-    await transProvider.insertTransaction(Transaction(
+    await transProvider.addTransaction(Transaction(
       id: DateTime.now().millisecondsSinceEpoch,
       title: 'واریز به بانک',
       description: 'واریز به بانک',
@@ -312,7 +304,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     ));
 
     if (fee > 0) {
-      await transProvider.insertTransaction(Transaction(
+      await transProvider.addTransaction(Transaction(
         id: DateTime.now().millisecondsSinceEpoch + 1,
         title: 'کارمزد واریز',
         description: 'کارمزد واریز از ${selectedContact!.fullName}',
