@@ -16,6 +16,7 @@ class ReturnFromSaleScreen extends StatefulWidget {
 
 class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
   final quantityController = TextEditingController();
+  final pricePerUnitController = TextEditingController();
   final noteController = TextEditingController();
   Product? selectedProduct;
   DateTime selectedDate = DateTime.now();
@@ -79,7 +80,6 @@ class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
                                 final product = filtered[index];
                                 return ListTile(
                                   title: Text(product.name, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
-                                  subtitle: Text('${formatAmount(product.price)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
                                   onTap: () => Navigator.pop(dialogContext, product),
                                 );
                               },
@@ -100,7 +100,8 @@ class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
   @override
   Widget build(BuildContext context) {
     final quantity = double.tryParse(quantityController.text) ?? 0;
-    final totalReturn = quantity * (selectedProduct?.price ?? 0);
+    final pricePerUnit = double.tryParse(pricePerUnitController.text) ?? 0;
+    final totalReturn = quantity * pricePerUnit;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -144,13 +145,40 @@ class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
             ),
             const SizedBox(height: 16),
 
-            if (selectedProduct != null && totalReturn > 0)
+            TextField(
+              controller: pricePerUnitController,
+              keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
+              style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+              decoration: _decoration(context, 'قیمت واحد (تومان) *'),
+            ),
+            if (pricePerUnit > 0)
               Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(top: 8),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(color: const Color(0xFF11998E).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Text('${formatAmount(totalReturn)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF38EF7D), fontFamily: _fontFamily)),
+                  child: Text('${formatAmount(pricePerUnit)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF38EF7D), fontFamily: _fontFamily)),
+                ),
+              ),
+            const SizedBox(height: 16),
+
+            if (totalReturn > 0)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.divider(context))),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('مبلغ برگشت', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
+                      const SizedBox(height: 8),
+                      Text(formatAmount(totalReturn), style: TextStyle(color: AppColors.text(context), fontSize: 18, fontWeight: FontWeight.w800, fontFamily: _fontFamily)),
+                      const SizedBox(height: 4),
+                      Text('تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 11, fontFamily: _fontFamily)),
+                    ],
+                  ),
                 ),
               ),
 
@@ -215,21 +243,23 @@ class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
   }
 
   void _submit() async {
-    if (selectedProduct == null || quantityController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('محصول و تعداد الزامی هستند', style: TextStyle(fontFamily: _fontFamily))));
+    if (selectedProduct == null || quantityController.text.isEmpty || pricePerUnitController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('محصول، تعداد و قیمت الزامی هستند', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
 
     final quantity = double.tryParse(quantityController.text) ?? 0;
-    if (quantity <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعداد باید بزرگتر از صفر باشد', style: TextStyle(fontFamily: _fontFamily))));
+    final pricePerUnit = double.tryParse(pricePerUnitController.text) ?? 0;
+    
+    if (quantity <= 0 || pricePerUnit <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعداد و قیمت باید بزرگتر از صفر باشند', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
 
     setState(() => _isSubmitting = true);
 
     final transProvider = context.read<TransactionProvider>();
-    final totalReturn = quantity * selectedProduct!.price;
+    final totalReturn = quantity * pricePerUnit;
 
     await transProvider.addTransaction(Transaction(
       id: DateTime.now().millisecondsSinceEpoch,
@@ -251,6 +281,7 @@ class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
   @override
   void dispose() {
     quantityController.dispose();
+    pricePerUnitController.dispose();
     noteController.dispose();
     super.dispose();
   }
