@@ -194,6 +194,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
   Future<void> _pickBank() async {
     final bankProvider = context.read<BankProvider>();
+    final banks = bankProvider.banks.where((b) => b.accountNumber != 'صندوق').toList();
     final result = await showDialog<int>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -203,12 +204,12 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         content: SizedBox(
           width: double.maxFinite,
           height: 250,
-          child: bankProvider.banks.where((b) => b.accountNumber != 'صندوق').isEmpty
+          child: banks.isEmpty
               ? Center(child: Text('بانکی موجود نیست', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontFamily: _fontFamily)))
               : ListView.builder(
-                  itemCount: bankProvider.banks.where((b) => b.accountNumber != 'صندوق').length,
+                  itemCount: banks.length,
                   itemBuilder: (context, index) {
-                    final bank = bankProvider.banks.where((b) => b.accountNumber != 'صندوق').toList()[index];
+                    final bank = banks[index];
                     return ListTile(
                       title: Text(bank.bankName, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
                       subtitle: Text('${formatAmount(bank.balance)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
@@ -526,36 +527,35 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: gradient),
+                        color: AppColors.card(context),
                         borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: selectedCashboxId == null ? AppColors.divider(context) : gradient[1], width: 2),
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: Colors.white30, shape: BoxShape.circle),
-                            child: const Icon(Icons.savings_rounded, color: Colors.white, size: 18),
-                          ),
+                          Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), shape: BoxShape.circle), child: const Icon(Icons.savings_rounded, color: Colors.white, size: 18)),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               selectedCashboxId == null ? 'انتخاب صندوق *' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedCashboxId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: _fontFamily),
+                              style: TextStyle(color: selectedCashboxId != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily),
                             ),
                           ),
-                          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white70),
+                          Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: paidNowController,
-                    keyboardType: TextInputType.number,
-                    onChanged: (_) => setState(() {}),
-                    style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                    decoration: _decoration(context, 'مبلغ دریافتی (تومان)'),
-                  ),
+                  if (selectedCashboxId != null) ...[
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: paidNowController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setState(() {}),
+                      style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                      decoration: _decoration(context, 'مبلغ دریافتی (تومان)'),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                 ],
               ),
@@ -569,46 +569,41 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: gradient),
+                        color: AppColors.card(context),
                         borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: selectedBankId == null ? AppColors.divider(context) : gradient[1], width: 2),
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: Colors.white30, shape: BoxShape.circle),
-                            child: const Icon(Icons.account_balance, color: Colors.white, size: 18),
-                          ),
+                          Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), shape: BoxShape.circle), child: const Icon(Icons.account_balance, color: Colors.white, size: 18)),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               selectedBankId == null ? 'انتخاب بانک *' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: _fontFamily,
-                              ),
+                              style: TextStyle(color: selectedBankId != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily),
                             ),
                           ),
-                          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white70),
+                          Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: paidNowController,
-                    keyboardType: TextInputType.number,
-                    onChanged: (_) => setState(() {}),
-                    style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                    decoration: _decoration(context, 'مبلغ دریافتی (تومان)'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: trackingCodeController,
-                    style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                    decoration: _decoration(context, 'کد پیگیری (اختیاری)'),
-                  ),
+                  if (selectedBankId != null) ...[
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: paidNowController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setState(() {}),
+                      style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                      decoration: _decoration(context, 'مبلغ دریافتی (تومان)'),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: trackingCodeController,
+                      style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                      decoration: _decoration(context, 'کد پیگیری (اختیاری)'),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                 ],
               ),
