@@ -6,6 +6,8 @@ import '../models/contact_model.dart';
 import '../models/product_model.dart';
 import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
+import '../models/ledger_model.dart';
+import '../models/debt_model.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 
@@ -597,7 +599,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     setState(() => _isSubmitting = true);
 
     final totalReturn = quantity * selectedPurchase!.pricePerUnit;
-    final description = noteController.text.isNotEmpty ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد) - ${noteController.text}' : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد)';
+    final returnDescription = 'برگشت ${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد)${noteController.text.isNotEmpty ? ' - ${noteController.text}' : ''}';
 
     // کم کردن موجودی انبار
     await productProvider.reduceStockFifo(selectedProduct!.id!, quantity);
@@ -617,6 +619,31 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     );
     await productProvider.updateProductTransaction(updatedPurchase);
 
+    // اگه همون لحظه پول گرفته شده، مبلغ باقی‌مونده صفره؛ اگه نه، کل مبلغ میره تو حساب طرف
+    final remainingAmount = selectedPaymentMethod != null ? 0.0 : totalReturn;
+
+    final ledgerProvider = context.read<LedgerProvider>();
+    await ledgerProvider.addEntry(LedgerEntry(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
+      date: selectedDate,
+      description: returnDescription,
+      debitAmount: remainingAmount,
+      creditAmount: 0,
+    ));
+
+    if (remainingAmount > 0) {
+      final debtProvider = context.read<DebtProvider>();
+      await debtProvider.addDebt(Debt(
+        personName: selectedContact!.firstName,
+        personFamily: selectedContact!.lastName,
+        totalAmount: remainingAmount,
+        description: returnDescription,
+        date: selectedDate,
+        type: DebtType.receivable,
+      ));
+    }
+
     if (selectedPaymentMethod != null) {
       final bankProvider = context.read<BankProvider>();
       final transProvider = context.read<TransactionProvider>();
@@ -632,7 +659,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
       await transProvider.addTransaction(Transaction(
         id: DateTime.now().millisecondsSinceEpoch,
         title: 'برگشت از خرید',
-        description: description,
+        description: returnDescription,
         amount: totalReturn,
         type: TransactionType.income,
         category: 'برگشت از خرید',
