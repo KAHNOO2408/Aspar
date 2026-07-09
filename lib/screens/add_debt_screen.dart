@@ -266,6 +266,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final laborFee = showLaborFee ? (double.tryParse(laborFeeController.text) ?? 0.0) : 0.0;
     final baseAmount = quantity * price;
     final totalAmount = baseAmount + laborFee;
+    final paidLabel = isPurchase ? 'مبلغ پرداختی (تومان)' : 'مبلغ دریافتی (تومان)';
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -330,10 +331,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   child: _UnitButton(label: 'عدد', selected: selectedUnit == 'count', gradient: gradient, onTap: () => setState(() => selectedUnit = 'count')),
                 ),
                 const SizedBox(width: 10),
-                if (!isPurchase)
-                  Expanded(
-                    child: _UnitButton(label: 'میل', selected: selectedUnit == 'ml', gradient: gradient, onTap: () => setState(() => selectedUnit = 'ml')),
-                  ),
+                Expanded(
+                  child: _UnitButton(label: 'میل', selected: selectedUnit == 'ml', gradient: gradient, onTap: () => setState(() => selectedUnit = 'ml')),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -553,7 +553,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       keyboardType: TextInputType.number,
                       onChanged: (_) => setState(() {}),
                       style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                      decoration: _decoration(context, 'مبلغ دریافتی (تومان)'),
+                      decoration: _decoration(context, paidLabel),
                     ),
                   ],
                   const SizedBox(height: 16),
@@ -595,7 +595,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       keyboardType: TextInputType.number,
                       onChanged: (_) => setState(() {}),
                       style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                      decoration: _decoration(context, 'مبلغ دریافتی (تومان)'),
+                      decoration: _decoration(context, paidLabel),
                     ),
                     const SizedBox(height: 16),
                     TextField(
@@ -701,6 +701,18 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       laborFee: laborFee,
       trackingCode: selectedPaymentMethod == 'card' && trackingCodeController.text.trim().isNotEmpty ? trackingCodeController.text.trim() : null,
     ));
+
+    if (remainingAmount > 0) {
+      final debtProvider = context.read<DebtProvider>();
+      await debtProvider.addDebt(Debt(
+        personName: selectedContact!.firstName,
+        personFamily: selectedContact!.lastName,
+        totalAmount: remainingAmount,
+        description: productInfo,
+        date: selectedDate,
+        type: isPurchase ? DebtType.owed : DebtType.receivable,
+      ));
+    }
 
     if (paidNow > 0 && selectedPaymentMethod == 'cash') {
       final bankProvider = context.read<BankProvider>();
