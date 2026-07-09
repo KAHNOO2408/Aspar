@@ -185,7 +185,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     if (selectedContact == null || selectedProduct == null) return;
     final productProvider = context.read<ProductProvider>();
     final matches = productProvider.productTransactions
-        .where((t) => t.type == ProductTxType.purchase && t.contactName == selectedContact!.fullName && t.productId == selectedProduct!.id)
+        .where((t) => t.type == ProductTxType.purchase && t.contactName == selectedContact!.fullName && t.productId == selectedProduct!.id && t.quantity > 0)
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
 
@@ -289,6 +289,9 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     final unitPrice = selectedPurchase?.pricePerUnit ?? 0;
     final totalReturn = quantity * unitPrice;
 
+    final stock = selectedProduct != null ? context.watch<ProductProvider>().getStock(selectedProduct!.id!) : 0.0;
+    final maxReturnable = selectedPurchase != null ? (selectedPurchase!.quantity < stock ? selectedPurchase!.quantity : stock) : 0.0;
+
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(title: const Text('برگشت از خرید', style: TextStyle(fontFamily: _fontFamily))),
@@ -380,7 +383,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
             if (selectedPurchase != null)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
-                child: Text('حداکثر: ${selectedPurchase!.quantity.toStringAsFixed(0)} عدد از این خرید', style: TextStyle(fontSize: 11, color: AppColors.textMuted(context), fontFamily: _fontFamily)),
+                child: Text('حداکثر: ${maxReturnable.toStringAsFixed(0)} عدد (بر اساس موجودی فعلی انبار)', style: TextStyle(fontSize: 11, color: AppColors.textMuted(context), fontFamily: _fontFamily)),
               ),
             const SizedBox(height: 16),
 
@@ -573,8 +576,13 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعداد باید بزرگتر از صفر باشد', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
-    if (quantity > selectedPurchase!.quantity) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعداد برگشتی نمی‌تواند از تعداد خریداری‌شده بیشتر باشد', style: TextStyle(fontFamily: _fontFamily))));
+
+    final productProvider = context.read<ProductProvider>();
+    final stock = productProvider.getStock(selectedProduct!.id!);
+    final maxReturnable = selectedPurchase!.quantity < stock ? selectedPurchase!.quantity : stock;
+
+    if (quantity > maxReturnable) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حداکثر ${maxReturnable.toStringAsFixed(0)} عدد قابل برگشت است (موجودی فعلی انبار)', style: const TextStyle(fontFamily: _fontFamily))));
       return;
     }
     if (selectedPaymentMethod == 'card' && selectedBankId == null) {
@@ -590,6 +598,24 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
 
     final totalReturn = quantity * selectedPurchase!.pricePerUnit;
     final description = noteController.text.isNotEmpty ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد) - ${noteController.text}' : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد)';
+
+    // کم کردن موجودی انبار
+    await productProvider.reduceStockFifo(selectedProduct!.id!, quantity);
+
+    // اصلاح رکورد خرید اصلی (کم کردن مقدار برگشت‌داده‌شده)
+    final newQuantity = selectedPurchase!.quantity - quantity;
+    final updatedPurchase = ProductTransaction(
+      id: selectedPurchase!.id,
+      productId: selectedPurchase!.productId,
+      productName: selectedPurchase!.productName,
+      quantity: newQuantity,
+      pricePerUnit: selectedPurchase!.pricePerUnit,
+      totalAmount: newQuantity * selectedPurchase!.pricePerUnit,
+      type: ProductTxType.purchase,
+      date: selectedPurchase!.date,
+      contactName: selectedPurchase!.contactName,
+    );
+    await productProvider.updateProductTransaction(updatedPurchase);
 
     if (selectedPaymentMethod != null) {
       final bankProvider = context.read<BankProvider>();
