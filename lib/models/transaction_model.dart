@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
 enum TransactionType { income, expense }
@@ -65,6 +66,52 @@ class Transaction {
       ledgerEntryId: map['ledgerEntryId'],
     );
   }
+}
+
+class TransactionAdapter extends TypeAdapter<Transaction> {
+  @override
+  final int typeId = 1;
+
+  @override
+  Transaction read(BinaryReader reader) {
+    return Transaction(
+      id: reader.read() as int?,
+      title: reader.read() as String,
+      description: reader.read() as String,
+      amount: reader.read() as double,
+      type: TransactionType.values[reader.readByte()],
+      category: reader.read() as String,
+      date: reader.read() as DateTime,
+      bankId: reader.read() as int?,
+      contactName: reader.read() as String?,
+      productInfo: reader.read() as String?,
+      laborFee: reader.read() as double,
+      ledgerEntryId: reader.read() as int?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Transaction obj) {
+    writer.write(obj.id);
+    writer.write(obj.title);
+    writer.write(obj.description);
+    writer.write(obj.amount);
+    writer.writeByte(obj.type.index);
+    writer.write(obj.category);
+    writer.write(obj.date);
+    writer.write(obj.bankId);
+    writer.write(obj.contactName);
+    writer.write(obj.productInfo);
+    writer.write(obj.laborFee);
+    writer.write(obj.ledgerEntryId);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is TransactionAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class TransactionProvider extends ChangeNotifier {
