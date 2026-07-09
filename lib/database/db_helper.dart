@@ -25,7 +25,11 @@ class DatabaseHelper {
 
   static Future<void> init() async {
     await Hive.initFlutter();
-    
+
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(BankAdapter());
+    }
+
     bankBox = await Hive.openBox<Bank>('banks');
     transactionBox = await Hive.openBox<Transaction>('transactions');
     contactBox = await Hive.openBox<Contact>('contacts');
