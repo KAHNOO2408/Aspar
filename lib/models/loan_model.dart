@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
 class Loan {
   final int? id;
   final String bankName;
-  final double totalAmount; // مبلغ کل قابل بازپرداخت (اصل + سود)
-  final double principalAmount; // اصل وام (بدون سود)
-  final double interestPercent; // درصد سود؛ صفر یعنی بدون سود
+  final double totalAmount;
+  final double principalAmount;
+  final double interestPercent;
   final double monthlyPayment;
   final int months;
   final DateTime startDate;
@@ -87,6 +88,52 @@ class Loan {
       paidAmount: (map['paidAmount'] ?? 0 as num).toDouble(),
     );
   }
+}
+
+class LoanAdapter extends TypeAdapter<Loan> {
+  @override
+  final int typeId = 7;
+
+  @override
+  Loan read(BinaryReader reader) {
+    return Loan(
+      id: reader.read() as int?,
+      bankName: reader.read() as String,
+      totalAmount: reader.read() as double,
+      principalAmount: reader.read() as double,
+      interestPercent: reader.read() as double,
+      monthlyPayment: reader.read() as double,
+      months: reader.read() as int,
+      startDate: reader.read() as DateTime,
+      endDate: reader.read() as DateTime,
+      bankId: reader.read() as int,
+      description: reader.read() as String,
+      paidAmount: reader.read() as double,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Loan obj) {
+    writer.write(obj.id);
+    writer.write(obj.bankName);
+    writer.write(obj.totalAmount);
+    writer.write(obj.principalAmount);
+    writer.write(obj.interestPercent);
+    writer.write(obj.monthlyPayment);
+    writer.write(obj.months);
+    writer.write(obj.startDate);
+    writer.write(obj.endDate);
+    writer.write(obj.bankId);
+    writer.write(obj.description);
+    writer.write(obj.paidAmount);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is LoanAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class LoanProvider extends ChangeNotifier {
