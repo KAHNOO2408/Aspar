@@ -3,26 +3,28 @@ import 'dart:io';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../database/db_helper.dart';
 
 class BackupService {
+  // این اسم‌ها دقیقاً باید با اسم باکس‌هایی که DatabaseHelper.init() باز می‌کنه یکی باشن
   static const List<String> boxNames = [
-    'transactions',
-    'debts',
     'banks',
-    'payments',
-    'auth',
+    'transactions',
+    'contacts',
+    'debts',
     'products',
     'productBatches',
     'productTransactions',
-    'ledger',
-    'contacts',
+    'ledgerEntries',
     'loans',
-    'settings',
+    'savingsGoals',
+    'payments',
+    'auth',
   ];
 
   // این باکس‌ها موقع «پاک کردن تمام داده‌ها» دست‌نخورده می‌مونن
   // (رمز ورود و تنظیمات امنیتی) تا از حساب پرت نشی
-  static const List<String> _protectedFromDelete = ['auth', 'settings'];
+  static const List<String> _protectedFromDelete = ['auth'];
 
   static Future<bool> _requestPermission() async {
     if (await Permission.manageExternalStorage.isGranted) return true;
@@ -50,6 +52,39 @@ class BackupService {
     return asparDir;
   }
 
+  // به‌جای اینکه دوباره Hive.box(name) رو صدا بزنیم (که با نوع اشتباه باعث خطا میشه)،
+  // مستقیم از باکس‌های از قبل بازِ DatabaseHelper استفاده می‌کنیم
+  static dynamic _getOpenBox(String name) {
+    switch (name) {
+      case 'banks':
+        return DatabaseHelper.bankBox;
+      case 'transactions':
+        return DatabaseHelper.transactionBox;
+      case 'contacts':
+        return DatabaseHelper.contactBox;
+      case 'debts':
+        return DatabaseHelper.debtBox;
+      case 'products':
+        return DatabaseHelper.productBox;
+      case 'productBatches':
+        return DatabaseHelper.productBatchBox;
+      case 'productTransactions':
+        return DatabaseHelper.productTransactionBox;
+      case 'ledgerEntries':
+        return DatabaseHelper.ledgerEntryBox;
+      case 'loans':
+        return DatabaseHelper.loanBox;
+      case 'savingsGoals':
+        return DatabaseHelper.savingsGoalBox;
+      case 'payments':
+        return DatabaseHelper.paymentBox;
+      case 'auth':
+        return DatabaseHelper.authBox;
+      default:
+        return null;
+    }
+  }
+
   static Future<String> createBackup() async {
     final hasPermission = await _requestPermission();
     if (!hasPermission) {
@@ -59,7 +94,8 @@ class BackupService {
     final Map<String, dynamic> boxesData = {};
 
     for (final name in boxNames) {
-      final box = Hive.isBoxOpen(name) ? Hive.box(name) : await Hive.openBox(name);
+      final box = _getOpenBox(name);
+      if (box == null) continue;
       final Map<String, dynamic> boxMap = {};
       for (final key in box.keys) {
         boxMap[key.toString()] = box.get(key);
@@ -89,7 +125,8 @@ class BackupService {
 
     for (final name in boxNames) {
       if (!boxesData.containsKey(name)) continue;
-      final box = Hive.isBoxOpen(name) ? Hive.box(name) : await Hive.openBox(name);
+      final box = _getOpenBox(name);
+      if (box == null) continue;
       await box.clear();
 
       final Map<String, dynamic> boxMap = Map<String, dynamic>.from(boxesData[name]);
@@ -104,7 +141,8 @@ class BackupService {
   static Future<void> deleteAllData() async {
     for (final name in boxNames) {
       if (_protectedFromDelete.contains(name)) continue;
-      final box = Hive.isBoxOpen(name) ? Hive.box(name) : await Hive.openBox(name);
+      final box = _getOpenBox(name);
+      if (box == null) continue;
       await box.clear();
     }
   }
