@@ -2,17 +2,11 @@ import 'package:hive/hive.dart';
 import 'package:flutter/foundation.dart';
 import '../database/db_helper.dart';
 
-@HiveType(typeId: 0)
 class Bank extends HiveObject {
-  @HiveField(0)
   int id;
-  @HiveField(1)
   String bankName;
-  @HiveField(2)
   String accountNumber;
-  @HiveField(3)
   double balance;
-  @HiveField(4)
   double cashBox;
   Bank({
     required this.id,
@@ -23,6 +17,53 @@ class Bank extends HiveObject {
   });
   double get totalBalance => balance + cashBox;
 }
+
+class BankAdapter extends TypeAdapter<Bank> {
+  @override
+  final int typeId = 0;
+
+  @override
+  Bank read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return Bank(
+      id: fields[0] as int,
+      bankName: fields[1] as String,
+      accountNumber: fields[2] as String,
+      balance: fields[3] as double,
+      cashBox: fields[4] as double,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Bank obj) {
+    writer
+      ..writeByte(5)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.bankName)
+      ..writeByte(2)
+      ..write(obj.accountNumber)
+      ..writeByte(3)
+      ..write(obj.balance)
+      ..writeByte(4)
+      ..write(obj.cashBox);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BankAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
 class BankProvider extends ChangeNotifier {
   List<Bank> banks = [];
   BankProvider() {
