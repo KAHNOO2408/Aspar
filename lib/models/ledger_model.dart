@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
 class LedgerEntry {
@@ -51,6 +52,48 @@ class LedgerEntry {
         trackingCode: map['trackingCode'],
         laborFee: (map['laborFee'] ?? 0 as num).toDouble(),
       );
+}
+
+class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
+  @override
+  final int typeId = 6;
+
+  @override
+  LedgerEntry read(BinaryReader reader) {
+    return LedgerEntry(
+      id: reader.read() as int?,
+      personName: reader.read() as String,
+      personFamily: reader.read() as String,
+      date: reader.read() as DateTime,
+      description: reader.read() as String,
+      debitAmount: reader.read() as double,
+      creditAmount: reader.read() as double,
+      bankId: reader.read() as int?,
+      trackingCode: reader.read() as String?,
+      laborFee: reader.read() as double,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, LedgerEntry obj) {
+    writer.write(obj.id);
+    writer.write(obj.personName);
+    writer.write(obj.personFamily);
+    writer.write(obj.date);
+    writer.write(obj.description);
+    writer.write(obj.debitAmount);
+    writer.write(obj.creditAmount);
+    writer.write(obj.bankId);
+    writer.write(obj.trackingCode);
+    writer.write(obj.laborFee);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is LedgerEntryAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class LedgerProvider extends ChangeNotifier {
