@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
 enum PaymentType { debtPayment, receivablePayment }
@@ -38,6 +39,42 @@ class Payment {
     date: DateTime.parse(map['date']),
     bankId: map['bankId'],
   );
+}
+
+class PaymentAdapter extends TypeAdapter<Payment> {
+  @override
+  final int typeId = 9;
+
+  @override
+  Payment read(BinaryReader reader) {
+    return Payment(
+      id: reader.read() as int?,
+      debtId: reader.read() as int,
+      amount: reader.read() as double,
+      date: reader.read() as DateTime,
+      description: reader.read() as String,
+      type: PaymentType.values[reader.readByte()],
+      bankId: reader.read() as int?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Payment obj) {
+    writer.write(obj.id);
+    writer.write(obj.debtId);
+    writer.write(obj.amount);
+    writer.write(obj.date);
+    writer.write(obj.description);
+    writer.writeByte(obj.type.index);
+    writer.write(obj.bankId);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is PaymentAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class PaymentProvider extends ChangeNotifier {
