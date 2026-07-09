@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
 class Contact {
@@ -33,6 +34,38 @@ class Contact {
         phoneNumber: map['phoneNumber'],
         address: map['address'],
       );
+}
+
+class ContactAdapter extends TypeAdapter<Contact> {
+  @override
+  final int typeId = 2;
+
+  @override
+  Contact read(BinaryReader reader) {
+    return Contact(
+      id: reader.read() as int?,
+      firstName: reader.read() as String,
+      lastName: reader.read() as String,
+      phoneNumber: reader.read() as String,
+      address: reader.read() as String?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Contact obj) {
+    writer.write(obj.id);
+    writer.write(obj.firstName);
+    writer.write(obj.lastName);
+    writer.write(obj.phoneNumber);
+    writer.write(obj.address);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is ContactAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class ContactProvider extends ChangeNotifier {
