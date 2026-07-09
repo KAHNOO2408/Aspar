@@ -54,7 +54,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     final months = int.tryParse(monthsController.text) ?? 0;
 
     final totalPayable = principal * (1 + (interestPercent / 100));
-    final monthlyPayment = months > 0 ? totalPayable / months : 0;
+    final monthlyPayment = months > 0 ? totalPayable / months : 0.0;
 
     final rawPaidMonths = int.tryParse(paidMonthsController.text) ?? 0;
     final paidMonths = months > 0 ? rawPaidMonths.clamp(0, months) : 0;
