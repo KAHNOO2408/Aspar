@@ -213,6 +213,7 @@ class BanksScreen extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final bank = bankProvider.banks[index];
                       final gradient = _cardGradients[index % _cardGradients.length];
+                      final isCashbox = bank.accountNumber == 'صندوق';
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -235,7 +236,7 @@ class BanksScreen extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.account_balance_rounded, color: Colors.white, size: 22)),
+                                            Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(14)), child: Icon(isCashbox ? Icons.savings_rounded : Icons.account_balance_rounded, color: Colors.white, size: 22)),
                                             const SizedBox(width: 12),
                                             Text(bank.bankName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: Colors.white, fontFamily: 'YekanBakh')),
                                           ],
@@ -244,7 +245,7 @@ class BanksScreen extends StatelessWidget {
                                           icon: Icon(Icons.more_vert, color: Colors.white.withOpacity(0.9)),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                           onSelected: (value) {
-                                            if (value == 'edit') _showEditDialog(context, bankProvider, bank);
+                                            if (value == 'edit') _showEditDialog(context, bankProvider, bank, isCashbox);
                                             if (value == 'delete') _showDeleteDialog(context, bankProvider, bank);
                                           },
                                           itemBuilder: (context) => [
@@ -255,14 +256,16 @@ class BanksScreen extends StatelessWidget {
                                       ],
                                     ),
                                     const SizedBox(height: 22),
-                                    Text(bank.accountNumber, style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.85), letterSpacing: 1.2, fontWeight: FontWeight.w500, fontFamily: 'YekanBakh')),
-                                    const SizedBox(height: 18),
+                                    if (!isCashbox)
+                                      Text(bank.accountNumber, style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.85), letterSpacing: 1.2, fontWeight: FontWeight.w500, fontFamily: 'YekanBakh')),
+                                    if (!isCashbox) const SizedBox(height: 18),
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('موجودی: ${formatAmount(bank.balance)} تومان', style: const TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'YekanBakh')),
-                                        const SizedBox(height: 6),
-                                        Text('صندوق: ${formatAmount(bank.cashBox)} تومان', style: const TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'YekanBakh')),
+                                        if (isCashbox)
+                                          Text('موجودی صندوق: ${formatAmount(bank.cashBox)} تومان', style: const TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'YekanBakh'))
+                                        else
+                                          Text('موجودی: ${formatAmount(bank.balance)} تومان', style: const TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'YekanBakh')),
                                         const SizedBox(height: 10),
                                         Row(
                                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -292,7 +295,7 @@ class BanksScreen extends StatelessWidget {
     );
   }
 
-  void _showEditDialog(BuildContext context, BankProvider provider, Bank bank) {
+  void _showEditDialog(BuildContext context, BankProvider provider, Bank bank, bool isCashbox) {
     final nameController = TextEditingController(text: bank.bankName);
     final accountController = TextEditingController(text: bank.accountNumber);
     final balanceController = TextEditingController(text: bank.balance.toString());
@@ -303,24 +306,32 @@ class BanksScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('ویرایش بانک', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context), fontFamily: 'YekanBakh')),
+        title: Text(isCashbox ? 'ویرایش صندوق' : 'ویرایش بانک', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(context), fontFamily: 'YekanBakh')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameController, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'نام بانک', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            TextField(controller: nameController, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: isCashbox ? 'نام صندوق' : 'نام بانک', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            if (!isCashbox) const SizedBox(height: 16),
+            if (!isCashbox)
+              TextField(controller: accountController, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'شماره حساب', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
             const SizedBox(height: 16),
-            TextField(controller: accountController, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'شماره حساب', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
-            const SizedBox(height: 16),
-            TextField(controller: balanceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'موجودی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
-            const SizedBox(height: 16),
-            TextField(controller: cashBoxController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'صندوق (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
+            if (isCashbox)
+              TextField(controller: cashBoxController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'موجودی صندوق (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)))
+            else
+              TextField(controller: balanceController, keyboardType: TextInputType.number, style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'), decoration: InputDecoration(labelText: 'موجودی (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14))),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
           ElevatedButton(
             onPressed: () {
-              final updatedBank = Bank(id: bank.id, bankName: nameController.text, accountNumber: accountController.text, balance: double.tryParse(balanceController.text) ?? 0, cashBox: double.tryParse(cashBoxController.text) ?? 0);
+              final updatedBank = Bank(
+                id: bank.id,
+                bankName: nameController.text,
+                accountNumber: isCashbox ? 'صندوق' : accountController.text,
+                balance: isCashbox ? 0 : (double.tryParse(balanceController.text) ?? 0),
+                cashBox: isCashbox ? (double.tryParse(cashBoxController.text) ?? 0) : 0,
+              );
               provider.updateBank(updatedBank);
               Navigator.pop(context);
             },
