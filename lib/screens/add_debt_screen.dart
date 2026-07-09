@@ -26,9 +26,11 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final paidNowController = TextEditingController();
   final feeController = TextEditingController();
   final laborFeeController = TextEditingController();
+  final trackingCodeController = TextEditingController();
   Contact? selectedContact;
   Product? selectedProduct;
   int? selectedBankId;
+  int? selectedCashboxId;
   DateTime selectedDate = DateTime.now();
   String selectedUnit = 'count';
   String? selectedPaymentMethod;
@@ -201,15 +203,15 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         content: SizedBox(
           width: double.maxFinite,
           height: 250,
-          child: bankProvider.banks.isEmpty
+          child: bankProvider.banks.where((b) => b.accountNumber != 'صندوق').isEmpty
               ? Center(child: Text('بانکی موجود نیست', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontFamily: _fontFamily)))
               : ListView.builder(
-                  itemCount: bankProvider.banks.length,
+                  itemCount: bankProvider.banks.where((b) => b.accountNumber != 'صندوق').length,
                   itemBuilder: (context, index) {
-                    final bank = bankProvider.banks[index];
+                    final bank = bankProvider.banks.where((b) => b.accountNumber != 'صندوق').toList()[index];
                     return ListTile(
                       title: Text(bank.bankName, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
-                      subtitle: Text('${formatAmount(bank.totalBalance)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
+                      subtitle: Text('${formatAmount(bank.balance)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
                       onTap: () => Navigator.pop(dialogContext, bank.id),
                     );
                   },
@@ -219,6 +221,38 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     );
 
     if (result != null) setState(() => selectedBankId = result);
+  }
+
+  Future<void> _pickCashbox() async {
+    final bankProvider = context.read<BankProvider>();
+    final cashboxes = bankProvider.banks.where((b) => b.accountNumber == 'صندوق').toList();
+    final result = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.card(dialogContext),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('انتخاب صندوق', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext), fontFamily: _fontFamily)),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 250,
+          child: cashboxes.isEmpty
+              ? Center(child: Text('صندوقی موجود نیست', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontFamily: _fontFamily)))
+              : ListView.builder(
+                  itemCount: cashboxes.length,
+                  itemBuilder: (context, index) {
+                    final cashbox = cashboxes[index];
+                    return ListTile(
+                      title: Text(cashbox.bankName, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
+                      subtitle: Text('${formatAmount(cashbox.cashBox)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
+                      onTap: () => Navigator.pop(dialogContext, cashbox.id),
+                    );
+                  },
+                ),
+        ),
+      ),
+    );
+
+    if (result != null) setState(() => selectedCashboxId = result);
   }
 
   @override
@@ -371,7 +405,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(12)),
                     child: Center(
-                      child: Text('مبلغ: ${formatAmount(baseAmount)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+                      child: Text('مبلغ: ${formatAmount(price)} تومان', style: TextStyle(color: gradient[1], fontSize: 12, fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
                     ),
                   ),
                 ),
@@ -486,12 +520,41 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             if (selectedPaymentMethod == 'cash')
               Column(
                 children: [
+                  InkWell(
+                    onTap: _pickCashbox,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: gradient),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(color: Colors.white30, shape: BoxShape.circle),
+                            child: const Icon(Icons.savings_rounded, color: Colors.white, size: 18),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              selectedCashboxId == null ? 'انتخاب صندوق *' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedCashboxId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: _fontFamily),
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white70),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: paidNowController,
                     keyboardType: TextInputType.number,
                     onChanged: (_) => setState(() {}),
                     style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-                    decoration: _decoration(context, 'دریافت نقدی (تومان)'),
+                    decoration: _decoration(context, 'مبلغ دریافتی (تومان)'),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -513,10 +576,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white30,
-                              shape: BoxShape.circle,
-                            ),
+                            decoration: const BoxDecoration(color: Colors.white30, shape: BoxShape.circle),
                             child: const Icon(Icons.account_balance, color: Colors.white, size: 18),
                           ),
                           const SizedBox(width: 12),
@@ -534,6 +594,20 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         ],
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: paidNowController,
+                    keyboardType: TextInputType.number,
+                    onChanged: (_) => setState(() {}),
+                    style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                    decoration: _decoration(context, 'مبلغ دریافتی (تومان)'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: trackingCodeController,
+                    style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
+                    decoration: _decoration(context, 'کد پیگیری (اختیاری)'),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -582,13 +656,17 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final totalAmount = baseAmount + laborFee;
     final paidNow = double.tryParse(paidNowController.text) ?? 0;
     final fee = double.tryParse(feeController.text) ?? 0;
-    
+
     if (paidNow > totalAmount) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ پرداختی نمی‌تواند بیشتر از مبلغ کل باشد', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
     if (selectedPaymentMethod == 'card' && selectedBankId == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('برای پرداخت کارت، انتخاب بانک الزامی است', style: TextStyle(fontFamily: _fontFamily))));
+      return;
+    }
+    if (selectedPaymentMethod == 'cash' && selectedCashboxId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('برای پرداخت نقدی، انتخاب صندوق الزامی است', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
 
@@ -614,6 +692,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final unitLabel = selectedUnit == 'ml' ? 'میل' : 'عدد';
     final productInfo = noteController.text.isNotEmpty ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel) - ${noteController.text}' : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel)';
 
+    final remainingAmount = totalAmount - paidNow < 0 ? 0.0 : totalAmount - paidNow;
+
     final ledgerProvider = context.read<LedgerProvider>();
     await ledgerProvider.addEntry(LedgerEntry(
       id: DateTime.now().millisecondsSinceEpoch,
@@ -621,13 +701,26 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       personFamily: selectedContact!.lastName,
       date: selectedDate,
       description: productInfo,
-      creditAmount: isPurchase ? totalAmount : 0,
-      debitAmount: isPurchase ? 0 : totalAmount,
+      creditAmount: isPurchase ? remainingAmount : 0,
+      debitAmount: isPurchase ? 0 : remainingAmount,
       laborFee: laborFee,
+      trackingCode: selectedPaymentMethod == 'card' && trackingCodeController.text.trim().isNotEmpty ? trackingCodeController.text.trim() : null,
     ));
 
     if (paidNow > 0 && selectedPaymentMethod == 'cash') {
+      final bankProvider = context.read<BankProvider>();
       final transProvider = context.read<TransactionProvider>();
+      final cashbox = bankProvider.banks.firstWhere((b) => b.id == selectedCashboxId);
+
+      final updatedCashbox = Bank(
+        id: cashbox.id,
+        bankName: cashbox.bankName,
+        accountNumber: cashbox.accountNumber,
+        balance: cashbox.balance,
+        cashBox: isPurchase ? cashbox.cashBox - paidNow : cashbox.cashBox + paidNow,
+      );
+      await bankProvider.updateBank(updatedCashbox);
+
       await transProvider.addTransaction(Transaction(
         id: DateTime.now().millisecondsSinceEpoch,
         title: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
@@ -693,6 +786,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     paidNowController.dispose();
     feeController.dispose();
     laborFeeController.dispose();
+    trackingCodeController.dispose();
     super.dispose();
   }
 }
