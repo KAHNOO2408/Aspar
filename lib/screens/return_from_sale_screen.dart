@@ -185,7 +185,7 @@ class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
     if (selectedContact == null || selectedProduct == null) return;
     final productProvider = context.read<ProductProvider>();
     final matches = productProvider.productTransactions
-        .where((t) => t.type == ProductTxType.sale && t.contactName == selectedContact!.fullName && t.productId == selectedProduct!.id)
+        .where((t) => t.type == ProductTxType.sale && t.contactName == selectedContact!.fullName && t.productId == selectedProduct!.id && t.quantity > 0)
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
 
@@ -588,8 +588,37 @@ class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
 
     setState(() => _isSubmitting = true);
 
+    final productProvider = context.read<ProductProvider>();
     final totalReturn = quantity * selectedSale!.pricePerUnit;
     final description = noteController.text.isNotEmpty ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد) - ${noteController.text}' : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد)';
+
+    // اضافه کردن موجودی برگشتی به انبار، با قیمت تمام‌شده‌ی همون فروش
+    final unitCost = selectedSale!.quantity > 0 ? selectedSale!.costOfGoods / selectedSale!.quantity : 0.0;
+    await productProvider.addStockBatch(selectedProduct!.id!, quantity, unitCost, selectedDate);
+
+    // اصلاح رکورد فروش اصلی (کم کردن مقدار و سود برگشت‌داده‌شده)
+    final ratio = quantity / selectedSale!.quantity;
+    final newQuantity = selectedSale!.quantity - quantity;
+    final newTotalAmount = newQuantity * selectedSale!.pricePerUnit;
+    final newCostOfGoods = selectedSale!.costOfGoods - (unitCost * quantity);
+    final newLaborFee = selectedSale!.laborFee * (1 - ratio);
+    final newProfit = newTotalAmount - newCostOfGoods;
+
+    final updatedSale = ProductTransaction(
+      id: selectedSale!.id,
+      productId: selectedSale!.productId,
+      productName: selectedSale!.productName,
+      quantity: newQuantity,
+      pricePerUnit: selectedSale!.pricePerUnit,
+      totalAmount: newTotalAmount,
+      type: ProductTxType.sale,
+      date: selectedSale!.date,
+      profit: newProfit,
+      costOfGoods: newCostOfGoods,
+      laborFee: newLaborFee,
+      contactName: selectedSale!.contactName,
+    );
+    await productProvider.updateProductTransaction(updatedSale);
 
     if (selectedPaymentMethod != null) {
       final bankProvider = context.read<BankProvider>();
