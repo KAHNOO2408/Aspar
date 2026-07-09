@@ -338,6 +338,42 @@ class ProductProvider extends ChangeNotifier {
     return profit;
   }
 
+  // برای برگشت از خرید: کم کردن موجودی انبار به صورت FIFO بدون ساختن تراکنش جدید
+  Future<void> reduceStockFifo(int productId, double quantity) async {
+    final productBatches = batches.where((b) => b.productId == productId && b.remainingQuantity > 0).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    double remaining = quantity;
+    for (final batch in productBatches) {
+      if (remaining <= 0) break;
+      final consumed = remaining < batch.remainingQuantity ? remaining : batch.remainingQuantity;
+      batch.remainingQuantity -= consumed;
+      await DatabaseHelper.updateProductBatch(batch);
+      remaining -= consumed;
+    }
+    await loadAll();
+  }
+
+  // برای برگشت از فروش: اضافه کردن یه بچ جدید به انبار با قیمت تمام‌شده‌ی همون فروش
+  Future<void> addStockBatch(int productId, double quantity, double unitCost, DateTime date) async {
+    final batch = ProductBatch(
+      id: DateTime.now().millisecondsSinceEpoch,
+      productId: productId,
+      originalQuantity: quantity,
+      remainingQuantity: quantity,
+      purchasePrice: unitCost,
+      date: date,
+    );
+    await DatabaseHelper.insertProductBatch(batch);
+    await loadAll();
+  }
+
+  // اصلاح یه تراکنش خرید/فروش قدیمی (برای کم کردن مقدار برگشت‌داده‌شده)
+  Future<void> updateProductTransaction(ProductTransaction tx) async {
+    await DatabaseHelper.insertProductTransaction(tx);
+    await loadAll();
+  }
+
   List<ProductTransaction> getHistoryForProduct(int productId) {
     final list = productTransactions.where((t) => t.productId == productId).toList();
     list.sort((a, b) => b.date.compareTo(a.date));
