@@ -259,22 +259,12 @@ class BanksScreen extends StatelessWidget {
                                     if (!isCashbox)
                                       Text(bank.accountNumber, style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.85), letterSpacing: 1.2, fontWeight: FontWeight.w500, fontFamily: 'YekanBakh')),
                                     if (!isCashbox) const SizedBox(height: 18),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
-                                        if (isCashbox)
-                                          Text('موجودی صندوق: ${formatAmount(bank.cashBox)} تومان', style: const TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'YekanBakh'))
-                                        else
-                                          Text('موجودی: ${formatAmount(bank.balance)} تومان', style: const TextStyle(fontSize: 12, color: Colors.white70, fontFamily: 'YekanBakh')),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            Text(formatAmount(bank.totalBalance), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white, fontFamily: 'YekanBakh')),
-                                            const SizedBox(width: 6),
-                                            Padding(padding: const EdgeInsets.only(bottom: 3), child: Text('تومان', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75), fontFamily: 'YekanBakh'))),
-                                          ],
-                                        ),
+                                        Text(formatAmount(bank.totalBalance), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22, color: Colors.white, fontFamily: 'YekanBakh')),
+                                        const SizedBox(width: 6),
+                                        Padding(padding: const EdgeInsets.only(bottom: 3), child: Text('تومان', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75), fontFamily: 'YekanBakh'))),
                                       ],
                                     ),
                                   ],
