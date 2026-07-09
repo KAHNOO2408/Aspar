@@ -13,22 +13,28 @@ class AddBankScreen extends StatefulWidget {
 
 class _AddBankScreenState extends State<AddBankScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-  
+
   // Bank fields
   final bankNameController = TextEditingController();
   final accountNumberController = TextEditingController();
   final balanceController = TextEditingController();
-  
+
   // Cashbox fields
   final cashboxNameController = TextEditingController();
   final cashboxAmountController = TextEditingController();
 
   static const _fontFamily = 'YekanBakh';
 
+  static const List<Color> _bankGradient = [Color(0xFF4F6BF5), Color(0xFF2B3FBE)];
+  static const List<Color> _cashboxGradient = [Color(0xFFE67E22), Color(0xFFD35400)];
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) setState(() {});
+    });
   }
 
   @override
@@ -51,25 +57,63 @@ class _AddBankScreenState extends State<AddBankScreen> with TickerProviderStateM
         contentPadding: const EdgeInsets.all(14),
       );
 
+  Widget _buildTabButton(BuildContext context, int index, String label, IconData icon, List<Color> gradient) {
+    final selected = _tabController.index == index;
+    return GestureDetector(
+      onTap: () => _tabController.animateTo(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          gradient: selected ? LinearGradient(colors: gradient) : null,
+          boxShadow: selected ? [BoxShadow(color: gradient[1].withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 6))] : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: selected ? Colors.white : AppColors.textSecondary(context)),
+            const SizedBox(width: 8),
+            Text(label, style: TextStyle(color: selected ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily)),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
         title: const Text('بانک/صندوق جدید', style: TextStyle(fontFamily: _fontFamily)),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'بانک', icon: Icon(Icons.account_balance)),
-            Tab(text: 'صندوق', icon: Icon(Icons.savings_rounded)),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _buildBankTab(context),
-          _buildCashboxTab(context),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]),
+              child: Row(
+                children: [
+                  Expanded(child: _buildTabButton(context, 0, 'بانک', Icons.account_balance_rounded, _bankGradient)),
+                  const SizedBox(width: 6),
+                  Expanded(child: _buildTabButton(context, 1, 'صندوق', Icons.savings_rounded, _cashboxGradient)),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildBankTab(context),
+                _buildCashboxTab(context),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -116,7 +160,7 @@ class _AddBankScreenState extends State<AddBankScreen> with TickerProviderStateM
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)]),
+              gradient: const LinearGradient(colors: _bankGradient),
               boxShadow: [BoxShadow(color: const Color(0xFF2B3FBE).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))],
             ),
             child: Material(
@@ -173,7 +217,7 @@ class _AddBankScreenState extends State<AddBankScreen> with TickerProviderStateM
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: const LinearGradient(colors: [Color(0xFFE67E22), Color(0xFFD35400)]),
+              gradient: const LinearGradient(colors: _cashboxGradient),
               boxShadow: [BoxShadow(color: const Color(0xFFD35400).withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 7))],
             ),
             child: Material(
@@ -210,7 +254,7 @@ class _AddBankScreenState extends State<AddBankScreen> with TickerProviderStateM
     );
 
     await Provider.of<BankProvider>(context, listen: false).insertBank(bank);
-    
+
     if (mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('بانک ایجاد شد ✅', style: TextStyle(fontFamily: _fontFamily))));
@@ -232,7 +276,7 @@ class _AddBankScreenState extends State<AddBankScreen> with TickerProviderStateM
     );
 
     await Provider.of<BankProvider>(context, listen: false).insertBank(cashbox);
-    
+
     if (mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('صندوق ایجاد شد ✅', style: TextStyle(fontFamily: _fontFamily))));
