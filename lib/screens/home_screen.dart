@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/transaction_model.dart';
 import '../models/bank_model.dart';
 import '../models/debt_model.dart';
+import '../models/savings_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
@@ -247,113 +248,93 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            Consumer3<TransactionProvider, BankProvider, DebtProvider>(
-              builder: (context, transProvider, bankProvider, debtProvider, _) {
+            Consumer4<TransactionProvider, BankProvider, DebtProvider, SavingsProvider>(
+              builder: (context, transProvider, bankProvider, debtProvider, savingsProvider, _) {
                 final income = transProvider.getTotalIncome(null, null);
                 final expense = transProvider.getTotalExpense(null, null);
                 final balance = transProvider.getNetBalance();
+                final totalBalance = bankProvider.getTotalBalanceWithCashBox();
                 final bankBalance = bankProvider.getTotalBalance();
+                final cashboxBalance = bankProvider.getTotalCashBox();
+                final totalSavings = savingsProvider.getTotalSavings();
 
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Column(
                     children: [
                       _StatCard(
-                        icon: Icons.trending_up,
-                        label: 'درآمد',
-                        value: formatAmount(income),
-                        gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
-                      ),
-                      _StatCard(
-                        icon: Icons.trending_down,
-                        label: 'خرج',
-                        value: formatAmount(expense),
-                        gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
-                      ),
-                      _StatCard(
-                        icon: Icons.account_balance_wallet,
-                        label: 'موجودی بانک',
-                        value: formatAmount(bankBalance),
+                        icon: Icons.account_balance_wallet_rounded,
+                        label: 'کل موجودی',
+                        value: formatAmount(totalBalance),
                         gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
+                        fullWidth: true,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
-                        child: _StatCard(
-                          icon: Icons.analytics,
-                          label: 'خالص',
-                          value: formatAmount(balance),
-                          gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
-                          fullWidth: true,
-                        ),
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.savings_rounded,
+                              label: 'صندوق',
+                              value: formatAmount(cashboxBalance),
+                              gradient: const [Color(0xFFE67E22), Color(0xFFD35400)],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.account_balance_rounded,
+                              label: 'موجودی بانک',
+                              value: formatAmount(bankBalance),
+                              gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
+                            ),
+                          ),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
-                        child: _StatCard(
-                          icon: Icons.account_balance_rounded,
-                          label: 'تعداد بانک',
-                          value: '${bankProvider.banks.length}',
-                          gradient: const [Color(0xFFFF5C8A), Color(0xFFD81B60)],
-                          fullWidth: true,
-                        ),
+                      const SizedBox(height: 12),
+                      _StatCard(
+                        icon: Icons.savings_rounded,
+                        label: 'کل پس انداز',
+                        value: formatAmount(totalSavings),
+                        gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
+                        fullWidth: true,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.trending_up,
+                              label: 'درآمد',
+                              value: formatAmount(income),
+                              gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.trending_down,
+                              label: 'خرج',
+                              value: formatAmount(expense),
+                              gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _StatCard(
+                        icon: Icons.analytics,
+                        label: 'خالص',
+                        value: formatAmount(balance),
+                        gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
+                        fullWidth: true,
                       ),
                     ],
                   ),
                 );
               },
-            ),
-            const SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('دسترسی های سریع', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.text(context), fontFamily: 'YekanBakh')),
-                  const SizedBox(height: 15),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _QuickAction(
-                          icon: Icons.add_rounded,
-                          label: 'تراکنش جدید',
-                          gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTransactionScreen())),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _QuickAction(
-                          icon: Icons.shopping_cart_rounded,
-                          label: 'ثبت خرید',
-                          gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.owed))),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _QuickAction(
-                          icon: Icons.sell_rounded,
-                          label: 'ثبت فروش',
-                          gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDebtScreen(type: DebtType.receivable))),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _QuickAction(
-                          icon: Icons.account_balance_rounded,
-                          label: 'بانک جدید',
-                          gradient: const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)],
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBankScreen())),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
             const SizedBox(height: 30),
           ],
@@ -383,7 +364,6 @@ class _StatCard extends StatelessWidget {
     return Container(
       width: fullWidth ? double.infinity : null,
       padding: const EdgeInsets.all(18),
-      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
@@ -426,47 +406,6 @@ class _StatCard extends StatelessWidget {
                 Text(value, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
               ],
             ),
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final List<Color> gradient;
-  final VoidCallback onTap;
-
-  const _QuickAction({required this.icon, required this.label, required this.gradient, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-        boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 14, offset: const Offset(0, 7))],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(18),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 22),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), shape: BoxShape.circle),
-                  child: Icon(icon, color: Colors.white, size: 24),
-                ),
-                const SizedBox(height: 10),
-                Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12, fontFamily: 'YekanBakh')),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
