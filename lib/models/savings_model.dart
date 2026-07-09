@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
 class SavingsGoal {
@@ -47,6 +48,42 @@ class SavingsGoal {
       targetDate: map['targetDate'] != null ? DateTime.parse(map['targetDate']) : null,
     );
   }
+}
+
+class SavingsGoalAdapter extends TypeAdapter<SavingsGoal> {
+  @override
+  final int typeId = 8;
+
+  @override
+  SavingsGoal read(BinaryReader reader) {
+    return SavingsGoal(
+      id: reader.read() as int?,
+      title: reader.read() as String,
+      description: reader.read() as String,
+      targetAmount: reader.read() as double,
+      currentAmount: reader.read() as double,
+      createdDate: reader.read() as DateTime,
+      targetDate: reader.read() as DateTime?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, SavingsGoal obj) {
+    writer.write(obj.id);
+    writer.write(obj.title);
+    writer.write(obj.description);
+    writer.write(obj.targetAmount);
+    writer.write(obj.currentAmount);
+    writer.write(obj.createdDate);
+    writer.write(obj.targetDate);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SavingsGoalAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class SavingsProvider extends ChangeNotifier {
