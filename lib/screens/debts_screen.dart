@@ -10,209 +10,181 @@ import 'contact_ledger_screen.dart';
 class DebtsScreen extends StatelessWidget {
   const DebtsScreen({Key? key}) : super(key: key);
 
-  Map<String, double> _groupByContact(List<Debt> debts) {
-    final Map<String, double> grouped = {};
+  Map<String, double> _computeNetBalances(List<Debt> debts) {
+    final Map<String, double> net = {};
     for (final d in debts) {
       final key = '${d.personName}|${d.personFamily}';
-      grouped[key] = (grouped[key] ?? 0) + d.remainder;
+      final delta = d.type == DebtType.receivable ? d.remainder : -d.remainder;
+      net[key] = (net[key] ?? 0) + delta;
     }
-    grouped.removeWhere((key, value) => value <= 0);
-    return grouped;
+    net.removeWhere((key, value) => value.abs() < 0.01);
+    return net;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background(context),
-      appBar: buildCustomAppBar(title: 'طلب و دهی', context: context),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]),
-          boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.4), blurRadius: 14, offset: const Offset(0, 6))],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: PopupMenuButton(
-            iconColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            onSelected: (value) {
-              if (value == 'owed') Navigator.push(context, MaterialPageRoute(builder: (_) => const AddSimpleDebtScreen(type: DebtType.owed)));
-              if (value == 'receivable') Navigator.push(context, MaterialPageRoute(builder: (_) => const AddSimpleDebtScreen(type: DebtType.receivable)));
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem(value: 'owed', child: Row(children: [Icon(Icons.arrow_upward, size: 16), SizedBox(width: 8), Text('ثبت دهی', style: TextStyle(fontFamily: 'YekanBakh'))])),
-              const PopupMenuItem(value: 'receivable', child: Row(children: [Icon(Icons.arrow_downward, size: 16), SizedBox(width: 8), Text('ثبت طلب', style: TextStyle(fontFamily: 'YekanBakh'))])),
-            ],
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.add, color: Colors.white), const SizedBox(width: 8), const Text('افزودن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'YekanBakh'))]),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppColors.background(context),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(110),
+          child: Container(
+            decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+            child: Column(
+              children: [
+                buildCustomAppBar(title: 'طلب و دهی', context: context),
+                const TabBar(labelColor: Colors.white, unselectedLabelColor: Colors.white60, indicatorColor: Colors.white, indicatorWeight: 3, labelStyle: TextStyle(fontWeight: FontWeight.w700), tabs: [Tab(text: 'بدهی‌های من'), Tab(text: 'طلب‌های من')]),
+              ],
             ),
           ),
         ),
-      ),
-      body: Consumer<DebtProvider>(
-        builder: (context, provider, _) {
-          final owedDebts = provider.debts.where((d) => d.type == DebtType.owed).toList();
-          final receivableDebts = provider.debts.where((d) => d.type == DebtType.receivable).toList();
-
-          final totalOwed = owedDebts.fold(0.0, (sum, d) => sum + d.remainder);
-          final totalReceivable = receivableDebts.fold(0.0, (sum, d) => sum + d.remainder);
-
-          final groupedOwed = _groupByContact(owedDebts);
-          final groupedReceivable = _groupByContact(receivableDebts);
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _SummaryCard(
-                          icon: Icons.arrow_upward_rounded,
-                          label: 'بدهکاری',
-                          value: formatAmount(totalOwed),
-                          gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _SummaryCard(
-                          icon: Icons.arrow_downward_rounded,
-                          label: 'طلبکاری',
-                          value: formatAmount(totalReceivable),
-                          gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                if (groupedOwed.isEmpty && groupedReceivable.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(60),
-                    child: Column(
-                      children: [
-                        Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.card(context), shape: BoxShape.circle), child: Icon(Icons.account_balance_wallet_outlined, size: 55, color: AppColors.textMuted(context))),
-                        const SizedBox(height: 20),
-                        Text('طلب و دهی‌ای ثبت نشده', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
-                      ],
-                    ),
-                  )
-                else
-                  Column(
-                    children: [
-                      if (groupedReceivable.isNotEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-                          child: Align(alignment: Alignment.centerRight, child: Text('طلب‌های من', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context), fontFamily: 'YekanBakh'))),
-                        ),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: groupedReceivable.length,
-                          itemBuilder: (context, index) {
-                            final key = groupedReceivable.keys.elementAt(index);
-                            final parts = key.split('|');
-                            final personName = parts[0];
-                            final personFamily = parts.length > 1 ? parts[1] : '';
-                            final amount = groupedReceivable[key]!;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _ContactSummaryCard(
-                                personName: personName,
-                                personFamily: personFamily,
-                                amount: amount,
-                                gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: personName, personFamily: personFamily))),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-
-                      if (groupedOwed.isNotEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-                          child: Align(alignment: Alignment.centerRight, child: Text('بدهی‌های من', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context), fontFamily: 'YekanBakh'))),
-                        ),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: groupedOwed.length,
-                          itemBuilder: (context, index) {
-                            final key = groupedOwed.keys.elementAt(index);
-                            final parts = key.split('|');
-                            final personName = parts[0];
-                            final personFamily = parts.length > 1 ? parts[1] : '';
-                            final amount = groupedOwed[key]!;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _ContactSummaryCard(
-                                personName: personName,
-                                personFamily: personFamily,
-                                amount: amount,
-                                gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: personName, personFamily: personFamily))),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ],
-                  ),
-
-                const SizedBox(height: 90),
+        floatingActionButton: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(colors: [Color(0xFF9B6DFF), Color(0xFF6A3DE8)]),
+            boxShadow: [BoxShadow(color: const Color(0xFF6A3DE8).withOpacity(0.4), blurRadius: 14, offset: const Offset(0, 6))],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: PopupMenuButton(
+              iconColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              onSelected: (value) {
+                if (value == 'owed') Navigator.push(context, MaterialPageRoute(builder: (_) => const AddSimpleDebtScreen(type: DebtType.owed)));
+                if (value == 'receivable') Navigator.push(context, MaterialPageRoute(builder: (_) => const AddSimpleDebtScreen(type: DebtType.receivable)));
+              },
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem(value: 'owed', child: Row(children: [Icon(Icons.arrow_upward, size: 16), SizedBox(width: 8), Text('ثبت دهی', style: TextStyle(fontFamily: 'YekanBakh'))])),
+                const PopupMenuItem(value: 'receivable', child: Row(children: [Icon(Icons.arrow_downward, size: 16), SizedBox(width: 8), Text('ثبت طلب', style: TextStyle(fontFamily: 'YekanBakh'))])),
               ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.add, color: Colors.white), const SizedBox(width: 8), const Text('افزودن', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontFamily: 'YekanBakh'))]),
+              ),
             ),
-          );
-        },
+          ),
+        ),
+        body: Consumer<DebtProvider>(
+          builder: (context, provider, _) {
+            final net = _computeNetBalances(provider.debts);
+
+            final owedEntries = <MapEntry<String, double>>[];
+            final receivableEntries = <MapEntry<String, double>>[];
+            for (final entry in net.entries) {
+              if (entry.value < 0) {
+                owedEntries.add(MapEntry(entry.key, -entry.value));
+              } else {
+                receivableEntries.add(MapEntry(entry.key, entry.value));
+              }
+            }
+
+            final totalOwed = owedEntries.fold(0.0, (sum, e) => sum + e.value);
+            final totalReceivable = receivableEntries.fold(0.0, (sum, e) => sum + e.value);
+
+            return TabBarView(
+              children: [
+                _DebtsTab(
+                  entries: owedEntries,
+                  total: totalOwed,
+                  emptyText: 'بدهی‌ای ثبت نشده',
+                  gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
+                  totalLabel: 'مجموع بدهکاری',
+                ),
+                _DebtsTab(
+                  entries: receivableEntries,
+                  total: totalReceivable,
+                  emptyText: 'طلبی ثبت نشده',
+                  gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
+                  totalLabel: 'مجموع طلبکاری',
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
+class _DebtsTab extends StatelessWidget {
+  final List<MapEntry<String, double>> entries;
+  final double total;
+  final String emptyText;
   final List<Color> gradient;
+  final String totalLabel;
 
-  const _SummaryCard({
-    required this.icon,
-    required this.label,
-    required this.value,
+  const _DebtsTab({
+    required this.entries,
+    required this.total,
+    required this.emptyText,
     required this.gradient,
+    required this.totalLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-        boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
-      ),
+    return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: Colors.white, size: 16)),
-              const SizedBox(width: 8),
-              Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 8))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(totalLabel, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
+                  const SizedBox(height: 10),
+                  Text('${formatAmount(total)} تومان', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800, fontFamily: 'YekanBakh')),
-          const SizedBox(height: 2),
-          const Text('تومان', style: TextStyle(color: Colors.white70, fontSize: 10, fontFamily: 'YekanBakh')),
+
+          if (entries.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(60),
+              child: Column(
+                children: [
+                  Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: AppColors.card(context), shape: BoxShape.circle), child: Icon(Icons.account_balance_wallet_outlined, size: 55, color: AppColors.textMuted(context))),
+                  const SizedBox(height: 20),
+                  Text(emptyText, style: TextStyle(color: AppColors.textSecondary(context), fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
+                ],
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: entries.length,
+              itemBuilder: (context, index) {
+                final key = entries[index].key;
+                final amount = entries[index].value;
+                final parts = key.split('|');
+                final personName = parts[0];
+                final personFamily = parts.length > 1 ? parts[1] : '';
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _ContactSummaryCard(
+                    personName: personName,
+                    personFamily: personFamily,
+                    amount: amount,
+                    gradient: gradient,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: personName, personFamily: personFamily))),
+                  ),
+                );
+              },
+            ),
+
+          const SizedBox(height: 90),
         ],
       ),
     );
