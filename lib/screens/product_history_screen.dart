@@ -14,6 +14,45 @@ class ProductHistoryScreen extends StatelessWidget {
     return '${j.year}/${j.month.toString().padLeft(2, '0')}/${j.day.toString().padLeft(2, '0')}';
   }
 
+  String _typeLabel(ProductTxType type) {
+    switch (type) {
+      case ProductTxType.purchase:
+        return 'خرید';
+      case ProductTxType.sale:
+        return 'فروش';
+      case ProductTxType.returnFromPurchase:
+        return 'برگشت از خرید';
+      case ProductTxType.returnFromSale:
+        return 'برگشت از فروش';
+    }
+  }
+
+  List<Color> _typeGradient(ProductTxType type) {
+    switch (type) {
+      case ProductTxType.purchase:
+        return const [Color(0xFFFF7A59), Color(0xFFE64A19)];
+      case ProductTxType.sale:
+        return const [Color(0xFF11998E), Color(0xFF38EF7D)];
+      case ProductTxType.returnFromPurchase:
+        return const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)];
+      case ProductTxType.returnFromSale:
+        return const [Color(0xFF9B6DFF), Color(0xFF6A3DE8)];
+    }
+  }
+
+  IconData _typeIcon(ProductTxType type) {
+    switch (type) {
+      case ProductTxType.purchase:
+        return Icons.arrow_upward_rounded;
+      case ProductTxType.sale:
+        return Icons.arrow_downward_rounded;
+      case ProductTxType.returnFromPurchase:
+        return Icons.keyboard_return_rounded;
+      case ProductTxType.returnFromSale:
+        return Icons.keyboard_return_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,8 +103,8 @@ class ProductHistoryScreen extends StatelessWidget {
                         itemCount: history.length,
                         itemBuilder: (context, index) {
                           final tx = history[index];
-                          final isPurchase = tx.type == ProductTxType.purchase;
-                          final gradient = isPurchase ? const [Color(0xFFFF7A59), Color(0xFFE64A19)] : const [Color(0xFF11998E), Color(0xFF38EF7D)];
+                          final isSaleType = tx.type == ProductTxType.sale;
+                          final gradient = _typeGradient(tx.type);
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
@@ -80,9 +119,9 @@ class ProductHistoryScreen extends StatelessWidget {
                                     children: [
                                       Row(
                                         children: [
-                                          Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(8)), child: Icon(isPurchase ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded, color: Colors.white, size: 14)),
+                                          Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), borderRadius: BorderRadius.circular(8)), child: Icon(_typeIcon(tx.type), color: Colors.white, size: 14)),
                                           const SizedBox(width: 8),
-                                          Text(isPurchase ? 'خرید' : 'فروش', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1])),
+                                          Text(_typeLabel(tx.type), style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1])),
                                         ],
                                       ),
                                       Text(_formatJalali(tx.date), style: TextStyle(fontSize: 11, color: AppColors.textMuted(context))),
@@ -101,7 +140,7 @@ class ProductHistoryScreen extends StatelessWidget {
                                       Text('مبلغ کل: ${formatAmount(tx.totalAmount)}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.text(context))),
                                     ],
                                   ),
-                                  if (!isPurchase) ...[
+                                  if (isSaleType) ...[
                                     const SizedBox(height: 6),
                                     Text('سود: ${formatAmount(tx.profit)} تومان', style: const TextStyle(fontSize: 12, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700)),
                                   ],
