@@ -267,6 +267,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final baseAmount = quantity * price;
     final totalAmount = baseAmount + laborFee;
     final paidLabel = isPurchase ? 'مبلغ پرداختی (تومان)' : 'مبلغ دریافتی (تومان)';
+    final paidNow = double.tryParse(paidNowController.text) ?? 0;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -555,6 +556,15 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                       decoration: _decoration(context, paidLabel),
                     ),
+                    if (paidNow > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                          child: Text('${formatAmount(paidNow)} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1], fontFamily: _fontFamily)),
+                        ),
+                      ),
                   ],
                   const SizedBox(height: 16),
                 ],
@@ -580,10 +590,14 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                           Expanded(
                             child: Text(
                               selectedBankId == null ? 'انتخاب بانک *' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
-                              style: TextStyle(color: selectedBankId != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: _fontFamily,
+                              ),
                             ),
                           ),
-                          Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
+                          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white70),
                         ],
                       ),
                     ),
@@ -597,6 +611,15 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
                       decoration: _decoration(context, paidLabel),
                     ),
+                    if (paidNow > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                          child: Text('${formatAmount(paidNow)} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1], fontFamily: _fontFamily)),
+                        ),
+                      ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: trackingCodeController,
@@ -701,18 +724,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       laborFee: laborFee,
       trackingCode: selectedPaymentMethod == 'card' && trackingCodeController.text.trim().isNotEmpty ? trackingCodeController.text.trim() : null,
     ));
-
-    if (remainingAmount > 0) {
-      final debtProvider = context.read<DebtProvider>();
-      await debtProvider.addDebt(Debt(
-        personName: selectedContact!.firstName,
-        personFamily: selectedContact!.lastName,
-        totalAmount: remainingAmount,
-        description: productInfo,
-        date: selectedDate,
-        type: isPurchase ? DebtType.owed : DebtType.receivable,
-      ));
-    }
 
     if (paidNow > 0 && selectedPaymentMethod == 'cash') {
       final bankProvider = context.read<BankProvider>();
