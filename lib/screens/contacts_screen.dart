@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/contact_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/app_colors.dart';
+import 'contact_ledger_screen.dart';
 
 class ContactsScreen extends StatelessWidget {
   const ContactsScreen({Key? key}) : super(key: key);
@@ -68,6 +69,10 @@ class ContactsScreen extends StatelessWidget {
                           subtitle: Text(contact.phoneNumber, style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context), fontFamily: _fontFamily)),
                           trailing: PopupMenuButton(
                             itemBuilder: (context) => [
+                              PopupMenuItem(
+                                child: const Row(children: [Icon(Icons.receipt_long_outlined, size: 18, color: Colors.green), SizedBox(width: 8), Text('دیدن حساب', style: TextStyle(fontFamily: _fontFamily))]),
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: contact.firstName, personFamily: contact.lastName))),
+                              ),
                               PopupMenuItem(
                                 child: const Row(children: [Icon(Icons.edit_outlined, size: 18, color: Colors.blue), SizedBox(width: 8), Text('ویرایش', style: TextStyle(fontFamily: _fontFamily))]),
                                 onTap: () => _showEditContactDialog(context, provider, contact),
