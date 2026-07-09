@@ -222,54 +222,72 @@ class SavingsScreen extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('هدف جدید', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
-              decoration: InputDecoration(labelText: 'عنوان', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final target = double.tryParse(targetController.text) ?? 0;
+          return AlertDialog(
+            backgroundColor: AppColors.card(context),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('هدف جدید', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
+                    decoration: InputDecoration(labelText: 'عنوان', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descriptionController,
+                    style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
+                    decoration: InputDecoration(labelText: 'توضیح (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: targetController,
+                    keyboardType: TextInputType.number,
+                    onChanged: (_) => setState(() {}),
+                    style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
+                    decoration: InputDecoration(labelText: 'مبلغ هدف (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+                  ),
+                  if (target > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(color: const Color(0xFF6A3DE8).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                        child: Text('${formatAmount(target)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontFamily: 'YekanBakh')),
+                      ),
+                    ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: descriptionController,
-              style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
-              decoration: InputDecoration(labelText: 'توضیح (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: targetController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
-              decoration: InputDecoration(labelText: 'مبلغ هدف (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
-          ElevatedButton(
-            onPressed: () {
-              final savingsProvider = context.read<SavingsProvider>();
-              final goal = SavingsGoal(
-                id: DateTime.now().millisecondsSinceEpoch,
-                title: titleController.text,
-                description: descriptionController.text,
-                targetAmount: double.tryParse(targetController.text) ?? 0,
-                currentAmount: 0,
-                createdDate: DateTime.now(),
-                targetDate: null,
-              );
-              savingsProvider.addSavingsGoal(goal);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A3DE8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('ایجاد', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
-          ),
-        ],
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
+              ElevatedButton(
+                onPressed: () {
+                  final savingsProvider = context.read<SavingsProvider>();
+                  final goal = SavingsGoal(
+                    id: DateTime.now().millisecondsSinceEpoch,
+                    title: titleController.text,
+                    description: descriptionController.text,
+                    targetAmount: double.tryParse(targetController.text) ?? 0,
+                    currentAmount: 0,
+                    createdDate: DateTime.now(),
+                    targetDate: null,
+                  );
+                  savingsProvider.addSavingsGoal(goal);
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A3DE8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: const Text('ایجاد', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -285,6 +303,7 @@ class SavingsScreen extends StatelessWidget {
         builder: (context, setState) {
           final bankProvider = context.read<BankProvider>();
           final selectedBank = selectedBankId != null ? bankProvider.banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)) : null;
+          final amount = double.tryParse(amountController.text) ?? 0;
 
           return AlertDialog(
             backgroundColor: AppColors.card(context),
@@ -297,9 +316,20 @@ class SavingsScreen extends StatelessWidget {
                   TextField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
+                    onChanged: (_) => setState(() {}),
                     style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
                     decoration: InputDecoration(labelText: 'مبلغ (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
                   ),
+                  if (amount > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(color: const Color(0xFF6A3DE8).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                        child: Text('${formatAmount(amount)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontFamily: 'YekanBakh')),
+                      ),
+                    ),
                   const SizedBox(height: 16),
                   Text('برداشت از:', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')),
                   const SizedBox(height: 10),
@@ -392,54 +422,72 @@ class SavingsScreen extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('ویرایش هدف', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
-              decoration: InputDecoration(labelText: 'عنوان', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final target = double.tryParse(targetController.text) ?? 0;
+          return AlertDialog(
+            backgroundColor: AppColors.card(context),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('ویرایش هدف', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'YekanBakh')),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
+                    decoration: InputDecoration(labelText: 'عنوان', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descriptionController,
+                    style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
+                    decoration: InputDecoration(labelText: 'توضیح (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: targetController,
+                    keyboardType: TextInputType.number,
+                    onChanged: (_) => setState(() {}),
+                    style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
+                    decoration: InputDecoration(labelText: 'مبلغ هدف (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
+                  ),
+                  if (target > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(color: const Color(0xFF6A3DE8).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                        child: Text('${formatAmount(target)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontFamily: 'YekanBakh')),
+                      ),
+                    ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: descriptionController,
-              style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
-              decoration: InputDecoration(labelText: 'توضیح (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: targetController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh'),
-              decoration: InputDecoration(labelText: 'مبلغ هدف (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.all(14)),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
-          ElevatedButton(
-            onPressed: () {
-              final savingsProvider = context.read<SavingsProvider>();
-              final updatedGoal = SavingsGoal(
-                id: goal.id,
-                title: titleController.text,
-                description: descriptionController.text,
-                targetAmount: double.tryParse(targetController.text) ?? 0,
-                currentAmount: goal.currentAmount,
-                createdDate: goal.createdDate,
-                targetDate: goal.targetDate,
-              );
-              savingsProvider.updateSavingsGoal(updatedGoal);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A3DE8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('ذخیره', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
-          ),
-        ],
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: 'YekanBakh'))),
+              ElevatedButton(
+                onPressed: () {
+                  final savingsProvider = context.read<SavingsProvider>();
+                  final updatedGoal = SavingsGoal(
+                    id: goal.id,
+                    title: titleController.text,
+                    description: descriptionController.text,
+                    targetAmount: double.tryParse(targetController.text) ?? 0,
+                    currentAmount: goal.currentAmount,
+                    createdDate: goal.createdDate,
+                    targetDate: goal.targetDate,
+                  );
+                  savingsProvider.updateSavingsGoal(updatedGoal);
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A3DE8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: const Text('ذخیره', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
