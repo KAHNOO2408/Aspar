@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/transaction_model.dart';
+import '../models/bank_model.dart';
+import '../database/db_helper.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 
@@ -20,6 +22,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String? selectedCategory;
   List<String> categories = [];
   DateTime selectedDate = DateTime.now();
+  int? selectedBankId;
+  int? selectedCashboxId;
+  String? selectedPaymentMethod;
   bool _isSubmitting = false;
 
   static const _fontFamily = 'YekanBakh';
@@ -30,17 +35,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _loadCategories();
   }
 
-  Future<void> _loadCategories() async {
-    final prefs = await _getSharedPreferences();
+  void _loadCategories() {
+    final saved = DatabaseHelper.authBox.get('categories_$transactionType');
     setState(() {
-      categories = prefs.getStringList('categories_$transactionType') ?? [];
+      categories = saved != null ? List<String>.from(saved) : [];
     });
-  }
-
-  Future<dynamic> _getSharedPreferences() async {
-    // این میتونه SharedPreferences یا Hive باشه
-    // برای حالا فقط list رو return می‌کنم
-    return {'getStringList': (key) => [] as List<String>?};
   }
 
   InputDecoration _decoration(BuildContext context, String label) => InputDecoration(
@@ -79,14 +78,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف', style: TextStyle(fontFamily: _fontFamily))),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (newCategoryController.text.isNotEmpty) {
+                final updated = {...categories, newCategoryController.text}.toList();
+                await DatabaseHelper.authBox.put('categories_$transactionType', updated);
                 setState(() {
-                  categories.add(newCategoryController.text);
+                  categories = updated;
                   selectedCategory = newCategoryController.text;
-                  categories = categories.toSet().toList(); // Remove duplicates
                 });
-                Navigator.pop(context);
+                if (context.mounted) Navigator.pop(context);
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F6BF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
@@ -95,6 +95,70 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _pickBank() async {
+    final bankProvider = context.read<BankProvider>();
+    final banks = bankProvider.banks.where((b) => b.accountNumber != 'صندوق').toList();
+    final result = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.card(dialogContext),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('انتخاب بانک', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext), fontFamily: _fontFamily)),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 250,
+          child: banks.isEmpty
+              ? Center(child: Text('بانکی موجود نیست', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontFamily: _fontFamily)))
+              : ListView.builder(
+                  itemCount: banks.length,
+                  itemBuilder: (context, index) {
+                    final bank = banks[index];
+                    return ListTile(
+                      title: Text(bank.bankName, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
+                      subtitle: Text('${formatAmount(bank.balance)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
+                      onTap: () => Navigator.pop(dialogContext, bank.id),
+                    );
+                  },
+                ),
+        ),
+      ),
+    );
+
+    if (result != null) setState(() => selectedBankId = result);
+  }
+
+  Future<void> _pickCashbox() async {
+    final bankProvider = context.read<BankProvider>();
+    final cashboxes = bankProvider.banks.where((b) => b.accountNumber == 'صندوق').toList();
+    final result = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.card(dialogContext),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('انتخاب صندوق', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext), fontFamily: _fontFamily)),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 250,
+          child: cashboxes.isEmpty
+              ? Center(child: Text('صندوقی موجود نیست', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontFamily: _fontFamily)))
+              : ListView.builder(
+                  itemCount: cashboxes.length,
+                  itemBuilder: (context, index) {
+                    final cashbox = cashboxes[index];
+                    return ListTile(
+                      title: Text(cashbox.bankName, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
+                      subtitle: Text('${formatAmount(cashbox.cashBox)} تومان', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontFamily: _fontFamily)),
+                      onTap: () => Navigator.pop(dialogContext, cashbox.id),
+                    );
+                  },
+                ),
+        ),
+      ),
+    );
+
+    if (result != null) setState(() => selectedCashboxId = result);
   }
 
   @override
@@ -122,7 +186,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   Segmented(
                     options: const ['درآمد', 'خرج'],
                     selected: transactionType,
-                    onOptionSelected: (value) => setState(() => transactionType = value),
+                    onOptionSelected: (value) {
+                      setState(() {
+                        transactionType = value;
+                        selectedCategory = null;
+                      });
+                      _loadCategories();
+                    },
                   ),
                 ],
               ),
@@ -205,7 +275,112 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 16),
+
+            Text('${isIncome ? 'واریز به' : 'برداشت از'} (بانک یا صندوق) *', style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
+            const SizedBox(height: 8),
+
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: selectedPaymentMethod == 'cash' ? LinearGradient(colors: gradient) : null,
+                      color: selectedPaymentMethod != 'cash' ? AppColors.card(context) : null,
+                      border: selectedPaymentMethod != 'cash' ? Border.all(color: AppColors.divider(context), width: 2) : null,
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => setState(() {
+                          selectedPaymentMethod = selectedPaymentMethod == 'cash' ? null : 'cash';
+                          selectedBankId = null;
+                        }),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Center(child: Text('صندوق', style: TextStyle(color: selectedPaymentMethod == 'cash' ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily))),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: selectedPaymentMethod == 'card' ? LinearGradient(colors: gradient) : null,
+                      color: selectedPaymentMethod != 'card' ? AppColors.card(context) : null,
+                      border: selectedPaymentMethod != 'card' ? Border.all(color: AppColors.divider(context), width: 2) : null,
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => setState(() {
+                          selectedPaymentMethod = selectedPaymentMethod == 'card' ? null : 'card';
+                          selectedCashboxId = null;
+                        }),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Center(child: Text('بانک', style: TextStyle(color: selectedPaymentMethod == 'card' ? Colors.white : AppColors.textSecondary(context), fontWeight: FontWeight.w700, fontFamily: _fontFamily))),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            if (selectedPaymentMethod == 'cash')
+              InkWell(
+                onTap: _pickCashbox,
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), border: Border.all(color: selectedCashboxId == null ? AppColors.divider(context) : gradient[1], width: 2)),
+                  child: Row(
+                    children: [
+                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), shape: BoxShape.circle), child: const Icon(Icons.savings_rounded, color: Colors.white, size: 18)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          selectedCashboxId == null ? 'انتخاب صندوق' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedCashboxId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
+                          style: TextStyle(color: selectedCashboxId != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily),
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
+                    ],
+                  ),
+                ),
+              ),
+
+            if (selectedPaymentMethod == 'card')
+              InkWell(
+                onTap: _pickBank,
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: AppColors.card(context), borderRadius: BorderRadius.circular(14), border: Border.all(color: selectedBankId == null ? AppColors.divider(context) : gradient[1], width: 2)),
+                  child: Row(
+                    children: [
+                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), shape: BoxShape.circle), child: const Icon(Icons.account_balance, color: Colors.white, size: 18)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          selectedBankId == null ? 'انتخاب بانک' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
+                          style: TextStyle(color: selectedBankId != null ? AppColors.text(context) : AppColors.textMuted(context), fontWeight: FontWeight.w600, fontFamily: _fontFamily),
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
 
             Container(
               width: double.infinity,
@@ -248,16 +423,51 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       return;
     }
 
+    if (selectedPaymentMethod == 'cash' && selectedCashboxId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('انتخاب صندوق الزامی است', style: TextStyle(fontFamily: _fontFamily))));
+      return;
+    }
+    if (selectedPaymentMethod == 'card' && selectedBankId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('انتخاب بانک الزامی است', style: TextStyle(fontFamily: _fontFamily))));
+      return;
+    }
+    if (selectedPaymentMethod == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('انتخاب بانک یا صندوق الزامی است', style: TextStyle(fontFamily: _fontFamily))));
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
+    final isIncome = transactionType == 'درآمد';
+    final bankProvider = context.read<BankProvider>();
     final transProvider = context.read<TransactionProvider>();
+
+    if (selectedPaymentMethod == 'cash') {
+      final cashbox = bankProvider.banks.firstWhere((b) => b.id == selectedCashboxId);
+      await bankProvider.updateBank(Bank(
+        id: cashbox.id,
+        bankName: cashbox.bankName,
+        accountNumber: cashbox.accountNumber,
+        balance: cashbox.balance,
+        cashBox: isIncome ? cashbox.cashBox + amount : cashbox.cashBox - amount,
+      ));
+    } else {
+      final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
+      await bankProvider.updateBank(Bank(
+        id: bank.id,
+        bankName: bank.bankName,
+        accountNumber: bank.accountNumber,
+        balance: isIncome ? bank.balance + amount : bank.balance - amount,
+        cashBox: bank.cashBox,
+      ));
+    }
 
     await transProvider.addTransaction(Transaction(
       id: DateTime.now().millisecondsSinceEpoch,
       title: selectedCategory ?? 'تراکنش',
       description: descriptionController.text,
       amount: amount,
-      type: transactionType == 'درآمد' ? TransactionType.income : TransactionType.expense,
+      type: isIncome ? TransactionType.income : TransactionType.expense,
       category: selectedCategory ?? 'عمومی',
       date: selectedDate,
       contactName: '',
