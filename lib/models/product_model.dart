@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
 class Product {
@@ -8,6 +9,32 @@ class Product {
 
   Map<String, dynamic> toMap() => {'id': id, 'name': name};
   factory Product.fromMap(Map<String, dynamic> map) => Product(id: map['id'], name: map['name']);
+}
+
+class ProductAdapter extends TypeAdapter<Product> {
+  @override
+  final int typeId = 4;
+
+  @override
+  Product read(BinaryReader reader) {
+    return Product(
+      id: reader.read() as int?,
+      name: reader.read() as String,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Product obj) {
+    writer.write(obj.id);
+    writer.write(obj.name);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is ProductAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class ProductBatch {
@@ -44,6 +71,40 @@ class ProductBatch {
         purchasePrice: (map['purchasePrice'] as num).toDouble(),
         date: DateTime.parse(map['date']),
       );
+}
+
+class ProductBatchAdapter extends TypeAdapter<ProductBatch> {
+  @override
+  final int typeId = 10;
+
+  @override
+  ProductBatch read(BinaryReader reader) {
+    return ProductBatch(
+      id: reader.read() as int?,
+      productId: reader.read() as int,
+      originalQuantity: reader.read() as double,
+      remainingQuantity: reader.read() as double,
+      purchasePrice: reader.read() as double,
+      date: reader.read() as DateTime,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, ProductBatch obj) {
+    writer.write(obj.id);
+    writer.write(obj.productId);
+    writer.write(obj.originalQuantity);
+    writer.write(obj.remainingQuantity);
+    writer.write(obj.purchasePrice);
+    writer.write(obj.date);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is ProductBatchAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 enum ProductTxType { purchase, sale }
@@ -106,6 +167,52 @@ class ProductTransaction {
         laborFee: (map['laborFee'] ?? 0 as num).toDouble(),
         contactName: map['contactName'],
       );
+}
+
+class ProductTransactionAdapter extends TypeAdapter<ProductTransaction> {
+  @override
+  final int typeId = 5;
+
+  @override
+  ProductTransaction read(BinaryReader reader) {
+    return ProductTransaction(
+      id: reader.read() as int?,
+      productId: reader.read() as int,
+      productName: reader.read() as String,
+      quantity: reader.read() as double,
+      pricePerUnit: reader.read() as double,
+      totalAmount: reader.read() as double,
+      type: ProductTxType.values[reader.readByte()],
+      date: reader.read() as DateTime,
+      profit: reader.read() as double,
+      costOfGoods: reader.read() as double,
+      laborFee: reader.read() as double,
+      contactName: reader.read() as String?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, ProductTransaction obj) {
+    writer.write(obj.id);
+    writer.write(obj.productId);
+    writer.write(obj.productName);
+    writer.write(obj.quantity);
+    writer.write(obj.pricePerUnit);
+    writer.write(obj.totalAmount);
+    writer.writeByte(obj.type.index);
+    writer.write(obj.date);
+    writer.write(obj.profit);
+    writer.write(obj.costOfGoods);
+    writer.write(obj.laborFee);
+    writer.write(obj.contactName);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is ProductTransactionAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class ProductProvider extends ChangeNotifier {
