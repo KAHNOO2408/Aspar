@@ -26,9 +26,17 @@ class DatabaseHelper {
   static Future<void> init() async {
     await Hive.initFlutter();
 
-    if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter(BankAdapter());
-    }
+    if (!Hive.isAdapterRegistered(0)) Hive.registerAdapter(BankAdapter());
+    if (!Hive.isAdapterRegistered(1)) Hive.registerAdapter(TransactionAdapter());
+    if (!Hive.isAdapterRegistered(2)) Hive.registerAdapter(ContactAdapter());
+    if (!Hive.isAdapterRegistered(3)) Hive.registerAdapter(DebtAdapter());
+    if (!Hive.isAdapterRegistered(4)) Hive.registerAdapter(ProductAdapter());
+    if (!Hive.isAdapterRegistered(5)) Hive.registerAdapter(ProductTransactionAdapter());
+    if (!Hive.isAdapterRegistered(6)) Hive.registerAdapter(LedgerEntryAdapter());
+    if (!Hive.isAdapterRegistered(7)) Hive.registerAdapter(LoanAdapter());
+    if (!Hive.isAdapterRegistered(8)) Hive.registerAdapter(SavingsGoalAdapter());
+    if (!Hive.isAdapterRegistered(9)) Hive.registerAdapter(PaymentAdapter());
+    if (!Hive.isAdapterRegistered(10)) Hive.registerAdapter(ProductBatchAdapter());
 
     bankBox = await Hive.openBox<Bank>('banks');
     transactionBox = await Hive.openBox<Transaction>('transactions');
