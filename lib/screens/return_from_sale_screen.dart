@@ -622,6 +622,16 @@ class _ReturnFromSaleScreenState extends State<ReturnFromSaleScreen> {
     );
     await productProvider.updateProductTransaction(updatedSale);
 
+    // ثبت یه رکورد مستقل برای خودِ برگشت، تا تو تاریخچه‌ی محصول دیده بشه
+    await productProvider.recordReturnLog(
+      product: selectedProduct!,
+      quantity: quantity,
+      pricePerUnit: selectedSale!.pricePerUnit,
+      date: selectedDate,
+      type: ProductTxType.returnFromSale,
+      contactName: selectedContact!.fullName,
+    );
+
     // اگه همون لحظه پول پس داده شده، مبلغ باقی‌مونده صفره؛ اگه نه، کل مبلغ میره تو حساب طرف
     final remainingAmount = selectedPaymentMethod != null ? 0.0 : totalReturn;
 
