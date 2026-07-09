@@ -91,7 +91,7 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.account_balance, color: Colors.green),
-              title: const Text('بانک', style: TextStyle(fontFamily: 'YekanBakh')),
+              title: const Text('مالی', style: TextStyle(fontFamily: 'YekanBakh')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const BanksScreen()));
