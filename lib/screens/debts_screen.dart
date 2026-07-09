@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shamsi_date/shamsi_date.dart';
-import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/debt_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 import 'add_simple_debt_screen.dart';
+import 'contact_ledger_screen.dart';
 
 class DebtsScreen extends StatelessWidget {
   const DebtsScreen({Key? key}) : super(key: key);
 
-  String _formatDateToJalali(DateTime date) {
-    final jalali = Jalali.fromDateTime(date);
-    return '${jalali.year}/${jalali.month.toString().padLeft(2, '0')}/${jalali.day.toString().padLeft(2, '0')}';
+  Map<String, double> _groupByContact(List<Debt> debts) {
+    final Map<String, double> grouped = {};
+    for (final d in debts) {
+      final key = '${d.personName}|${d.personFamily}';
+      grouped[key] = (grouped[key] ?? 0) + d.remainder;
+    }
+    grouped.removeWhere((key, value) => value <= 0);
+    return grouped;
   }
 
   @override
@@ -55,6 +59,9 @@ class DebtsScreen extends StatelessWidget {
           final totalOwed = owedDebts.fold(0.0, (sum, d) => sum + d.remainder);
           final totalReceivable = receivableDebts.fold(0.0, (sum, d) => sum + d.remainder);
 
+          final groupedOwed = _groupByContact(owedDebts);
+          final groupedReceivable = _groupByContact(receivableDebts);
+
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -83,7 +90,7 @@ class DebtsScreen extends StatelessWidget {
                   ),
                 ),
 
-                if (owedDebts.isEmpty && receivableDebts.isEmpty)
+                if (groupedOwed.isEmpty && groupedReceivable.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(60),
                     child: Column(
@@ -97,7 +104,7 @@ class DebtsScreen extends StatelessWidget {
                 else
                   Column(
                     children: [
-                      if (receivableDebts.isNotEmpty) ...[
+                      if (groupedReceivable.isNotEmpty) ...[
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
                           child: Align(alignment: Alignment.centerRight, child: Text('طلب‌های من', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context), fontFamily: 'YekanBakh'))),
@@ -106,19 +113,29 @@ class DebtsScreen extends StatelessWidget {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: receivableDebts.length,
+                          itemCount: groupedReceivable.length,
                           itemBuilder: (context, index) {
-                            final debt = receivableDebts[index];
+                            final key = groupedReceivable.keys.elementAt(index);
+                            final parts = key.split('|');
+                            final personName = parts[0];
+                            final personFamily = parts.length > 1 ? parts[1] : '';
+                            final amount = groupedReceivable[key]!;
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: _DebtCard(debt: debt, formatDate: _formatDateToJalali, gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)]),
+                              child: _ContactSummaryCard(
+                                personName: personName,
+                                personFamily: personFamily,
+                                amount: amount,
+                                gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: personName, personFamily: personFamily))),
+                              ),
                             );
                           },
                         ),
                         const SizedBox(height: 20),
                       ],
 
-                      if (owedDebts.isNotEmpty) ...[
+                      if (groupedOwed.isNotEmpty) ...[
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
                           child: Align(alignment: Alignment.centerRight, child: Text('بدهی‌های من', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context), fontFamily: 'YekanBakh'))),
@@ -127,12 +144,22 @@ class DebtsScreen extends StatelessWidget {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: owedDebts.length,
+                          itemCount: groupedOwed.length,
                           itemBuilder: (context, index) {
-                            final debt = owedDebts[index];
+                            final key = groupedOwed.keys.elementAt(index);
+                            final parts = key.split('|');
+                            final personName = parts[0];
+                            final personFamily = parts.length > 1 ? parts[1] : '';
+                            final amount = groupedOwed[key]!;
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: _DebtCard(debt: debt, formatDate: _formatDateToJalali, gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)]),
+                              child: _ContactSummaryCard(
+                                personName: personName,
+                                personFamily: personFamily,
+                                amount: amount,
+                                gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ContactLedgerScreen(personName: personName, personFamily: personFamily))),
+                              ),
                             );
                           },
                         ),
@@ -192,315 +219,48 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-class _DebtCard extends StatelessWidget {
-  final Debt debt;
-  final String Function(DateTime) formatDate;
+class _ContactSummaryCard extends StatelessWidget {
+  final String personName;
+  final String personFamily;
+  final double amount;
   final List<Color> gradient;
+  final VoidCallback onTap;
 
-  const _DebtCard({
-    required this.debt,
-    required this.formatDate,
+  const _ContactSummaryCard({
+    required this.personName,
+    required this.personFamily,
+    required this.amount,
     required this.gradient,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isOwed = debt.type == DebtType.owed;
-    final isCompleted = debt.remainder <= 0;
-
     return Material(
       color: AppColors.card(context),
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       elevation: 2,
       shadowColor: Colors.black12,
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          iconColor: AppColors.text(context),
-          collapsedIconColor: AppColors.text(context),
-          title: Text('${debt.personName} ${debt.personFamily}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context), fontFamily: 'YekanBakh')),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${formatAmount(debt.totalAmount)} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context), fontFamily: 'YekanBakh')),
-                if (!isCompleted)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text('باقی: ${formatAmount(debt.remainder)} تومان', style: TextStyle(fontSize: 11, color: gradient[1], fontWeight: FontWeight.w600, fontFamily: 'YekanBakh')),
-                  ),
-              ],
-            ),
-          ),
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildDetailRow(context, 'نوع', isOwed ? 'دهی' : 'طلب'),
-                  _buildDetailRow(context, 'مبلغ کل', '${formatAmount(debt.totalAmount)} تومان'),
-                  _buildDetailRow(context, 'پرداخت‌شده', '${formatAmount(debt.paidAmount)} تومان'),
-                  _buildDetailRow(context, 'باقی مانده', '${formatAmount(debt.remainder)} تومان', isCompleted ? const Color(0xFF11998E) : gradient[1]),
-                  if (debt.description.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: _buildDetailRow(context, 'یادداشت', debt.description),
-                    ),
-                  _buildDetailRow(context, 'تاریخ', formatDate(debt.date)),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _ActionButton(
-                          icon: Icons.edit_rounded,
-                          label: 'ویرایش',
-                          gradient: const [Color(0xFF4F6BF5), Color(0xFF2B3FBE)],
-                          onTap: () => _showEditDialog(context, debt),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _ActionButton(
-                          icon: Icons.delete_outline_rounded,
-                          label: 'حذف',
-                          gradient: const [Color(0xFFFF7A59), Color(0xFFE64A19)],
-                          onTap: () => _showDeleteDialog(context, debt),
-                        ),
-                      ),
-                      if (!isCompleted) ...[
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _ActionButton(
-                            icon: Icons.check_circle_outline,
-                            label: 'پرداخت',
-                            gradient: const [Color(0xFF11998E), Color(0xFF38EF7D)],
-                            onTap: () => _showPaymentDialog(context, debt),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(gradient: LinearGradient(colors: gradient), shape: BoxShape.circle),
+                child: const Icon(Icons.person, color: Colors.white, size: 18),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(BuildContext context, String title, String value, [Color? valueColor]) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context), fontFamily: 'YekanBakh')),
-          Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: valueColor ?? AppColors.text(context), fontFamily: 'YekanBakh')),
-        ],
-      ),
-    );
-  }
-
-  void _showEditDialog(BuildContext context, Debt debt) {
-    final amountController = TextEditingController(text: debt.totalAmount.toStringAsFixed(0));
-    final descController = TextEditingController(text: debt.description);
-    bool isSubmitting = false;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setState) {
-          final amount = double.tryParse(amountController.text) ?? 0;
-
-          return AlertDialog(
-            backgroundColor: AppColors.card(dialogContext),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text('ویرایش', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext), fontFamily: 'YekanBakh')),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    onChanged: (_) => setState(() {}),
-                    style: TextStyle(color: AppColors.text(dialogContext), fontFamily: 'YekanBakh'),
-                    decoration: InputDecoration(labelText: 'مبلغ (تومان)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), labelStyle: TextStyle(fontFamily: 'YekanBakh')),
-                  ),
-                  if (amount > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(color: gradient[0].withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                        child: Text('${formatAmount(amount)} تومان', style: TextStyle(fontWeight: FontWeight.w700, color: gradient[1], fontSize: 12, fontFamily: 'YekanBakh')),
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: descController,
-                    maxLines: 2,
-                    style: TextStyle(color: AppColors.text(dialogContext), fontFamily: 'YekanBakh'),
-                    decoration: InputDecoration(labelText: 'یادداشت', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), labelStyle: TextStyle(fontFamily: 'YekanBakh')),
-                  ),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('$personName $personFamily', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context), fontFamily: 'YekanBakh')),
               ),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
-              ElevatedButton(
-                onPressed: isSubmitting || amount <= 0
-                    ? null
-                    : () async {
-                        setState(() => isSubmitting = true);
-                        final updated = Debt(
-                          id: debt.id,
-                          personName: debt.personName,
-                          personFamily: debt.personFamily,
-                          totalAmount: amount,
-                          description: descController.text,
-                          date: debt.date,
-                          type: debt.type,
-                          paidAmount: debt.paidAmount,
-                        );
-                        await context.read<DebtProvider>().editDebt(updated);
-                        Navigator.pop(dialogContext);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ویرایش شد ✅')));
-                      },
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: isSubmitting
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('ذخیره', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
-              ),
+              Text('${formatAmount(amount)} تومان', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: gradient[1], fontFamily: 'YekanBakh')),
+              const SizedBox(width: 8),
+              Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textMuted(context)),
             ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _showPaymentDialog(BuildContext context, Debt debt) {
-    final paymentController = TextEditingController();
-    bool isSubmitting = false;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setState) {
-          final payment = double.tryParse(paymentController.text) ?? 0;
-          final totalAfter = debt.paidAmount + payment;
-          final canPay = payment > 0 && totalAfter <= debt.totalAmount;
-
-          return AlertDialog(
-            backgroundColor: AppColors.card(dialogContext),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text('پرداخت', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext), fontFamily: 'YekanBakh')),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('باقی مانده: ${formatAmount(debt.remainder)} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(dialogContext), fontFamily: 'YekanBakh')),
-                const SizedBox(height: 15),
-                TextField(
-                  controller: paymentController,
-                  keyboardType: TextInputType.number,
-                  onChanged: (_) => setState(() {}),
-                  style: TextStyle(color: AppColors.text(dialogContext), fontFamily: 'YekanBakh'),
-                  decoration: InputDecoration(hintText: 'مبلغ پرداخت', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), hintStyle: TextStyle(fontFamily: 'YekanBakh')),
-                ),
-                if (payment > 0)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: const Color(0xFF9B6DFF).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${formatAmount(payment)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontFamily: 'YekanBakh')),
-                          const SizedBox(height: 6),
-                          Text('باقی جدید: ${formatAmount((debt.remainder - payment).clamp(0, double.infinity))} تومان', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(dialogContext), fontFamily: 'YekanBakh')),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
-              ElevatedButton(
-                onPressed: isSubmitting || !canPay
-                    ? null
-                    : () async {
-                        setState(() => isSubmitting = true);
-                        await context.read<DebtProvider>().payDebt(debt.id!, payment);
-                        Navigator.pop(dialogContext);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('پرداخت شد ✅')));
-                      },
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF11998E), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: isSubmitting
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('تأیید', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _showDeleteDialog(BuildContext context, Debt debt) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('حذف', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red, fontFamily: 'YekanBakh')),
-        content: Text('آیا مطمئن هستید؟', style: TextStyle(color: AppColors.text(context), fontFamily: 'YekanBakh')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
-          ElevatedButton(
-            onPressed: () {
-              context.read<DebtProvider>().deleteDebt(debt.id!);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حذف شد'), backgroundColor: Colors.red));
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('حذف', style: TextStyle(color: Colors.white, fontFamily: 'YekanBakh')),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final List<Color> gradient;
-  final VoidCallback onTap;
-
-  const _ActionButton({required this.icon, required this.label, required this.gradient, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: LinearGradient(colors: gradient),
-        boxShadow: [BoxShadow(color: gradient[1].withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, color: Colors.white, size: 16), const SizedBox(width: 4), Flexible(child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12, fontFamily: 'YekanBakh'), overflow: TextOverflow.ellipsis))]),
           ),
         ),
       ),
