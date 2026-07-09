@@ -107,7 +107,8 @@ class ProductBatchAdapter extends TypeAdapter<ProductBatch> {
       identical(this, other) || other is ProductBatchAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
-enum ProductTxType { purchase, sale }
+// نکته: مقادیر جدید فقط باید انتهای enum اضافه بشن (نه وسطش)، وگرنه داده‌های قبلی بهم می‌ریزه
+enum ProductTxType { purchase, sale, returnFromPurchase, returnFromSale }
 
 class ProductTransaction {
   final int? id;
@@ -338,7 +339,7 @@ class ProductProvider extends ChangeNotifier {
     return profit;
   }
 
-  // برای برگشت از خرید: کم کردن موجودی انبار به صورت FIFO بدون ساختن تراکنش جدید
+  // برای برگشت از خرید: کم کردن موجودی انبار به صورت FIFO بدون ساختن تراکنش خرید/فروش جدید
   Future<void> reduceStockFifo(int productId, double quantity) async {
     final productBatches = batches.where((b) => b.productId == productId && b.remainingQuantity > 0).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
@@ -374,6 +375,30 @@ class ProductProvider extends ChangeNotifier {
     await loadAll();
   }
 
+  // ثبت یه رکورد مستقل برای خودِ برگشت، تا تو تاریخچه دیده بشه (تاثیری رو موجودی/سود نداره)
+  Future<void> recordReturnLog({
+    required Product product,
+    required double quantity,
+    required double pricePerUnit,
+    required DateTime date,
+    required ProductTxType type,
+    String? contactName,
+  }) async {
+    final tx = ProductTransaction(
+      id: DateTime.now().millisecondsSinceEpoch,
+      productId: product.id!,
+      productName: product.name,
+      quantity: quantity,
+      pricePerUnit: pricePerUnit,
+      totalAmount: quantity * pricePerUnit,
+      type: type,
+      date: date,
+      contactName: contactName,
+    );
+    await DatabaseHelper.insertProductTransaction(tx);
+    await loadAll();
+  }
+
   List<ProductTransaction> getHistoryForProduct(int productId) {
     final list = productTransactions.where((t) => t.productId == productId).toList();
     list.sort((a, b) => b.date.compareTo(a.date));
@@ -397,7 +422,7 @@ class ProductProvider extends ChangeNotifier {
           });
       if (t.type == ProductTxType.purchase) {
         grouped[t.productName]!['totalPurchase'] += t.totalAmount;
-      } else {
+      } else if (t.type == ProductTxType.sale) {
         grouped[t.productName]!['totalSale'] += t.totalAmount;
         grouped[t.productName]!['profit'] += t.profit;
       }
