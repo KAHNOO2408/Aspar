@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
 enum DebtType { owed, receivable }
@@ -47,6 +48,44 @@ class Debt {
       paidAmount: (map['paidAmount'] ?? 0 as num).toDouble(),
     );
   }
+}
+
+class DebtAdapter extends TypeAdapter<Debt> {
+  @override
+  final int typeId = 3;
+
+  @override
+  Debt read(BinaryReader reader) {
+    return Debt(
+      id: reader.read() as int?,
+      personName: reader.read() as String,
+      personFamily: reader.read() as String,
+      totalAmount: reader.read() as double,
+      description: reader.read() as String,
+      date: reader.read() as DateTime,
+      type: DebtType.values[reader.readByte()],
+      paidAmount: reader.read() as double,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Debt obj) {
+    writer.write(obj.id);
+    writer.write(obj.personName);
+    writer.write(obj.personFamily);
+    writer.write(obj.totalAmount);
+    writer.write(obj.description);
+    writer.write(obj.date);
+    writer.writeByte(obj.type.index);
+    writer.write(obj.paidAmount);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is DebtAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class DebtProvider extends ChangeNotifier {
@@ -110,8 +149,6 @@ class DebtProvider extends ChangeNotifier {
     await loadDebts();
   }
 
-  // تسویه‌ی خودکار بین بدهی/طلب یک مخاطب؛ آی‌دی بدهی‌ای که در نهایت
-  // به‌عنوان حامل این پرداخت شناخته میشه رو برمی‌گردونه (برای ثبت Payment)
   Future<int> applyContactPayment({
     required String personName,
     required String personFamily,
