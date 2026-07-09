@@ -19,9 +19,9 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   final principalController = TextEditingController();
   final interestPercentController = TextEditingController();
   final monthsController = TextEditingController();
-  final paidAmountController = TextEditingController();
+  final paidMonthsController = TextEditingController();
   final descController = TextEditingController();
-  
+
   DateTime selectedStartDate = DateTime.now();
   bool _isSubmitting = false;
 
@@ -52,9 +52,14 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     final principal = double.tryParse(principalController.text) ?? 0;
     final interestPercent = double.tryParse(interestPercentController.text) ?? 0;
     final months = int.tryParse(monthsController.text) ?? 0;
-    
+
     final totalPayable = principal * (1 + (interestPercent / 100));
     final monthlyPayment = months > 0 ? totalPayable / months : 0;
+
+    final rawPaidMonths = int.tryParse(paidMonthsController.text) ?? 0;
+    final paidMonths = months > 0 ? rawPaidMonths.clamp(0, months) : 0;
+    final paidAmount = paidMonths * monthlyPayment;
+    final remainingMonths = months - paidMonths;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -124,19 +129,28 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
             const SizedBox(height: 16),
 
             TextField(
-              controller: paidAmountController,
+              controller: paidMonthsController,
               keyboardType: TextInputType.number,
               onChanged: (_) => setState(() {}),
               style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily),
-              decoration: _decoration(context, 'مبلغ پرداخت‌شده تاکنون (اختیاری)'),
+              decoration: _decoration(context, 'تعداد ماه‌های پرداخت‌شده (اختیاری)'),
             ),
-            if ((double.tryParse(paidAmountController.text) ?? 0) > 0)
+            if (months > 0 && paidMonths > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(color: const Color(0xFF9B6DFF).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Text('${formatAmount(double.tryParse(paidAmountController.text) ?? 0)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8))),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('مبلغ پرداخت‌شده:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context), fontFamily: _fontFamily)),
+                      Text('${formatAmount(paidAmount)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontSize: 14, fontFamily: _fontFamily)),
+                      const SizedBox(height: 8),
+                      Text('ماه‌های باقی‌مانده:', style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context), fontFamily: _fontFamily)),
+                      Text('$remainingMonths ماه', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF6A3DE8), fontSize: 14, fontFamily: _fontFamily)),
+                    ],
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
@@ -211,9 +225,15 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
     final principal = double.tryParse(principalController.text) ?? 0;
     final months = int.tryParse(monthsController.text) ?? 0;
-    
+
     if (principal <= 0 || months <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مقادیر باید بزرگتر از صفر باشند', style: TextStyle(fontFamily: _fontFamily))));
+      return;
+    }
+
+    final rawPaidMonths = int.tryParse(paidMonthsController.text) ?? 0;
+    if (rawPaidMonths > months) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعداد ماه‌های پرداخت‌شده نمی‌تواند بیشتر از کل ماه‌ها باشد', style: TextStyle(fontFamily: _fontFamily))));
       return;
     }
 
@@ -223,7 +243,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     final totalPayable = principal * (1 + (interestPercent / 100));
     final monthlyPayment = totalPayable / months;
     final endDate = DateTime(selectedStartDate.year, selectedStartDate.month + months, selectedStartDate.day);
-    final paidAmount = double.tryParse(paidAmountController.text) ?? 0;
+    final paidMonths = rawPaidMonths.clamp(0, months);
+    final paidAmount = paidMonths * monthlyPayment;
 
     final loan = Loan(
       id: DateTime.now().millisecondsSinceEpoch,
@@ -254,7 +275,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     principalController.dispose();
     interestPercentController.dispose();
     monthsController.dispose();
-    paidAmountController.dispose();
+    paidMonthsController.dispose();
     descController.dispose();
     super.dispose();
   }
