@@ -591,13 +591,13 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                             child: Text(
                               selectedBankId == null ? 'انتخاب بانک *' : context.read<BankProvider>().banks.firstWhere((b) => b.id == selectedBankId, orElse: () => Bank(id: -1, bankName: 'نامشخص', accountNumber: '', balance: 0, cashBox: 0)).bankName,
                               style: TextStyle(
-                                color: Colors.white,
+                                color: selectedBankId != null ? AppColors.text(context) : AppColors.textMuted(context),
                                 fontWeight: FontWeight.w600,
                                 fontFamily: _fontFamily,
                               ),
                             ),
                           ),
-                          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white70),
+                          Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textSecondary(context)),
                         ],
                       ),
                     ),
