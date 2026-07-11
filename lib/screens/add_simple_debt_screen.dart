@@ -4,6 +4,7 @@ import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/debt_model.dart';
 import '../models/contact_model.dart';
+import '../models/ledger_model.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 
@@ -106,7 +107,7 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
-      appBar: AppBar(title: Text(isPurchase ? 'ثبت دهی دستی' : 'ثبت طلب دستی')),
+      appBar: AppBar(title: Text(isPurchase ? 'ثبت بدهی دستی' : 'ثبت طلب دستی')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -209,7 +210,7 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
                     child: Center(
                       child: _isSubmitting
                           ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : Text('ثبت ${isPurchase ? 'دهی' : 'طلب'}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                          : Text('ثبت ${isPurchase ? 'بدهی' : 'طلب'}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
                     ),
                   ),
                 ),
@@ -236,8 +237,9 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
 
     setState(() => _isSubmitting = true);
 
+    final isPurchase = widget.type == DebtType.owed;
     final debtProvider = context.read<DebtProvider>();
-    final description = noteController.text.isNotEmpty ? 'دستی: ${noteController.text}' : 'دستی';
+    final description = noteController.text.isNotEmpty ? 'ثبت دستی: ${noteController.text}' : 'ثبت دستی';
 
     final debt = Debt(
       personName: selectedContact!.firstName,
@@ -249,6 +251,17 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
     );
 
     await debtProvider.addDebt(debt);
+
+    // ثبت تو دفتر معاملات هم، تا تو تاریخچه‌ی مخاطب دیده بشه
+    final ledgerProvider = context.read<LedgerProvider>();
+    await ledgerProvider.addEntry(LedgerEntry(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
+      date: selectedDate,
+      description: description,
+      creditAmount: isPurchase ? amount : 0,
+      debitAmount: isPurchase ? 0 : amount,
+    ));
 
     if (mounted) {
       Navigator.pop(context);
