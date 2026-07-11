@@ -725,6 +725,18 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       trackingCode: selectedPaymentMethod == 'card' && trackingCodeController.text.trim().isNotEmpty ? trackingCodeController.text.trim() : null,
     ));
 
+    if (remainingAmount > 0) {
+      final debtProvider = context.read<DebtProvider>();
+      await debtProvider.addDebt(Debt(
+        personName: selectedContact!.firstName,
+        personFamily: selectedContact!.lastName,
+        totalAmount: remainingAmount,
+        description: productInfo,
+        date: selectedDate,
+        type: isPurchase ? DebtType.owed : DebtType.receivable,
+      ));
+    }
+
     if (paidNow > 0 && selectedPaymentMethod == 'cash') {
       final bankProvider = context.read<BankProvider>();
       final transProvider = context.read<TransactionProvider>();
