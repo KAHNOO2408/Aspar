@@ -13,6 +13,7 @@ class Debt {
   final DateTime date;
   final DebtType type;
   double paidAmount;
+  final int? linkedLedgerId; // اتصال به همون فاکتور تو دفتر معاملات (اگه از خرید/فروش اومده باشه)
   Debt({
     this.id,
     required this.personName,
@@ -22,6 +23,7 @@ class Debt {
     required this.date,
     required this.type,
     this.paidAmount = 0,
+    this.linkedLedgerId,
   });
   double get remainder => totalAmount - paidAmount;
   Map<String, dynamic> toMap() {
@@ -34,6 +36,7 @@ class Debt {
       'date': date.toString(),
       'type': type == DebtType.owed ? 'owed' : 'receivable',
       'paidAmount': paidAmount,
+      'linkedLedgerId': linkedLedgerId,
     };
   }
   factory Debt.fromMap(Map<String, dynamic> map) {
@@ -46,6 +49,7 @@ class Debt {
       date: DateTime.parse(map['date']),
       type: map['type'] == 'owed' ? DebtType.owed : DebtType.receivable,
       paidAmount: (map['paidAmount'] ?? 0 as num).toDouble(),
+      linkedLedgerId: map['linkedLedgerId'],
     );
   }
 }
@@ -56,6 +60,22 @@ class DebtAdapter extends TypeAdapter<Debt> {
 
   @override
   Debt read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    if (numOfFields >= 8) {
+      // فرمت جدید (شامل linkedLedgerId)
+      return Debt(
+        id: reader.read() as int?,
+        personName: reader.read() as String,
+        personFamily: reader.read() as String,
+        totalAmount: reader.read() as double,
+        description: reader.read() as String,
+        date: reader.read() as DateTime,
+        type: DebtType.values[reader.readByte()],
+        paidAmount: reader.read() as double,
+        linkedLedgerId: reader.read() as int?,
+      );
+    }
+    // فرمت قدیمی (بدون linkedLedgerId) برای سازگاری با داده‌های قبلی
     return Debt(
       id: reader.read() as int?,
       personName: reader.read() as String,
@@ -70,14 +90,17 @@ class DebtAdapter extends TypeAdapter<Debt> {
 
   @override
   void write(BinaryWriter writer, Debt obj) {
-    writer.write(obj.id);
-    writer.write(obj.personName);
-    writer.write(obj.personFamily);
-    writer.write(obj.totalAmount);
-    writer.write(obj.description);
-    writer.write(obj.date);
-    writer.writeByte(obj.type.index);
-    writer.write(obj.paidAmount);
+    writer
+      ..writeByte(8)
+      ..write(obj.id)
+      ..write(obj.personName)
+      ..write(obj.personFamily)
+      ..write(obj.totalAmount)
+      ..write(obj.description)
+      ..write(obj.date)
+      ..writeByte(obj.type.index)
+      ..write(obj.paidAmount)
+      ..write(obj.linkedLedgerId);
   }
 
   @override
@@ -111,6 +134,7 @@ class DebtProvider extends ChangeNotifier {
             date: debt.date,
             type: debt.type,
             paidAmount: debt.paidAmount,
+            linkedLedgerId: debt.linkedLedgerId,
           )
         : debt;
     await DatabaseHelper.insertDebt(debtToSave);
@@ -149,6 +173,8 @@ class DebtProvider extends ChangeNotifier {
     await loadDebts();
   }
 
+  // تسویه‌ی خودکار بین بدهی/طلب یک مخاطب؛ آی‌دی بدهی‌ای که در نهایت
+  // به‌عنوان حامل این پرداخت شناخته میشه رو برمی‌گردونه (برای ثبت Payment)
   Future<int> applyContactPayment({
     required String personName,
     required String personFamily,
