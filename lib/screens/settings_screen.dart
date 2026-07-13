@@ -12,6 +12,8 @@ import '../models/product_model.dart';
 import '../models/ledger_model.dart';
 import '../models/contact_model.dart';
 import '../models/loan_model.dart';
+import '../models/debt_model.dart';
+import '../models/savings_model.dart';
 import 'package:provider/provider.dart';
 import '../widgets/pattern_lock_widget.dart';
 import '../utils/app_colors.dart';
@@ -63,6 +65,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await context.read<LedgerProvider>().loadEntries();
     await context.read<ContactProvider>().loadContacts();
     await context.read<LoanProvider>().loadLoans();
+    await context.read<DebtProvider>().loadDebts();
+    await context.read<SavingsProvider>().loadSavingsGoals();
   }
 
   Future<bool> _confirmSwitchMethod(String newMethodName, String currentMethodName) async {
