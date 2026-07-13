@@ -760,6 +760,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         type: isPurchase ? TransactionType.expense : TransactionType.income,
         category: 'معامله نقدی',
         date: selectedDate,
+        bankId: cashbox.id,
         contactName: selectedContact!.fullName,
       ));
     }
@@ -786,6 +787,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         type: isPurchase ? TransactionType.expense : TransactionType.income,
         category: 'معامله کارتی',
         date: selectedDate,
+        bankId: bank.id,
         contactName: selectedContact!.fullName,
       ));
 
@@ -798,6 +800,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
           type: TransactionType.expense,
           category: 'کارمزد',
           date: selectedDate,
+          bankId: bank.id,
           contactName: selectedContact!.fullName,
         ));
       }
