@@ -6,6 +6,7 @@ import '../models/contact_model.dart';
 import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
 import '../models/ledger_model.dart';
+import '../models/debt_model.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 
@@ -281,6 +282,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
 
     final transProvider = context.read<TransactionProvider>();
     final ledgerProvider = context.read<LedgerProvider>();
+    final debtProvider = context.read<DebtProvider>();
 
     await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance - amount - fee));
 
@@ -296,6 +298,16 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
       bankId: bank.id,
       trackingCode: trackingCodeController.text,
     ));
+
+    // این پول به مخاطب پرداخت شده، پس اگه بهش بدهکار بودی، این مبلغ از بدهیت کم میشه
+    await debtProvider.applyContactPayment(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
+      amount: amount,
+      reduceType: DebtType.owed,
+      date: selectedDate,
+      description: ledgerDescription,
+    );
 
     await transProvider.addTransaction(Transaction(
       id: DateTime.now().millisecondsSinceEpoch,
