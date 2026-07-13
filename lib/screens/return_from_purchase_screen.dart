@@ -103,14 +103,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
       },
     );
 
-    if (result != null) {
-      setState(() {
-        selectedContact = result;
-        selectedProduct = null;
-        selectedPurchase = null;
-        quantityController.clear();
-      });
-    }
+    if (result != null) setState(() => selectedContact = result);
   }
 
   Future<void> _pickProduct() async {
@@ -657,12 +650,15 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     if (selectedPaymentMethod != null) {
       final bankProvider = context.read<BankProvider>();
       final transProvider = context.read<TransactionProvider>();
+      int accountId;
 
       if (selectedPaymentMethod == 'cash') {
         final cashbox = bankProvider.banks.firstWhere((b) => b.id == selectedCashboxId);
+        accountId = cashbox.id;
         await bankProvider.updateBank(Bank(id: cashbox.id, bankName: cashbox.bankName, accountNumber: cashbox.accountNumber, balance: cashbox.balance, cashBox: cashbox.cashBox + totalReturn));
       } else {
         final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
+        accountId = bank.id;
         await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + totalReturn, cashBox: bank.cashBox));
       }
 
@@ -674,6 +670,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
         type: TransactionType.income,
         category: 'برگشت از خرید',
         date: selectedDate,
+        bankId: accountId,
         contactName: selectedContact!.fullName,
       ));
     }
