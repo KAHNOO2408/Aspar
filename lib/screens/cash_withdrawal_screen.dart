@@ -101,7 +101,7 @@ class _CashWithdrawalScreenState extends State<CashWithdrawalScreen> {
 
   Future<void> _pickBank() async {
     final bankProvider = context.read<BankProvider>();
-    final banks = bankProvider.banks;
+    final banks = bankProvider.banks.where((b) => b.accountNumber == 'صندوق').toList();
 
     final result = await showDialog<Bank>(
       context: context,
@@ -310,6 +310,7 @@ class _CashWithdrawalScreenState extends State<CashWithdrawalScreen> {
       type: TransactionType.expense,
       category: 'پرداخت نقدی',
       date: selectedDate,
+      bankId: selectedBank!.id,
       contactName: selectedContact!.fullName,
     ));
 
