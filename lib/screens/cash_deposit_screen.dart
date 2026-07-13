@@ -101,7 +101,7 @@ class _CashDepositScreenState extends State<CashDepositScreen> {
 
   Future<void> _pickBank() async {
     final bankProvider = context.read<BankProvider>();
-    final banks = bankProvider.banks;
+    final banks = bankProvider.banks.where((b) => b.accountNumber == 'صندوق').toList();
 
     final result = await showDialog<Bank>(
       context: context,
@@ -273,7 +273,7 @@ class _CashDepositScreenState extends State<CashDepositScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، صندوق و مبلغ الزامی هستند', style: TextStyle(fontFamily: 'YekanBakh'))));
       return;
     }
-    
+
     final amount = double.tryParse(amountController.text) ?? 0;
     if (amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ باید بزرگتر از صفر باشد', style: TextStyle(fontFamily: 'YekanBakh'))));
@@ -305,6 +305,7 @@ class _CashDepositScreenState extends State<CashDepositScreen> {
       type: TransactionType.income,
       category: 'دریافت نقدی',
       date: selectedDate,
+      bankId: selectedBank!.id,
       contactName: selectedContact!.fullName,
     ));
 
