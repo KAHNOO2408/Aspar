@@ -4,6 +4,7 @@ import 'package:shamsi_date/shamsi_date.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/ledger_model.dart';
 import '../models/bank_model.dart';
+import '../models/debt_model.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 
@@ -107,6 +108,58 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     );
   }
 
+  // بعد از ویرایش یه فاکتور، بدهی/طلب لینک‌شده باهاش رو هم هماهنگ می‌کنه
+  Future<void> _syncLinkedDebtOnEdit(BuildContext context, LedgerEntry updated) async {
+    final debtProvider = context.read<DebtProvider>();
+    final newAmount = updated.debitAmount > 0 ? updated.debitAmount : updated.creditAmount;
+    final newType = updated.creditAmount > 0 ? DebtType.owed : DebtType.receivable;
+
+    Debt? linkedDebt;
+    try {
+      linkedDebt = debtProvider.debts.firstWhere((d) => d.linkedLedgerId == updated.id);
+    } catch (e) {
+      linkedDebt = null;
+    }
+
+    if (linkedDebt != null) {
+      if (newAmount <= 0) {
+        await debtProvider.deleteDebt(linkedDebt.id!);
+      } else {
+        final updatedDebt = Debt(
+          id: linkedDebt.id,
+          personName: updated.personName,
+          personFamily: updated.personFamily,
+          totalAmount: newAmount,
+          description: updated.description,
+          date: updated.date,
+          type: newType,
+          paidAmount: linkedDebt.paidAmount,
+          linkedLedgerId: updated.id,
+        );
+        await debtProvider.editDebt(updatedDebt);
+      }
+    } else if (newAmount > 0) {
+      await debtProvider.addDebt(Debt(
+        personName: updated.personName,
+        personFamily: updated.personFamily,
+        totalAmount: newAmount,
+        description: updated.description,
+        date: updated.date,
+        type: newType,
+        linkedLedgerId: updated.id,
+      ));
+    }
+  }
+
+  // بعد از حذف یه فاکتور، بدهی/طلب لینک‌شده باهاش رو هم حذف می‌کنه
+  Future<void> _syncLinkedDebtOnDelete(BuildContext context, int ledgerEntryId) async {
+    final debtProvider = context.read<DebtProvider>();
+    final linked = debtProvider.debts.where((d) => d.linkedLedgerId == ledgerEntryId).toList();
+    for (final d in linked) {
+      await debtProvider.deleteDebt(d.id!);
+    }
+  }
+
   void _showEditDialog(BuildContext context, LedgerProvider provider, LedgerEntry entry) {
     final descController = TextEditingController(text: entry.description);
     final debitController = TextEditingController(text: entry.debitAmount > 0 ? entry.debitAmount.toStringAsFixed(0) : '');
@@ -146,7 +199,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final updated = LedgerEntry(
                     id: entry.id,
                     personName: entry.personName,
@@ -159,8 +212,9 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                     trackingCode: entry.trackingCode,
                     laborFee: entry.laborFee,
                   );
-                  provider.updateEntry(updated);
-                  Navigator.pop(dialogContext);
+                  await provider.updateEntry(updated);
+                  await _syncLinkedDebtOnEdit(context, updated);
+                  if (dialogContext.mounted) Navigator.pop(dialogContext);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ویرایش شد ✅')));
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
@@ -184,9 +238,10 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
           ElevatedButton(
-            onPressed: () {
-              provider.deleteEntry(entry.id!);
-              Navigator.pop(dialogContext);
+            onPressed: () async {
+              await _syncLinkedDebtOnDelete(context, entry.id!);
+              await provider.deleteEntry(entry.id!);
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حذف شد'), backgroundColor: Colors.red));
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
