@@ -6,6 +6,7 @@ import '../models/contact_model.dart';
 import '../models/bank_model.dart';
 import '../models/transaction_model.dart';
 import '../models/ledger_model.dart';
+import '../models/debt_model.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 
@@ -274,6 +275,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     final bankProvider = context.read<BankProvider>();
     final transProvider = context.read<TransactionProvider>();
     final ledgerProvider = context.read<LedgerProvider>();
+    final debtProvider = context.read<DebtProvider>();
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
 
     await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount - fee));
@@ -290,6 +292,16 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       bankId: bank.id,
       trackingCode: trackingCodeController.text,
     ));
+
+    // این پول از مخاطب دریافت شده، پس اگه ازش طلب داشتی، این مبلغ از طلبت کم میشه
+    await debtProvider.applyContactPayment(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
+      amount: amount,
+      reduceType: DebtType.receivable,
+      date: selectedDate,
+      description: ledgerDescription,
+    );
 
     await transProvider.addTransaction(Transaction(
       id: DateTime.now().millisecondsSinceEpoch,
