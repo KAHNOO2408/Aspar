@@ -241,26 +241,24 @@ class _AddSimpleDebtScreenState extends State<AddSimpleDebtScreen> {
     final debtProvider = context.read<DebtProvider>();
     final description = noteController.text.isNotEmpty ? 'ثبت دستی: ${noteController.text}' : 'ثبت دستی';
 
-    final debt = Debt(
-      personName: selectedContact!.firstName,
-      personFamily: selectedContact!.lastName,
-      totalAmount: amount,
-      description: description,
-      date: selectedDate,
-      type: widget.type,
-    );
-
-    await debtProvider.addDebt(debt);
-
-    // ثبت تو دفتر معاملات هم، تا تو تاریخچه‌ی مخاطب دیده بشه
     final ledgerProvider = context.read<LedgerProvider>();
-    await ledgerProvider.addEntry(LedgerEntry(
+    final ledgerId = await ledgerProvider.addEntry(LedgerEntry(
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
       date: selectedDate,
       description: description,
       creditAmount: isPurchase ? amount : 0,
       debitAmount: isPurchase ? 0 : amount,
+    ));
+
+    await debtProvider.addDebt(Debt(
+      personName: selectedContact!.firstName,
+      personFamily: selectedContact!.lastName,
+      totalAmount: amount,
+      description: description,
+      date: selectedDate,
+      type: widget.type,
+      linkedLedgerId: ledgerId,
     ));
 
     if (mounted) {
