@@ -713,7 +713,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final remainingAmount = totalAmount - paidNow < 0 ? 0.0 : totalAmount - paidNow;
 
     final ledgerProvider = context.read<LedgerProvider>();
-    await ledgerProvider.addEntry(LedgerEntry(
+    final ledgerId = await ledgerProvider.addEntry(LedgerEntry(
       id: DateTime.now().millisecondsSinceEpoch,
       personName: selectedContact!.firstName,
       personFamily: selectedContact!.lastName,
@@ -734,6 +734,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         description: productInfo,
         date: selectedDate,
         type: isPurchase ? DebtType.owed : DebtType.receivable,
+        linkedLedgerId: ledgerId,
       ));
     }
 
