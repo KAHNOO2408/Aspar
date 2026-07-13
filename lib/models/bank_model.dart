@@ -16,6 +16,22 @@ class Bank extends HiveObject {
     this.cashBox = 0,
   });
   double get totalBalance => balance + cashBox;
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'bankName': bankName,
+        'accountNumber': accountNumber,
+        'balance': balance,
+        'cashBox': cashBox,
+      };
+
+  factory Bank.fromMap(Map<String, dynamic> map) => Bank(
+        id: map['id'],
+        bankName: map['bankName'],
+        accountNumber: map['accountNumber'],
+        balance: (map['balance'] as num).toDouble(),
+        cashBox: (map['cashBox'] ?? 0 as num).toDouble(),
+      );
 }
 
 class BankAdapter extends TypeAdapter<Bank> {
