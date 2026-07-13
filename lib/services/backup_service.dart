@@ -4,6 +4,15 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../database/db_helper.dart';
+import '../models/bank_model.dart';
+import '../models/transaction_model.dart';
+import '../models/contact_model.dart';
+import '../models/debt_model.dart';
+import '../models/product_model.dart';
+import '../models/ledger_model.dart';
+import '../models/loan_model.dart';
+import '../models/savings_model.dart';
+import '../models/payment_model.dart';
 
 class BackupService {
   // این اسم‌ها دقیقاً باید با اسم باکس‌هایی که DatabaseHelper.init() باز می‌کنه یکی باشن
@@ -23,7 +32,6 @@ class BackupService {
   ];
 
   // این باکس‌ها موقع «پاک کردن تمام داده‌ها» دست‌نخورده می‌مونن
-  // (رمز ورود و تنظیمات امنیتی) تا از حساب پرت نشی
   static const List<String> _protectedFromDelete = ['auth'];
 
   static Future<bool> _requestPermission() async {
@@ -52,8 +60,6 @@ class BackupService {
     return asparDir;
   }
 
-  // به‌جای اینکه دوباره Hive.box(name) رو صدا بزنیم (که با نوع اشتباه باعث خطا میشه)،
-  // مستقیم از باکس‌های از قبل بازِ DatabaseHelper استفاده می‌کنیم
   static dynamic _getOpenBox(String name) {
     switch (name) {
       case 'banks':
@@ -85,6 +91,70 @@ class BackupService {
     }
   }
 
+  // آبجکت مدل رو به یه Map ساده (قابل تبدیل به JSON) تبدیل می‌کنه
+  static dynamic _objectToSerializable(String boxName, dynamic obj) {
+    switch (boxName) {
+      case 'banks':
+        return (obj as Bank).toMap();
+      case 'transactions':
+        return (obj as Transaction).toMap();
+      case 'contacts':
+        return (obj as Contact).toMap();
+      case 'debts':
+        return (obj as Debt).toMap();
+      case 'products':
+        return (obj as Product).toMap();
+      case 'productBatches':
+        return (obj as ProductBatch).toMap();
+      case 'productTransactions':
+        return (obj as ProductTransaction).toMap();
+      case 'ledgerEntries':
+        return (obj as LedgerEntry).toMap();
+      case 'loans':
+        return (obj as Loan).toMap();
+      case 'savingsGoals':
+        return (obj as SavingsGoal).toMap();
+      case 'payments':
+        return (obj as Payment).toMap();
+      case 'auth':
+        return obj; // مقدارهای auth از قبل ساده هستن (رشته/بولین)
+      default:
+        return obj;
+    }
+  }
+
+  // یه Map ذخیره‌شده رو دوباره به آبجکت مدل واقعی برمی‌گردونه
+  static dynamic _mapToObject(String boxName, dynamic raw) {
+    if (boxName == 'auth') return raw;
+    final map = Map<String, dynamic>.from(raw as Map);
+    switch (boxName) {
+      case 'banks':
+        return Bank.fromMap(map);
+      case 'transactions':
+        return Transaction.fromMap(map);
+      case 'contacts':
+        return Contact.fromMap(map);
+      case 'debts':
+        return Debt.fromMap(map);
+      case 'products':
+        return Product.fromMap(map);
+      case 'productBatches':
+        return ProductBatch.fromMap(map);
+      case 'productTransactions':
+        return ProductTransaction.fromMap(map);
+      case 'ledgerEntries':
+        return LedgerEntry.fromMap(map);
+      case 'loans':
+        return Loan.fromMap(map);
+      case 'savingsGoals':
+        return SavingsGoal.fromMap(map);
+      case 'payments':
+        return Payment.fromMap(map);
+      default:
+        return raw;
+    }
+  }
+
   static Future<String> createBackup() async {
     final hasPermission = await _requestPermission();
     if (!hasPermission) {
@@ -98,7 +168,7 @@ class BackupService {
       if (box == null) continue;
       final Map<String, dynamic> boxMap = {};
       for (final key in box.keys) {
-        boxMap[key.toString()] = box.get(key);
+        boxMap[key.toString()] = _objectToSerializable(name, box.get(key));
       }
       boxesData[name] = boxMap;
     }
@@ -133,7 +203,8 @@ class BackupService {
       for (final entry in boxMap.entries) {
         final parsedKey = int.tryParse(entry.key);
         final key = parsedKey ?? entry.key;
-        await box.put(key, entry.value);
+        final value = _mapToObject(name, entry.value);
+        await box.put(key, value);
       }
     }
   }
