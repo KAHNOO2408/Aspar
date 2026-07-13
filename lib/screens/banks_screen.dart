@@ -6,6 +6,7 @@ import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 import 'add_bank_screen.dart';
+import 'bank_ledger_screen.dart';
 
 class BanksScreen extends StatelessWidget {
   const BanksScreen({Key? key}) : super(key: key);
@@ -245,10 +246,12 @@ class BanksScreen extends StatelessWidget {
                                           icon: Icon(Icons.more_vert, color: Colors.white.withOpacity(0.9)),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                           onSelected: (value) {
+                                            if (value == 'statement') Navigator.push(context, MaterialPageRoute(builder: (_) => BankLedgerScreen(bank: bank)));
                                             if (value == 'edit') _showEditDialog(context, bankProvider, bank, isCashbox);
                                             if (value == 'delete') _showDeleteDialog(context, bankProvider, bank);
                                           },
                                           itemBuilder: (context) => [
+                                            const PopupMenuItem(value: 'statement', child: Row(children: [Icon(Icons.receipt_long_outlined, size: 18, color: Colors.green), SizedBox(width: 8), Text('گردش حساب', style: TextStyle(fontFamily: 'YekanBakh'))])),
                                             const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 18, color: Colors.blue), SizedBox(width: 8), Text('ویرایش', style: TextStyle(fontFamily: 'YekanBakh'))])),
                                             const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: Colors.red), SizedBox(width: 8), Text('حذف', style: TextStyle(fontFamily: 'YekanBakh'))])),
                                           ],
