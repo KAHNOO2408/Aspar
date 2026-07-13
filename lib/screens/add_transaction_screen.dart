@@ -441,9 +441,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final isIncome = transactionType == 'درآمد';
     final bankProvider = context.read<BankProvider>();
     final transProvider = context.read<TransactionProvider>();
+    int selectedAccountId;
 
     if (selectedPaymentMethod == 'cash') {
       final cashbox = bankProvider.banks.firstWhere((b) => b.id == selectedCashboxId);
+      selectedAccountId = cashbox.id;
       await bankProvider.updateBank(Bank(
         id: cashbox.id,
         bankName: cashbox.bankName,
@@ -453,6 +455,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       ));
     } else {
       final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
+      selectedAccountId = bank.id;
       await bankProvider.updateBank(Bank(
         id: bank.id,
         bankName: bank.bankName,
@@ -470,6 +473,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       type: isIncome ? TransactionType.income : TransactionType.expense,
       category: selectedCategory ?? 'عمومی',
       date: selectedDate,
+      bankId: selectedAccountId,
       contactName: '',
     ));
 
