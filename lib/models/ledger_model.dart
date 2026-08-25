@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../database/db_helper.dart';
 
-class LedgerEntry {
+class LedgerEntry extends HiveObject {
   final int? id;
   final String personName;
   final String personFamily;
@@ -127,13 +127,38 @@ class LedgerProvider extends ChangeNotifier {
     return id;
   }
 
-  Future<void> updateEntry(LedgerEntry entry) async {
-    await DatabaseHelper.updateLedgerEntry(entry);
+  // به‌جای اعتماد به فیلد id، اول رکورد واقعی رو تو لیست فعلی پیدا می‌کنیم
+  // و از کلید واقعی خودِ Hive برای ذخیره استفاده می‌کنیم (مطمئن‌تره)
+  Future<void> updateEntry(LedgerEntry updated) async {
+    LedgerEntry? existing;
+    try {
+      existing = entries.firstWhere((e) => e.id == updated.id);
+    } catch (e) {
+      existing = null;
+    }
+
+    if (existing != null && existing.isInBox) {
+      await existing.delete();
+    }
+    await DatabaseHelper.ledgerEntryBox.put(updated.id, updated);
     await loadEntries();
   }
 
+  // همینطور برای حذف: به‌جای box.delete(id)، خودِ آبجکت واقعی رو پیدا می‌کنیم
+  // و با متد delete() خودش پاک می‌کنیم که همیشه کلید درست رو می‌شناسه
   Future<void> deleteEntry(int id) async {
-    await DatabaseHelper.deleteLedgerEntry(id);
+    LedgerEntry? existing;
+    try {
+      existing = entries.firstWhere((e) => e.id == id);
+    } catch (e) {
+      existing = null;
+    }
+
+    if (existing != null && existing.isInBox) {
+      await existing.delete();
+    } else {
+      await DatabaseHelper.deleteLedgerEntry(id);
+    }
     await loadEntries();
   }
 
