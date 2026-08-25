@@ -284,7 +284,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
     final ledgerProvider = context.read<LedgerProvider>();
     final debtProvider = context.read<DebtProvider>();
 
-    await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance - amount - fee));
+    await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance - amount - fee, cashBox: bank.cashBox));
 
     final ledgerDescription = noteController.text.isNotEmpty ? 'برداشت از بانک - ${noteController.text}' : 'برداشت از بانک';
 
