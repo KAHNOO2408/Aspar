@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/debt_model.dart';
+import '../models/ledger_model.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
@@ -10,11 +11,13 @@ import 'contact_ledger_screen.dart';
 class DebtsScreen extends StatelessWidget {
   const DebtsScreen({Key? key}) : super(key: key);
 
-  Map<String, double> _computeNetBalances(List<Debt> debts) {
+  // مانده‌ی هر مخاطب رو مستقیم از رو دفتر معاملات حساب می‌کنه
+  // (همون منبعی که «گردش حساب» هم ازش می‌خونه) تا همیشه با هم یکی باشن
+  Map<String, double> _computeNetBalances(List<LedgerEntry> entries) {
     final Map<String, double> net = {};
-    for (final d in debts) {
-      final key = '${d.personName}|${d.personFamily}';
-      final delta = d.type == DebtType.receivable ? d.remainder : -d.remainder;
+    for (final e in entries) {
+      final key = '${e.personName}|${e.personFamily}';
+      final delta = e.debitAmount - e.creditAmount;
       net[key] = (net[key] ?? 0) + delta;
     }
     net.removeWhere((key, value) => value.abs() < 0.01);
@@ -65,9 +68,9 @@ class DebtsScreen extends StatelessWidget {
             ),
           ),
         ),
-        body: Consumer<DebtProvider>(
-          builder: (context, provider, _) {
-            final net = _computeNetBalances(provider.debts);
+        body: Consumer<LedgerProvider>(
+          builder: (context, ledgerProvider, _) {
+            final net = _computeNetBalances(ledgerProvider.entries);
 
             final owedEntries = <MapEntry<String, double>>[];
             final receivableEntries = <MapEntry<String, double>>[];
