@@ -278,7 +278,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     final debtProvider = context.read<DebtProvider>();
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
 
-    await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount - fee));
+    await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount - fee, cashBox: bank.cashBox));
 
     final ledgerDescription = noteController.text.isNotEmpty ? 'واریز به بانک - ${noteController.text}' : 'واریز به بانک';
 
