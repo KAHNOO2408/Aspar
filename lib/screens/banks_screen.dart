@@ -271,7 +271,7 @@ class BanksScreen extends StatelessWidget {
                                       ],
                                     ),
                                     const SizedBox(height: 6),
-                                    Text('id: ${bank.id}  •  balance: ${bank.balance}  •  cashBox: ${bank.cashBox}', style: const TextStyle(fontSize: 10, color: Colors.white54)),
+                                    Text('id: ${bank.id}  •  key: ${bank.key}  •  balance: ${bank.balance}', style: const TextStyle(fontSize: 10, color: Colors.white54)),
                                   ],
                                 ),
                               ),
