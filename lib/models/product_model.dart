@@ -107,7 +107,6 @@ class ProductBatchAdapter extends TypeAdapter<ProductBatch> {
       identical(this, other) || other is ProductBatchAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
-// نکته: مقادیر جدید فقط باید انتهای enum اضافه بشن (نه وسطش)، وگرنه داده‌های قبلی بهم می‌ریزه
 enum ProductTxType { purchase, sale, returnFromPurchase, returnFromSale }
 
 class ProductTransaction {
@@ -252,7 +251,8 @@ class ProductProvider extends ChangeNotifier {
     await loadAll();
   }
 
-  Future<void> recordPurchase({
+  // برمی‌گردونه: {'batchId': ..., 'productTransactionId': ...}
+  Future<Map<String, int>> recordPurchase({
     required Product product,
     required double quantity,
     required double pricePerUnit,
@@ -283,13 +283,15 @@ class ProductProvider extends ChangeNotifier {
     await DatabaseHelper.insertProductTransaction(tx);
 
     await loadAll();
+    return {'batchId': batch.id!, 'productTransactionId': tx.id!};
   }
 
   bool hasEnoughStock(int productId, double quantity) {
     return getStock(productId) >= quantity;
   }
 
-  Future<double> recordSale({
+  // برمی‌گردونه: {'profit': ..., 'productTransactionId': ..., 'unitCost': ...}
+  Future<Map<String, dynamic>> recordSale({
     required Product product,
     required double quantity,
     required double pricePerUnit,
@@ -336,7 +338,7 @@ class ProductProvider extends ChangeNotifier {
     await DatabaseHelper.insertProductTransaction(tx);
 
     await loadAll();
-    return profit;
+    return {'profit': profit, 'productTransactionId': tx.id!, 'unitCost': quantity > 0 ? totalCost / quantity : 0.0};
   }
 
   // برای برگشت از خرید: کم کردن موجودی انبار به صورت FIFO بدون ساختن تراکنش خرید/فروش جدید
@@ -356,7 +358,7 @@ class ProductProvider extends ChangeNotifier {
   }
 
   // برای برگشت از فروش: اضافه کردن یه بچ جدید به انبار با قیمت تمام‌شده‌ی همون فروش
-  Future<void> addStockBatch(int productId, double quantity, double unitCost, DateTime date) async {
+  Future<int> addStockBatch(int productId, double quantity, double unitCost, DateTime date) async {
     final batch = ProductBatch(
       id: DateTime.now().millisecondsSinceEpoch,
       productId: productId,
@@ -367,6 +369,7 @@ class ProductProvider extends ChangeNotifier {
     );
     await DatabaseHelper.insertProductBatch(batch);
     await loadAll();
+    return batch.id!;
   }
 
   // اصلاح یه تراکنش خرید/فروش قدیمی (برای کم کردن مقدار برگشت‌داده‌شده)
@@ -376,7 +379,8 @@ class ProductProvider extends ChangeNotifier {
   }
 
   // ثبت یه رکورد مستقل برای خودِ برگشت، تا تو تاریخچه دیده بشه (تاثیری رو موجودی/سود نداره)
-  Future<void> recordReturnLog({
+  // برمی‌گردونه: آیدی همون رکورد لاگ
+  Future<int> recordReturnLog({
     required Product product,
     required double quantity,
     required double pricePerUnit,
@@ -396,6 +400,128 @@ class ProductProvider extends ChangeNotifier {
       contactName: contactName,
     );
     await DatabaseHelper.insertProductTransaction(tx);
+    await loadAll();
+    return tx.id!;
+  }
+
+  // ============ متدهای «برگردوندنِ» یه فاکتور که حذف شده ============
+
+  // برگردوندنِ یه خرید: فقط اگه هیچی از اون خرید هنوز فروخته نشده باشه اجازه میده
+  Future<bool> reversePurchase({required int productTransactionId, required int batchId}) async {
+    ProductBatch? batch;
+    try {
+      batch = batches.firstWhere((b) => b.id == batchId);
+    } catch (e) {
+      batch = null;
+    }
+    if (batch == null) return false;
+    if ((batch.remainingQuantity - batch.originalQuantity).abs() > 0.001) return false;
+
+    await DatabaseHelper.deleteProductBatch(batchId);
+    await DatabaseHelper.deleteProductTransaction(productTransactionId);
+    await loadAll();
+    return true;
+  }
+
+  // برگردوندنِ یه فروش: کالا با قیمت تمام‌شده‌ی همون فروش به انبار برمی‌گرده
+  Future<void> reverseSale({
+    required int productId,
+    required int productTransactionId,
+    required double quantity,
+    required double unitCost,
+    required DateTime date,
+  }) async {
+    await DatabaseHelper.deleteProductTransaction(productTransactionId);
+    final batch = ProductBatch(
+      id: DateTime.now().millisecondsSinceEpoch,
+      productId: productId,
+      originalQuantity: quantity,
+      remainingQuantity: quantity,
+      purchasePrice: unitCost,
+      date: date,
+    );
+    await DatabaseHelper.insertProductBatch(batch);
+    await loadAll();
+  }
+
+  // لغوِ یه «برگشت از خرید»: موجودی دوباره از انبار خارج میشه و خرید اصلی ترمیم میشه
+  Future<void> reverseReturnFromPurchase({
+    required int productId,
+    required int originalPurchaseTxId,
+    required int logTxId,
+    required double quantity,
+    required double unitPrice,
+    required DateTime date,
+  }) async {
+    await reduceStockFifo(productId, quantity);
+
+    ProductTransaction? original;
+    try {
+      original = productTransactions.firstWhere((t) => t.id == originalPurchaseTxId);
+    } catch (e) {
+      original = null;
+    }
+    if (original != null) {
+      final newQuantity = original.quantity + quantity;
+      final restored = ProductTransaction(
+        id: original.id,
+        productId: original.productId,
+        productName: original.productName,
+        quantity: newQuantity,
+        pricePerUnit: original.pricePerUnit,
+        totalAmount: newQuantity * original.pricePerUnit,
+        type: ProductTxType.purchase,
+        date: original.date,
+        contactName: original.contactName,
+      );
+      await DatabaseHelper.insertProductTransaction(restored);
+    }
+
+    await DatabaseHelper.deleteProductTransaction(logTxId);
+    await loadAll();
+  }
+
+  // لغوِ یه «برگشت از فروش»: کالای برگشتی دوباره از انبار کم میشه و فروش اصلی ترمیم میشه
+  Future<void> reverseReturnFromSale({
+    required int productId,
+    required int originalSaleTxId,
+    required int logTxId,
+    required double quantity,
+    required double unitPrice,
+    required double unitCost,
+    required DateTime date,
+  }) async {
+    await reduceStockFifo(productId, quantity);
+
+    ProductTransaction? original;
+    try {
+      original = productTransactions.firstWhere((t) => t.id == originalSaleTxId);
+    } catch (e) {
+      original = null;
+    }
+    if (original != null) {
+      final newQuantity = original.quantity + quantity;
+      final newTotalAmount = newQuantity * original.pricePerUnit;
+      final newCostOfGoods = original.costOfGoods + (unitCost * quantity);
+      final newProfit = newTotalAmount - newCostOfGoods;
+      final restored = ProductTransaction(
+        id: original.id,
+        productId: original.productId,
+        productName: original.productName,
+        quantity: newQuantity,
+        pricePerUnit: original.pricePerUnit,
+        totalAmount: newTotalAmount,
+        type: ProductTxType.sale,
+        date: original.date,
+        profit: newProfit,
+        costOfGoods: newCostOfGoods,
+        laborFee: original.laborFee,
+        contactName: original.contactName,
+      );
+      await DatabaseHelper.insertProductTransaction(restored);
+    }
+
+    await DatabaseHelper.deleteProductTransaction(logTxId);
     await loadAll();
   }
 
