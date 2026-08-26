@@ -284,6 +284,9 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
     final ledgerProvider = context.read<LedgerProvider>();
     final debtProvider = context.read<DebtProvider>();
 
+    final int txId = DateTime.now().millisecondsSinceEpoch;
+    final int? feeTxId = fee > 0 ? DateTime.now().millisecondsSinceEpoch + 1 : null;
+
     await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance - amount - fee, cashBox: bank.cashBox));
 
     final ledgerDescription = noteController.text.isNotEmpty ? 'برداشت از بانک - ${noteController.text}' : 'برداشت از بانک';
@@ -297,6 +300,12 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
       debitAmount: amount,
       bankId: bank.id,
       trackingCode: trackingCodeController.text,
+      affectedBankId: bank.id,
+      bankAmount: amount,
+      bankIsIncome: false,
+      feeAmount: fee > 0 ? fee : null,
+      linkedTransactionId: txId,
+      linkedFeeTransactionId: feeTxId,
     ));
 
     // این پول به مخاطب پرداخت شده، پس اگه بهش بدهکار بودی، این مبلغ از بدهیت کم میشه
@@ -310,7 +319,7 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
     );
 
     await transProvider.addTransaction(Transaction(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: txId,
       title: 'برداشت از بانک',
       description: 'برداشت از بانک',
       amount: amount,
@@ -321,9 +330,9 @@ class _BankWithdrawalScreenState extends State<BankWithdrawalScreen> {
       contactName: selectedContact!.fullName,
     ));
 
-    if (fee > 0) {
+    if (fee > 0 && feeTxId != null) {
       await transProvider.addTransaction(Transaction(
-        id: DateTime.now().millisecondsSinceEpoch + 1,
+        id: feeTxId,
         title: 'کارمزد برداشت',
         description: 'کارمزد برداشت به ${selectedContact!.fullName}',
         amount: fee,
