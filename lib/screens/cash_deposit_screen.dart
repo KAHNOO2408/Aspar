@@ -286,6 +286,8 @@ class _CashDepositScreenState extends State<CashDepositScreen> {
     final ledgerProvider = context.read<LedgerProvider>();
     final bankProvider = context.read<BankProvider>();
 
+    final int txId = DateTime.now().millisecondsSinceEpoch;
+
     final ledgerDescription = noteController.text.isNotEmpty ? 'دریافت نقدی - ${noteController.text}' : 'دریافت نقدی';
 
     await ledgerProvider.addEntry(LedgerEntry(
@@ -295,10 +297,14 @@ class _CashDepositScreenState extends State<CashDepositScreen> {
       date: selectedDate,
       description: ledgerDescription,
       creditAmount: amount,
+      affectedBankId: selectedBank!.id,
+      bankAmount: amount,
+      bankIsIncome: true,
+      linkedTransactionId: txId,
     ));
 
     await transProvider.addTransaction(Transaction(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: txId,
       title: 'دریافت نقدی',
       description: 'دریافت نقدی',
       amount: amount,
