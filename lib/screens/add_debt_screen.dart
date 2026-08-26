@@ -694,8 +694,10 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final quantity = double.tryParse(quantityController.text) ?? 0;
     final price = double.tryParse(priceController.text) ?? 0;
 
+    Map<String, dynamic> productResult;
+
     if (isPurchase) {
-      await productProvider.recordPurchase(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, contactName: selectedContact!.fullName);
+      productResult = await productProvider.recordPurchase(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, contactName: selectedContact!.fullName);
     } else {
       if (!productProvider.hasEnoughStock(selectedProduct!.id!, quantity)) {
         if (mounted) {
@@ -704,13 +706,19 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         }
         return;
       }
-      await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, laborFee: laborFee, contactName: selectedContact!.fullName);
+      productResult = await productProvider.recordSale(product: selectedProduct!, quantity: quantity, pricePerUnit: price, date: selectedDate, laborFee: laborFee, contactName: selectedContact!.fullName);
     }
 
     final unitLabel = selectedUnit == 'ml' ? 'میل' : 'عدد';
     final productInfo = noteController.text.isNotEmpty ? '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel) - ${noteController.text}' : '${selectedProduct!.name} (${quantity.toStringAsFixed(0)} $unitLabel)';
 
     final remainingAmount = totalAmount - paidNow < 0 ? 0.0 : totalAmount - paidNow;
+
+    // اگه همون لحظه پول جابه‌جا میشه، از قبل شناسه‌ی رکوردهاش رو مشخص می‌کنیم
+    // تا بعداً (موقع حذف احتمالی این فاکتور) بشه دقیق پیداشون کرد
+    final int? bankTxId = paidNow > 0 ? DateTime.now().millisecondsSinceEpoch : null;
+    final int? feeTxId = (paidNow > 0 && selectedPaymentMethod == 'card' && fee > 0) ? DateTime.now().millisecondsSinceEpoch + 2 : null;
+    final int? affectedBankId = selectedPaymentMethod == 'cash' ? selectedCashboxId : (selectedPaymentMethod == 'card' ? selectedBankId : null);
 
     final ledgerProvider = context.read<LedgerProvider>();
     final ledgerId = await ledgerProvider.addEntry(LedgerEntry(
@@ -723,6 +731,19 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       debitAmount: isPurchase ? 0 : remainingAmount,
       laborFee: laborFee,
       trackingCode: selectedPaymentMethod == 'card' && trackingCodeController.text.trim().isNotEmpty ? trackingCodeController.text.trim() : null,
+      sourceType: isPurchase ? 'purchase' : 'sale',
+      productId: selectedProduct!.id,
+      quantity: quantity,
+      unitPrice: price,
+      unitCost: isPurchase ? null : (productResult['unitCost'] as double?),
+      relatedProductTxId: productResult['productTransactionId'] as int?,
+      linkedBatchId: isPurchase ? productResult['batchId'] as int? : null,
+      affectedBankId: paidNow > 0 ? affectedBankId : null,
+      bankAmount: paidNow > 0 ? paidNow : null,
+      bankIsIncome: paidNow > 0 ? !isPurchase : null,
+      feeAmount: feeTxId != null ? fee : null,
+      linkedTransactionId: bankTxId,
+      linkedFeeTransactionId: feeTxId,
     ));
 
     if (remainingAmount > 0) {
@@ -753,7 +774,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       await bankProvider.updateBank(updatedCashbox);
 
       await transProvider.addTransaction(Transaction(
-        id: DateTime.now().millisecondsSinceEpoch,
+        id: bankTxId,
         title: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
         description: isPurchase ? 'پرداخت نقدی' : 'دریافت نقدی',
         amount: paidNow,
@@ -780,7 +801,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       await bankProvider.updateBank(updatedBank);
 
       await transProvider.addTransaction(Transaction(
-        id: DateTime.now().millisecondsSinceEpoch,
+        id: bankTxId,
         title: isPurchase ? 'پرداخت به مخاطب' : 'دریافت از مخاطب',
         description: isPurchase ? 'پرداخت کارتی' : 'دریافت کارتی',
         amount: paidNow,
@@ -791,9 +812,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         contactName: selectedContact!.fullName,
       ));
 
-      if (fee > 0) {
+      if (fee > 0 && feeTxId != null) {
         await transProvider.addTransaction(Transaction(
-          id: DateTime.now().millisecondsSinceEpoch + 2,
+          id: feeTxId,
           title: 'کارمزد تراکنش',
           description: 'کارمزد ${isPurchase ? 'پرداخت به' : 'دریافت از'} ${selectedContact!.fullName}',
           amount: fee,
