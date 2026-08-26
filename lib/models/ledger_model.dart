@@ -14,6 +14,22 @@ class LedgerEntry extends HiveObject {
   final String? trackingCode;
   final double laborFee;
 
+  // فیلدهای ردیابی: برای اینکه حذف یه فاکتور بتونه همه‌ی اثراتش رو (انبار، بانک) برگردونه
+  final String? sourceType; // 'purchase' | 'sale' | 'returnFromPurchase' | 'returnFromSale'
+  final int? productId;
+  final double? quantity;
+  final double? unitPrice;
+  final double? unitCost;
+  final int? relatedProductTxId; // برای خرید/فروش: خودِ رکورد؛ برای برگشت‌ها: رکورد اصلی که اصلاح شده
+  final int? logProductTxId; // فقط برگشت‌ها: رکورد لاگ برگشتی
+  final int? linkedBatchId; // فقط خرید: بچ انبار ساخته‌شده
+  final int? affectedBankId;
+  final double? bankAmount;
+  final bool? bankIsIncome;
+  final double? feeAmount;
+  final int? linkedTransactionId;
+  final int? linkedFeeTransactionId;
+
   LedgerEntry({
     this.id,
     required this.personName,
@@ -25,6 +41,20 @@ class LedgerEntry extends HiveObject {
     this.bankId,
     this.trackingCode,
     this.laborFee = 0,
+    this.sourceType,
+    this.productId,
+    this.quantity,
+    this.unitPrice,
+    this.unitCost,
+    this.relatedProductTxId,
+    this.logProductTxId,
+    this.linkedBatchId,
+    this.affectedBankId,
+    this.bankAmount,
+    this.bankIsIncome,
+    this.feeAmount,
+    this.linkedTransactionId,
+    this.linkedFeeTransactionId,
   });
 
   Map<String, dynamic> toMap() => {
@@ -38,6 +68,20 @@ class LedgerEntry extends HiveObject {
         'bankId': bankId,
         'trackingCode': trackingCode,
         'laborFee': laborFee,
+        'sourceType': sourceType,
+        'productId': productId,
+        'quantity': quantity,
+        'unitPrice': unitPrice,
+        'unitCost': unitCost,
+        'relatedProductTxId': relatedProductTxId,
+        'logProductTxId': logProductTxId,
+        'linkedBatchId': linkedBatchId,
+        'affectedBankId': affectedBankId,
+        'bankAmount': bankAmount,
+        'bankIsIncome': bankIsIncome,
+        'feeAmount': feeAmount,
+        'linkedTransactionId': linkedTransactionId,
+        'linkedFeeTransactionId': linkedFeeTransactionId,
       };
 
   factory LedgerEntry.fromMap(Map<String, dynamic> map) => LedgerEntry(
@@ -51,6 +95,20 @@ class LedgerEntry extends HiveObject {
         bankId: map['bankId'],
         trackingCode: map['trackingCode'],
         laborFee: (map['laborFee'] ?? 0 as num).toDouble(),
+        sourceType: map['sourceType'],
+        productId: map['productId'],
+        quantity: map['quantity'] == null ? null : (map['quantity'] as num).toDouble(),
+        unitPrice: map['unitPrice'] == null ? null : (map['unitPrice'] as num).toDouble(),
+        unitCost: map['unitCost'] == null ? null : (map['unitCost'] as num).toDouble(),
+        relatedProductTxId: map['relatedProductTxId'],
+        logProductTxId: map['logProductTxId'],
+        linkedBatchId: map['linkedBatchId'],
+        affectedBankId: map['affectedBankId'],
+        bankAmount: map['bankAmount'] == null ? null : (map['bankAmount'] as num).toDouble(),
+        bankIsIncome: map['bankIsIncome'],
+        feeAmount: map['feeAmount'] == null ? null : (map['feeAmount'] as num).toDouble(),
+        linkedTransactionId: map['linkedTransactionId'],
+        linkedFeeTransactionId: map['linkedFeeTransactionId'],
       );
 }
 
@@ -60,17 +118,76 @@ class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
 
   @override
   LedgerEntry read(BinaryReader reader) {
+    final id = reader.read() as int?;
+    final personName = reader.read() as String;
+    final personFamily = reader.read() as String;
+    final date = reader.read() as DateTime;
+    final description = reader.read() as String;
+    final debitAmount = reader.read() as double;
+    final creditAmount = reader.read() as double;
+    final bankId = reader.read() as int?;
+    final trackingCode = reader.read() as String?;
+    final laborFee = reader.read() as double;
+
+    // فیلدهای جدید: فقط اگه دیتای بیشتری تو رکورد باشه می‌خونیم
+    // (فاکتورهای قدیمی‌تر این فیلدها رو ندارن، و این طبیعیه)
+    String? sourceType;
+    int? productId;
+    double? quantity;
+    double? unitPrice;
+    double? unitCost;
+    int? relatedProductTxId;
+    int? logProductTxId;
+    int? linkedBatchId;
+    int? affectedBankId;
+    double? bankAmount;
+    bool? bankIsIncome;
+    double? feeAmount;
+    int? linkedTransactionId;
+    int? linkedFeeTransactionId;
+
+    if (reader.availableBytes > 0) {
+      sourceType = reader.read() as String?;
+      productId = reader.read() as int?;
+      quantity = reader.read() as double?;
+      unitPrice = reader.read() as double?;
+      unitCost = reader.read() as double?;
+      relatedProductTxId = reader.read() as int?;
+      logProductTxId = reader.read() as int?;
+      linkedBatchId = reader.read() as int?;
+      affectedBankId = reader.read() as int?;
+      bankAmount = reader.read() as double?;
+      bankIsIncome = reader.read() as bool?;
+      feeAmount = reader.read() as double?;
+      linkedTransactionId = reader.read() as int?;
+      linkedFeeTransactionId = reader.read() as int?;
+    }
+
     return LedgerEntry(
-      id: reader.read() as int?,
-      personName: reader.read() as String,
-      personFamily: reader.read() as String,
-      date: reader.read() as DateTime,
-      description: reader.read() as String,
-      debitAmount: reader.read() as double,
-      creditAmount: reader.read() as double,
-      bankId: reader.read() as int?,
-      trackingCode: reader.read() as String?,
-      laborFee: reader.read() as double,
+      id: id,
+      personName: personName,
+      personFamily: personFamily,
+      date: date,
+      description: description,
+      debitAmount: debitAmount,
+      creditAmount: creditAmount,
+      bankId: bankId,
+      trackingCode: trackingCode,
+      laborFee: laborFee,
+      sourceType: sourceType,
+      productId: productId,
+      quantity: quantity,
+      unitPrice: unitPrice,
+      unitCost: unitCost,
+      relatedProductTxId: relatedProductTxId,
+      logProductTxId: logProductTxId,
+      linkedBatchId: linkedBatchId,
+      affectedBankId: affectedBankId,
+      bankAmount: bankAmount,
+      bankIsIncome: bankIsIncome,
+      feeAmount: feeAmount,
+      linkedTransactionId: linkedTransactionId,
+      linkedFeeTransactionId: linkedFeeTransactionId,
     );
   }
 
@@ -86,6 +203,20 @@ class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
     writer.write(obj.bankId);
     writer.write(obj.trackingCode);
     writer.write(obj.laborFee);
+    writer.write(obj.sourceType);
+    writer.write(obj.productId);
+    writer.write(obj.quantity);
+    writer.write(obj.unitPrice);
+    writer.write(obj.unitCost);
+    writer.write(obj.relatedProductTxId);
+    writer.write(obj.logProductTxId);
+    writer.write(obj.linkedBatchId);
+    writer.write(obj.affectedBankId);
+    writer.write(obj.bankAmount);
+    writer.write(obj.bankIsIncome);
+    writer.write(obj.feeAmount);
+    writer.write(obj.linkedTransactionId);
+    writer.write(obj.linkedFeeTransactionId);
   }
 
   @override
@@ -121,14 +252,26 @@ class LedgerProvider extends ChangeNotifier {
       bankId: entry.bankId,
       trackingCode: entry.trackingCode,
       laborFee: entry.laborFee,
+      sourceType: entry.sourceType,
+      productId: entry.productId,
+      quantity: entry.quantity,
+      unitPrice: entry.unitPrice,
+      unitCost: entry.unitCost,
+      relatedProductTxId: entry.relatedProductTxId,
+      logProductTxId: entry.logProductTxId,
+      linkedBatchId: entry.linkedBatchId,
+      affectedBankId: entry.affectedBankId,
+      bankAmount: entry.bankAmount,
+      bankIsIncome: entry.bankIsIncome,
+      feeAmount: entry.feeAmount,
+      linkedTransactionId: entry.linkedTransactionId,
+      linkedFeeTransactionId: entry.linkedFeeTransactionId,
     );
     await DatabaseHelper.insertLedgerEntry(toSave);
     await loadEntries();
     return id;
   }
 
-  // به‌جای اعتماد به فیلد id، اول رکورد واقعی رو تو لیست فعلی پیدا می‌کنیم
-  // و از کلید واقعی خودِ Hive برای ذخیره استفاده می‌کنیم (مطمئن‌تره)
   Future<void> updateEntry(LedgerEntry updated) async {
     LedgerEntry? existing;
     try {
@@ -144,8 +287,6 @@ class LedgerProvider extends ChangeNotifier {
     await loadEntries();
   }
 
-  // همینطور برای حذف: به‌جای box.delete(id)، خودِ آبجکت واقعی رو پیدا می‌کنیم
-  // و با متد delete() خودش پاک می‌کنیم که همیشه کلید درست رو می‌شناسه
   Future<void> deleteEntry(int id) async {
     LedgerEntry? existing;
     try {
