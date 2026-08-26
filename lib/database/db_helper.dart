@@ -142,6 +142,10 @@ class DatabaseHelper {
     await productTransactionBox.put(pt.id, pt);
   }
 
+  static Future<void> deleteProductTransaction(int id) async {
+    await productTransactionBox.delete(id);
+  }
+
   static Future<List<ProductTransaction>> getProductTransactions() async {
     return productTransactionBox.values.toList();
   }
@@ -217,6 +221,10 @@ class DatabaseHelper {
 
   static Future<void> updateProductBatch(ProductBatch batch) async {
     await productBatchBox.put(batch.id, batch);
+  }
+
+  static Future<void> deleteProductBatch(int id) async {
+    await productBatchBox.delete(id);
   }
 
   static Future<List<ProductBatch>> getProductBatches() async {
