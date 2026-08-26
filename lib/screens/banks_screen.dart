@@ -270,6 +270,8 @@ class BanksScreen extends StatelessWidget {
                                         Padding(padding: const EdgeInsets.only(bottom: 3), child: Text('تومان', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75), fontFamily: 'YekanBakh'))),
                                       ],
                                     ),
+                                    const SizedBox(height: 6),
+                                    Text('id: ${bank.id}  •  balance: ${bank.balance}  •  cashBox: ${bank.cashBox}', style: const TextStyle(fontSize: 10, color: Colors.white54)),
                                   ],
                                 ),
                               ),
