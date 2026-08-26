@@ -261,13 +261,13 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مخاطب، بانک، مبلغ و کد رهگیری الزامی هستند')));
       return;
     }
-    
+
     final amount = double.tryParse(amountController.text) ?? 0;
     if (amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ باید بزرگتر از صفر باشد')));
       return;
     }
-    
+
     final fee = double.tryParse(feeController.text) ?? 0;
 
     setState(() => _isSubmitting = true);
@@ -277,6 +277,9 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     final ledgerProvider = context.read<LedgerProvider>();
     final debtProvider = context.read<DebtProvider>();
     final bank = bankProvider.banks.firstWhere((b) => b.id == selectedBankId);
+
+    final int txId = DateTime.now().millisecondsSinceEpoch;
+    final int? feeTxId = fee > 0 ? DateTime.now().millisecondsSinceEpoch + 1 : null;
 
     await bankProvider.updateBank(Bank(id: bank.id, bankName: bank.bankName, accountNumber: bank.accountNumber, balance: bank.balance + amount - fee, cashBox: bank.cashBox));
 
@@ -291,6 +294,12 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       creditAmount: amount,
       bankId: bank.id,
       trackingCode: trackingCodeController.text,
+      affectedBankId: bank.id,
+      bankAmount: amount,
+      bankIsIncome: true,
+      feeAmount: fee > 0 ? fee : null,
+      linkedTransactionId: txId,
+      linkedFeeTransactionId: feeTxId,
     ));
 
     // این پول از مخاطب دریافت شده، پس اگه ازش طلب داشتی، این مبلغ از طلبت کم میشه
@@ -304,7 +313,7 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
     );
 
     await transProvider.addTransaction(Transaction(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: txId,
       title: 'واریز به بانک',
       description: 'واریز به بانک',
       amount: amount,
@@ -315,9 +324,9 @@ class _BankDepositScreenState extends State<BankDepositScreen> {
       contactName: selectedContact!.fullName,
     ));
 
-    if (fee > 0) {
+    if (fee > 0 && feeTxId != null) {
       await transProvider.addTransaction(Transaction(
-        id: DateTime.now().millisecondsSinceEpoch + 1,
+        id: feeTxId,
         title: 'کارمزد واریز',
         description: 'کارمزد واریز از ${selectedContact!.fullName}',
         amount: fee,
