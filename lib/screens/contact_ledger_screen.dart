@@ -5,6 +5,8 @@ import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import '../models/ledger_model.dart';
 import '../models/bank_model.dart';
 import '../models/debt_model.dart';
+import '../models/product_model.dart';
+import '../models/transaction_model.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
 
@@ -151,13 +153,111 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     }
   }
 
-  // بعد از حذف یه فاکتور، بدهی/طلب لینک‌شده باهاش رو هم حذف می‌کنه
-  Future<void> _syncLinkedDebtOnDelete(BuildContext context, int ledgerEntryId) async {
+  // ============ منطق اصلی: حذف کامل با برگردوندن همه‌ی اثرات ============
+  Future<void> _deleteEntryCompletely(BuildContext context, LedgerProvider ledgerProvider, LedgerEntry entry) async {
+    final productProvider = context.read<ProductProvider>();
+    final bankProvider = context.read<BankProvider>();
+    final transProvider = context.read<TransactionProvider>();
     final debtProvider = context.read<DebtProvider>();
-    final linked = debtProvider.debts.where((d) => d.linkedLedgerId == ledgerEntryId).toList();
-    for (final d in linked) {
-      await debtProvider.deleteDebt(d.id!);
+
+    // ۱. اعتبارسنجی امنیت (فقط برای خرید: اگه بخشی ازش فروخته شده، اجازه نمیدیم)
+    if (entry.sourceType == 'purchase' && entry.linkedBatchId != null) {
+      ProductBatch? batch;
+      try {
+        batch = productProvider.batches.firstWhere((b) => b.id == entry.linkedBatchId);
+      } catch (e) {
+        batch = null;
+      }
+      if (batch != null && (batch.remainingQuantity - batch.originalQuantity).abs() > 0.001) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('این خرید قابل حذف نیست، چون بخشی از این کالا قبلاً فروخته شده'), backgroundColor: Colors.red));
+        }
+        return;
+      }
     }
+
+    // ۲. برگردوندن اثر انبار بر اساس نوع فاکتور
+    if (entry.sourceType == 'purchase' && entry.relatedProductTxId != null && entry.linkedBatchId != null) {
+      await productProvider.reversePurchase(productTransactionId: entry.relatedProductTxId!, batchId: entry.linkedBatchId!);
+    } else if (entry.sourceType == 'sale' && entry.relatedProductTxId != null && entry.productId != null && entry.quantity != null) {
+      await productProvider.reverseSale(
+        productId: entry.productId!,
+        productTransactionId: entry.relatedProductTxId!,
+        quantity: entry.quantity!,
+        unitCost: entry.unitCost ?? 0,
+        date: entry.date,
+      );
+    } else if (entry.sourceType == 'returnFromPurchase' && entry.relatedProductTxId != null && entry.logProductTxId != null && entry.productId != null && entry.quantity != null && entry.unitPrice != null) {
+      await productProvider.reverseReturnFromPurchase(
+        productId: entry.productId!,
+        originalPurchaseTxId: entry.relatedProductTxId!,
+        logTxId: entry.logProductTxId!,
+        quantity: entry.quantity!,
+        unitPrice: entry.unitPrice!,
+        date: entry.date,
+      );
+    } else if (entry.sourceType == 'returnFromSale' && entry.relatedProductTxId != null && entry.logProductTxId != null && entry.productId != null && entry.quantity != null && entry.unitPrice != null) {
+      await productProvider.reverseReturnFromSale(
+        productId: entry.productId!,
+        originalSaleTxId: entry.relatedProductTxId!,
+        logTxId: entry.logProductTxId!,
+        quantity: entry.quantity!,
+        unitPrice: entry.unitPrice!,
+        unitCost: entry.unitCost ?? 0,
+        date: entry.date,
+      );
+    }
+
+    // ۳. برگردوندن اثر بانک/صندوق
+    if (entry.affectedBankId != null && entry.bankAmount != null && entry.bankIsIncome != null) {
+      Bank? bank;
+      try {
+        bank = bankProvider.banks.firstWhere((b) => b.id == entry.affectedBankId);
+      } catch (e) {
+        bank = null;
+      }
+      if (bank != null) {
+        final isCashbox = bank.accountNumber == 'صندوق';
+        final delta = entry.bankIsIncome! ? -entry.bankAmount! : entry.bankAmount!;
+        var updated = Bank(
+          id: bank.id,
+          bankName: bank.bankName,
+          accountNumber: bank.accountNumber,
+          balance: isCashbox ? bank.balance : bank.balance + delta,
+          cashBox: isCashbox ? bank.cashBox + delta : bank.cashBox,
+        );
+        await bankProvider.updateBank(updated);
+
+        // برگردوندن کارمزد (همیشه از همون بانک کم شده بود، پس برمی‌گرده)
+        if (entry.feeAmount != null && entry.feeAmount! > 0) {
+          final refreshed = bankProvider.banks.firstWhere((b) => b.id == entry.affectedBankId);
+          updated = Bank(
+            id: refreshed.id,
+            bankName: refreshed.bankName,
+            accountNumber: refreshed.accountNumber,
+            balance: isCashbox ? refreshed.balance : refreshed.balance + entry.feeAmount!,
+            cashBox: isCashbox ? refreshed.cashBox + entry.feeAmount! : refreshed.cashBox,
+          );
+          await bankProvider.updateBank(updated);
+        }
+      }
+    }
+
+    // ۴. حذف رکوردهای تراکنش بانکی مرتبط
+    if (entry.linkedTransactionId != null) await transProvider.deleteTransaction(entry.linkedTransactionId!);
+    if (entry.linkedFeeTransactionId != null) await transProvider.deleteTransaction(entry.linkedFeeTransactionId!);
+
+    // ۵. حذف بدهی/طلب لینک‌شده
+    Debt? linkedDebt;
+    try {
+      linkedDebt = debtProvider.debts.firstWhere((d) => d.linkedLedgerId == entry.id);
+    } catch (e) {
+      linkedDebt = null;
+    }
+    if (linkedDebt != null) await debtProvider.deleteDebt(linkedDebt.id!);
+
+    // ۶. حذف خودِ فاکتور
+    await ledgerProvider.deleteEntry(entry.id!);
   }
 
   void _showEditDialog(BuildContext context, LedgerProvider provider, LedgerEntry entry) {
@@ -193,6 +293,14 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                     label: Text(_formatJalali(selectedDate)),
                     style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 45)),
                   ),
+                  if (entry.sourceType != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                      child: const Text('⚠️ این فاکتور مرتبط با انبار/بانکه. ویرایش مبلغ اینجا فقط دفتر معاملات رو عوض می‌کنه، اثرات انبار/بانک قبلی دست‌نخورده می‌مونه.', style: TextStyle(fontSize: 11)),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -211,6 +319,20 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                     bankId: entry.bankId,
                     trackingCode: entry.trackingCode,
                     laborFee: entry.laborFee,
+                    sourceType: entry.sourceType,
+                    productId: entry.productId,
+                    quantity: entry.quantity,
+                    unitPrice: entry.unitPrice,
+                    unitCost: entry.unitCost,
+                    relatedProductTxId: entry.relatedProductTxId,
+                    logProductTxId: entry.logProductTxId,
+                    linkedBatchId: entry.linkedBatchId,
+                    affectedBankId: entry.affectedBankId,
+                    bankAmount: entry.bankAmount,
+                    bankIsIncome: entry.bankIsIncome,
+                    feeAmount: entry.feeAmount,
+                    linkedTransactionId: entry.linkedTransactionId,
+                    linkedFeeTransactionId: entry.linkedFeeTransactionId,
                   );
                   await provider.updateEntry(updated);
                   await _syncLinkedDebtOnEdit(context, updated);
@@ -228,21 +350,28 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
   }
 
   void _showDeleteConfirm(BuildContext context, LedgerProvider provider, LedgerEntry entry) {
+    final hasEffects = entry.sourceType != null || entry.affectedBankId != null;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.card(dialogContext),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('حذف فاکتور', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-        content: Text('آیا از حذف «${entry.description}» مطمئن هستید؟', style: TextStyle(color: AppColors.text(dialogContext))),
+        content: Text(
+          hasEffects
+              ? 'با حذف «${entry.description}»، اثرات اون رو انبار و بانک/صندوق هم برمی‌گرده. آیا مطمئن هستید؟'
+              : 'آیا از حذف «${entry.description}» مطمئن هستید؟',
+          style: TextStyle(color: AppColors.text(dialogContext)),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف')),
           ElevatedButton(
             onPressed: () async {
-              await _syncLinkedDebtOnDelete(context, entry.id!);
-              await provider.deleteEntry(entry.id!);
+              await _deleteEntryCompletely(context, provider, entry);
               if (dialogContext.mounted) Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حذف شد'), backgroundColor: Colors.red));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حذف شد'), backgroundColor: Colors.red));
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             child: const Text('حذف', style: TextStyle(color: Colors.white)),
