@@ -593,6 +593,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
 
     final totalReturn = quantity * selectedPurchase!.pricePerUnit;
     final returnDescription = 'برگشت ${selectedProduct!.name} (${quantity.toStringAsFixed(0)} عدد)${noteController.text.isNotEmpty ? ' - ${noteController.text}' : ''}';
+    final originalPurchaseTxId = selectedPurchase!.id!;
 
     // کم کردن موجودی انبار
     await productProvider.reduceStockFifo(selectedProduct!.id!, quantity);
@@ -613,7 +614,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     await productProvider.updateProductTransaction(updatedPurchase);
 
     // ثبت یه رکورد مستقل برای خودِ برگشت، تا تو تاریخچه‌ی محصول دیده بشه
-    await productProvider.recordReturnLog(
+    final logTxId = await productProvider.recordReturnLog(
       product: selectedProduct!,
       quantity: quantity,
       pricePerUnit: selectedPurchase!.pricePerUnit,
@@ -625,6 +626,9 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
     // اگه همون لحظه پول گرفته شده، مبلغ باقی‌مونده صفره؛ اگه نه، کل مبلغ میره تو حساب طرف
     final remainingAmount = selectedPaymentMethod != null ? 0.0 : totalReturn;
 
+    final int? bankTxId = selectedPaymentMethod != null ? DateTime.now().millisecondsSinceEpoch : null;
+    final int? affectedBankId = selectedPaymentMethod == 'cash' ? selectedCashboxId : (selectedPaymentMethod == 'card' ? selectedBankId : null);
+
     final ledgerProvider = context.read<LedgerProvider>();
     await ledgerProvider.addEntry(LedgerEntry(
       personName: selectedContact!.firstName,
@@ -633,6 +637,16 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
       description: returnDescription,
       debitAmount: remainingAmount,
       creditAmount: 0,
+      sourceType: 'returnFromPurchase',
+      productId: selectedProduct!.id,
+      quantity: quantity,
+      unitPrice: selectedPurchase!.pricePerUnit,
+      relatedProductTxId: originalPurchaseTxId,
+      logProductTxId: logTxId,
+      affectedBankId: affectedBankId,
+      bankAmount: selectedPaymentMethod != null ? totalReturn : null,
+      bankIsIncome: selectedPaymentMethod != null ? true : null,
+      linkedTransactionId: bankTxId,
     ));
 
     if (remainingAmount > 0) {
@@ -663,7 +677,7 @@ class _ReturnFromPurchaseScreenState extends State<ReturnFromPurchaseScreen> {
       }
 
       await transProvider.addTransaction(Transaction(
-        id: DateTime.now().millisecondsSinceEpoch,
+        id: bankTxId,
         title: 'برگشت از خرید',
         description: returnDescription,
         amount: totalReturn,
