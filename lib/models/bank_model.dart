@@ -94,16 +94,39 @@ class BankProvider extends ChangeNotifier {
     banks = DatabaseHelper.bankBox.values.toList();
     notifyListeners();
   }
+
+  // به‌جای اینکه فرض کنیم «id» همون کلید واقعیه، اول رکورد واقعی رو با
+  // همون id پیدا می‌کنیم و از کلید واقعی خودش (bank.key) برای ذخیره استفاده می‌کنیم
+  // این جلوی ساخته‌شدن رکورد تکراری رو می‌گیره
   Future<void> updateBank(Bank bank) async {
-    await DatabaseHelper.bankBox.put(bank.id, bank);
+    dynamic key = bank.id;
+    try {
+      final existing = banks.firstWhere((b) => b.id == bank.id);
+      key = existing.key;
+    } catch (e) {
+      // رکورد قبلی پیدا نشد (بانک واقعاً جدیده)، همون id رو به‌عنوان کلید استفاده می‌کنیم
+    }
+    await DatabaseHelper.bankBox.put(key, bank);
     banks = DatabaseHelper.bankBox.values.toList();
     notifyListeners();
   }
+
   Future<void> deleteBank(int id) async {
-    await DatabaseHelper.bankBox.delete(id);
+    Bank? existing;
+    try {
+      existing = banks.firstWhere((b) => b.id == id);
+    } catch (e) {
+      existing = null;
+    }
+    if (existing != null && existing.isInBox) {
+      await existing.delete();
+    } else {
+      await DatabaseHelper.bankBox.delete(id);
+    }
     banks = DatabaseHelper.bankBox.values.toList();
     notifyListeners();
   }
+
   double getTotalBalance() {
     return banks.fold(0.0, (sum, bank) => sum + bank.balance);
   }
