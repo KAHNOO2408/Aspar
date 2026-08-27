@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/bank_model.dart';
 import '../models/savings_model.dart';
+import '../database/db_helper.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/formatters.dart';
 import '../utils/app_colors.dart';
@@ -52,6 +53,15 @@ class BanksScreen extends StatelessWidget {
           return SingleChildScrollView(
             child: Column(
               children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(10),
+                  color: Colors.red.withOpacity(0.15),
+                  child: Text(
+                    'KEYS: ${DatabaseHelper.bankBox.keys.map((k) => '$k').join(" | ")}',
+                    style: const TextStyle(fontSize: 10, color: Colors.red),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
                   child: Column(
