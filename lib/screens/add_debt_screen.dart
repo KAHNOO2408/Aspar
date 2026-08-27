@@ -480,7 +480,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10),
-                        onTap: () => setState(() => selectedPaymentMethod = 'cash'),
+                        onTap: () => setState(() => selectedPaymentMethod = selectedPaymentMethod == 'cash' ? null : 'cash'),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Center(
@@ -504,7 +504,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10),
-                        onTap: () => setState(() => selectedPaymentMethod = 'card'),
+                        onTap: () => setState(() => selectedPaymentMethod = selectedPaymentMethod == 'card' ? null : 'card'),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Center(
@@ -675,10 +675,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     final paidNow = double.tryParse(paidNowController.text) ?? 0;
     final fee = double.tryParse(feeController.text) ?? 0;
 
-    if (paidNow > totalAmount) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('مبلغ پرداختی نمی‌تواند بیشتر از مبلغ کل باشد', style: TextStyle(fontFamily: _fontFamily))));
-      return;
-    }
     if (selectedPaymentMethod == 'card' && selectedBankId == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('برای پرداخت کارت، انتخاب بانک الزامی است', style: TextStyle(fontFamily: _fontFamily))));
       return;
