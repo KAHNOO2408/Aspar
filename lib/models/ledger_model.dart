@@ -20,15 +20,18 @@ class LedgerEntry extends HiveObject {
   final double? quantity;
   final double? unitPrice;
   final double? unitCost;
-  final int? relatedProductTxId; // برای خرید/فروش: خودِ رکورد؛ برای برگشت‌ها: رکورد اصلی که اصلاح شده
-  final int? logProductTxId; // فقط برگشت‌ها: رکورد لاگ برگشتی
-  final int? linkedBatchId; // فقط خرید: بچ انبار ساخته‌شده
+  final int? relatedProductTxId;
+  final int? logProductTxId;
+  final int? linkedBatchId;
   final int? affectedBankId;
   final double? bankAmount;
   final bool? bankIsIncome;
   final double? feeAmount;
   final int? linkedTransactionId;
   final int? linkedFeeTransactionId;
+
+  // برای گروه‌بندی چند قلم کالا زیر یه فاکتور مشترک
+  final int? invoiceId;
 
   LedgerEntry({
     this.id,
@@ -55,6 +58,7 @@ class LedgerEntry extends HiveObject {
     this.feeAmount,
     this.linkedTransactionId,
     this.linkedFeeTransactionId,
+    this.invoiceId,
   });
 
   Map<String, dynamic> toMap() => {
@@ -82,6 +86,7 @@ class LedgerEntry extends HiveObject {
         'feeAmount': feeAmount,
         'linkedTransactionId': linkedTransactionId,
         'linkedFeeTransactionId': linkedFeeTransactionId,
+        'invoiceId': invoiceId,
       };
 
   factory LedgerEntry.fromMap(Map<String, dynamic> map) => LedgerEntry(
@@ -109,6 +114,7 @@ class LedgerEntry extends HiveObject {
         feeAmount: map['feeAmount'] == null ? null : (map['feeAmount'] as num).toDouble(),
         linkedTransactionId: map['linkedTransactionId'],
         linkedFeeTransactionId: map['linkedFeeTransactionId'],
+        invoiceId: map['invoiceId'],
       );
 }
 
@@ -129,8 +135,6 @@ class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
     final trackingCode = reader.read() as String?;
     final laborFee = reader.read() as double;
 
-    // فیلدهای جدید: فقط اگه دیتای بیشتری تو رکورد باشه می‌خونیم
-    // (فاکتورهای قدیمی‌تر این فیلدها رو ندارن، و این طبیعیه)
     String? sourceType;
     int? productId;
     double? quantity;
@@ -145,6 +149,7 @@ class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
     double? feeAmount;
     int? linkedTransactionId;
     int? linkedFeeTransactionId;
+    int? invoiceId;
 
     if (reader.availableBytes > 0) {
       sourceType = reader.read() as String?;
@@ -161,6 +166,11 @@ class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
       feeAmount = reader.read() as double?;
       linkedTransactionId = reader.read() as int?;
       linkedFeeTransactionId = reader.read() as int?;
+    }
+
+    // فیلد جدید (برای رکوردهایی که قبل از این آپدیت ذخیره شدن، این فیلد رو ندارن)
+    if (reader.availableBytes > 0) {
+      invoiceId = reader.read() as int?;
     }
 
     return LedgerEntry(
@@ -188,6 +198,7 @@ class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
       feeAmount: feeAmount,
       linkedTransactionId: linkedTransactionId,
       linkedFeeTransactionId: linkedFeeTransactionId,
+      invoiceId: invoiceId,
     );
   }
 
@@ -217,6 +228,7 @@ class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
     writer.write(obj.feeAmount);
     writer.write(obj.linkedTransactionId);
     writer.write(obj.linkedFeeTransactionId);
+    writer.write(obj.invoiceId);
   }
 
   @override
@@ -266,6 +278,7 @@ class LedgerProvider extends ChangeNotifier {
       feeAmount: entry.feeAmount,
       linkedTransactionId: entry.linkedTransactionId,
       linkedFeeTransactionId: entry.linkedFeeTransactionId,
+      invoiceId: entry.invoiceId,
     );
     await DatabaseHelper.insertLedgerEntry(toSave);
     await loadEntries();
