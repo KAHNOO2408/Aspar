@@ -53,9 +53,9 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
   void _showDetails(BuildContext context, LedgerEntry entry, double balanceAfter) {
     final bankProvider = context.read<BankProvider>();
     String bankName = 'ثبت نشده';
-    if (entry.bankId != null) {
+    if (entry.bankId != null || entry.affectedBankId != null) {
       try {
-        bankName = bankProvider.banks.firstWhere((b) => b.id == entry.bankId).bankName;
+        bankName = bankProvider.banks.firstWhere((b) => b.id == (entry.bankId ?? entry.affectedBankId)).bankName;
       } catch (e) {
         bankName = 'ثبت نشده';
       }
@@ -110,7 +110,6 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     );
   }
 
-  // بعد از ویرایش یه فاکتور، بدهی/طلب لینک‌شده باهاش رو هم هماهنگ می‌کنه
   Future<void> _syncLinkedDebtOnEdit(BuildContext context, LedgerEntry updated) async {
     final debtProvider = context.read<DebtProvider>();
     final newAmount = updated.debitAmount > 0 ? updated.debitAmount : updated.creditAmount;
@@ -140,27 +139,15 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
         );
         await debtProvider.editDebt(updatedDebt);
       }
-    } else if (newAmount > 0) {
-      await debtProvider.addDebt(Debt(
-        personName: updated.personName,
-        personFamily: updated.personFamily,
-        totalAmount: newAmount,
-        description: updated.description,
-        date: updated.date,
-        type: newType,
-        linkedLedgerId: updated.id,
-      ));
     }
   }
 
-  // ============ منطق اصلی: حذف کامل با برگردوندن همه‌ی اثرات ============
   Future<void> _deleteEntryCompletely(BuildContext context, LedgerProvider ledgerProvider, LedgerEntry entry) async {
     final productProvider = context.read<ProductProvider>();
     final bankProvider = context.read<BankProvider>();
     final transProvider = context.read<TransactionProvider>();
     final debtProvider = context.read<DebtProvider>();
 
-    // ۱. اعتبارسنجی امنیت (فقط برای خرید: اگه بخشی ازش فروخته شده، اجازه نمیدیم)
     if (entry.sourceType == 'purchase' && entry.linkedBatchId != null) {
       ProductBatch? batch;
       try {
@@ -176,7 +163,6 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
       }
     }
 
-    // ۲. برگردوندن اثر انبار بر اساس نوع فاکتور
     if (entry.sourceType == 'purchase' && entry.relatedProductTxId != null && entry.linkedBatchId != null) {
       await productProvider.reversePurchase(productTransactionId: entry.relatedProductTxId!, batchId: entry.linkedBatchId!);
     } else if (entry.sourceType == 'sale' && entry.relatedProductTxId != null && entry.productId != null && entry.quantity != null) {
@@ -208,7 +194,6 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
       );
     }
 
-    // ۳. برگردوندن اثر بانک/صندوق
     if (entry.affectedBankId != null && entry.bankAmount != null && entry.bankIsIncome != null) {
       Bank? bank;
       try {
@@ -228,7 +213,6 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
         );
         await bankProvider.updateBank(updated);
 
-        // برگردوندن کارمزد (همیشه از همون بانک کم شده بود، پس برمی‌گرده)
         if (entry.feeAmount != null && entry.feeAmount! > 0) {
           final refreshed = bankProvider.banks.firstWhere((b) => b.id == entry.affectedBankId);
           updated = Bank(
@@ -243,11 +227,9 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
       }
     }
 
-    // ۴. حذف رکوردهای تراکنش بانکی مرتبط
     if (entry.linkedTransactionId != null) await transProvider.deleteTransaction(entry.linkedTransactionId!);
     if (entry.linkedFeeTransactionId != null) await transProvider.deleteTransaction(entry.linkedFeeTransactionId!);
 
-    // ۵. حذف بدهی/طلب لینک‌شده
     Debt? linkedDebt;
     try {
       linkedDebt = debtProvider.debts.firstWhere((d) => d.linkedLedgerId == entry.id);
@@ -256,7 +238,6 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     }
     if (linkedDebt != null) await debtProvider.deleteDebt(linkedDebt.id!);
 
-    // ۶. حذف خودِ فاکتور
     await ledgerProvider.deleteEntry(entry.id!);
   }
 
@@ -298,7 +279,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                      child: const Text('⚠️ این فاکتور مرتبط با انبار/بانکه. ویرایش مبلغ اینجا فقط دفتر معاملات رو عوض می‌کنه، اثرات انبار/بانک قبلی دست‌نخورده می‌مونه.', style: TextStyle(fontSize: 11)),
+                      child: const Text('⚠️ این قلم مرتبط با انبار/بانکه. ویرایش مبلغ اینجا فقط دفتر معاملات رو عوض می‌کنه، اثرات انبار/بانک قبلی دست‌نخورده می‌مونه.', style: TextStyle(fontSize: 11)),
                     ),
                   ],
                 ],
@@ -333,6 +314,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                     feeAmount: entry.feeAmount,
                     linkedTransactionId: entry.linkedTransactionId,
                     linkedFeeTransactionId: entry.linkedFeeTransactionId,
+                    invoiceId: entry.invoiceId,
                   );
                   await provider.updateEntry(updated);
                   await _syncLinkedDebtOnEdit(context, updated);
@@ -356,10 +338,10 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.card(dialogContext),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('حذف فاکتور', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
+        title: const Text('حذف', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
         content: Text(
           hasEffects
-              ? 'با حذف «${entry.description}»، اثرات اون رو انبار و بانک/صندوق هم برمی‌گرده. آیا مطمئن هستید؟'
+              ? 'با حذف «${entry.description}»، اثرات اون رو انبار و بانک/صندوق هم برمی‌گرده. بقیه‌ی قلم‌های فاکتور (اگه بودن) دست‌نخورده می‌مونن. آیا مطمئن هستید؟'
               : 'آیا از حذف «${entry.description}» مطمئن هستید؟',
           style: TextStyle(color: AppColors.text(dialogContext)),
         ),
@@ -377,6 +359,174 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
             child: const Text('حذف', style: TextStyle(color: Colors.white)),
           ),
         ],
+      ),
+    );
+  }
+
+  List<List<_LedgerRow>> _groupRows(List<_LedgerRow> rows) {
+    final List<List<_LedgerRow>> result = [];
+    final Map<int, List<_LedgerRow>> invoiceMap = {};
+    final Set<int> addedInvoiceIds = {};
+
+    for (final row in rows) {
+      final invId = row.entry.invoiceId;
+      if (invId != null) {
+        invoiceMap.putIfAbsent(invId, () => []).add(row);
+      }
+    }
+
+    for (final row in rows) {
+      final invId = row.entry.invoiceId;
+      if (invId == null) {
+        result.add([row]);
+      } else if (!addedInvoiceIds.contains(invId)) {
+        addedInvoiceIds.add(invId);
+        result.add(invoiceMap[invId]!);
+      }
+    }
+
+    result.sort((a, b) {
+      final aDate = a.map((r) => r.entry.date).reduce((x, y) => x.isAfter(y) ? x : y);
+      final bDate = b.map((r) => r.entry.date).reduce((x, y) => x.isAfter(y) ? x : y);
+      return aDate.compareTo(bDate);
+    });
+
+    return result;
+  }
+
+  Widget _buildSingleRowCard(BuildContext context, _LedgerRow row) {
+    final entry = row.entry;
+    final hasDebit = entry.debitAmount > 0;
+    final hasCredit = entry.creditAmount > 0;
+
+    return Material(
+      color: AppColors.card(context),
+      borderRadius: BorderRadius.circular(16),
+      elevation: 2,
+      shadowColor: Colors.black12,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _showDetails(context, entry, row.balanceAfter),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: Text(entry.description, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context)))),
+                  Text(_formatJalali(entry.date), style: TextStyle(fontSize: 11, color: AppColors.textMuted(context))),
+                  PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    icon: Icon(Icons.more_vert, color: AppColors.textMuted(context), size: 20),
+                    onSelected: (value) {
+                      final provider = context.read<LedgerProvider>();
+                      if (value == 'edit') _showEditDialog(context, provider, entry);
+                      if (value == 'delete') _showDeleteConfirm(context, provider, entry);
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 18, color: Colors.blue), SizedBox(width: 8), Text('ویرایش')])),
+                      const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text('حذف')])),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('دریافتی', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))), Text(hasCredit ? formatAmount(entry.creditAmount) : '-', style: const TextStyle(fontSize: 13, color: Colors.orange, fontWeight: FontWeight.w700))]),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('پرداختی', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))), Text(hasDebit ? formatAmount(entry.debitAmount) : '-', style: const TextStyle(fontSize: 13, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700))]),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text('مانده', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))),
+                      Text(formatAmount(row.balanceAfter.abs()), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: row.balanceAfter >= 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19))),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInvoiceGroupCard(BuildContext context, List<_LedgerRow> group) {
+    final itemRows = group.where((r) => r.entry.productId != null).toList();
+    final otherRows = group.where((r) => r.entry.productId == null).toList();
+    final isPurchase = itemRows.isNotEmpty ? itemRows.first.entry.sourceType == 'purchase' : group.first.entry.debitAmount == 0;
+    final label = isPurchase ? 'فاکتور خرید' : 'فاکتور فروش';
+    final itemsTotal = itemRows.fold(0.0, (sum, r) => sum + (r.entry.debitAmount > 0 ? r.entry.debitAmount : r.entry.creditAmount));
+    final lastRow = group.reduce((a, b) => a.entry.date.isAfter(b.entry.date) ? a : b);
+
+    return Material(
+      color: AppColors.card(context),
+      borderRadius: BorderRadius.circular(16),
+      elevation: 2,
+      shadowColor: Colors.black12,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14),
+          childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: (isPurchase ? const Color(0xFFE64A19) : const Color(0xFF11998E)).withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+            child: Icon(isPurchase ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded, color: isPurchase ? const Color(0xFFE64A19) : const Color(0xFF11998E), size: 18),
+          ),
+          title: Text('$label — ${itemRows.length} قلم', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context))),
+          subtitle: Text('${_formatJalali(lastRow.entry.date)}  •  جمع کالا: ${formatAmount(itemsTotal)} تومان', style: TextStyle(fontSize: 11, color: AppColors.textMuted(context))),
+          trailing: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('مانده', style: TextStyle(fontSize: 9, color: AppColors.textMuted(context))),
+              Text(formatAmount(lastRow.balanceAfter.abs()), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: lastRow.balanceAfter >= 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19))),
+            ],
+          ),
+          children: [
+            ...itemRows.map((row) => Padding(padding: const EdgeInsets.only(bottom: 8), child: _buildGroupItemRow(context, row))),
+            ...otherRows.map((row) => Padding(padding: const EdgeInsets.only(bottom: 8), child: _buildGroupItemRow(context, row))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGroupItemRow(BuildContext context, _LedgerRow row) {
+    final entry = row.entry;
+    final hasDebit = entry.debitAmount > 0;
+    final hasCredit = entry.creditAmount > 0;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => _showDetails(context, entry, row.balanceAfter),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(color: AppColors.background(context), borderRadius: BorderRadius.circular(12)),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(entry.description, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.text(context))),
+            ),
+            Text(hasCredit ? formatAmount(entry.creditAmount) : formatAmount(entry.debitAmount), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: hasDebit ? const Color(0xFF2B3FBE) : Colors.orange)),
+            PopupMenuButton<String>(
+              padding: EdgeInsets.zero,
+              icon: Icon(Icons.more_vert, color: AppColors.textMuted(context), size: 18),
+              onSelected: (value) {
+                final provider = context.read<LedgerProvider>();
+                if (value == 'edit') _showEditDialog(context, provider, entry);
+                if (value == 'delete') _showDeleteConfirm(context, provider, entry);
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 16, color: Colors.blue), SizedBox(width: 8), Text('ویرایش')])),
+                const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, size: 16, color: Colors.red), SizedBox(width: 8), Text('حذف')])),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -412,6 +562,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
 
           final totalDebit = filtered.fold(0.0, (sum, r) => sum + r.entry.debitAmount);
           final totalCredit = filtered.fold(0.0, (sum, r) => sum + r.entry.creditAmount);
+          final groups = _groupRows(filtered);
 
           return Column(
             children: [
@@ -476,7 +627,7 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
               const SizedBox(height: 10),
 
               Expanded(
-                child: filtered.isEmpty
+                child: groups.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -489,68 +640,12 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: filtered.length,
+                        itemCount: groups.length,
                         itemBuilder: (context, index) {
-                          final row = filtered[filtered.length - 1 - index];
-                          final entry = row.entry;
-                          final hasDebit = entry.debitAmount > 0;
-                          final hasCredit = entry.creditAmount > 0;
-
+                          final group = groups[groups.length - 1 - index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
-                            child: Material(
-                              color: AppColors.card(context),
-                              borderRadius: BorderRadius.circular(16),
-                              elevation: 2,
-                              shadowColor: Colors.black12,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: () => _showDetails(context, entry, row.balanceAfter),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(14),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(child: Text(entry.description, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.text(context)))),
-                                          Text(_formatJalali(entry.date), style: TextStyle(fontSize: 11, color: AppColors.textMuted(context))),
-                                          PopupMenuButton<String>(
-                                            padding: EdgeInsets.zero,
-                                            icon: Icon(Icons.more_vert, color: AppColors.textMuted(context), size: 20),
-                                            onSelected: (value) {
-                                              final provider = context.read<LedgerProvider>();
-                                              if (value == 'edit') _showEditDialog(context, provider, entry);
-                                              if (value == 'delete') _showDeleteConfirm(context, provider, entry);
-                                            },
-                                            itemBuilder: (context) => [
-                                              const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 18, color: Colors.blue), SizedBox(width: 8), Text('ویرایش')])),
-                                              const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text('حذف')])),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('دریافتی', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))), Text(hasCredit ? formatAmount(entry.creditAmount) : '-', style: const TextStyle(fontSize: 13, color: Colors.orange, fontWeight: FontWeight.w700))]),
-                                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('پرداختی', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))), Text(hasDebit ? formatAmount(entry.debitAmount) : '-', style: const TextStyle(fontSize: 13, color: Color(0xFF2B3FBE), fontWeight: FontWeight.w700))]),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.end,
-                                            children: [
-                                              Text('مانده', style: TextStyle(fontSize: 10, color: AppColors.textMuted(context))),
-                                              Text(formatAmount(row.balanceAfter.abs()), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: row.balanceAfter >= 0 ? const Color(0xFF11998E) : const Color(0xFFE64A19))),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                            child: (group.length == 1 && group.first.entry.invoiceId == null) ? _buildSingleRowCard(context, group.first) : _buildInvoiceGroupCard(context, group),
                           );
                         },
                       ),
