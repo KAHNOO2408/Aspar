@@ -24,6 +24,8 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
   DateTime? startDate;
   DateTime? endDate;
 
+  static const _fontFamily = 'YekanBakh';
+
   String _formatJalali(DateTime date) {
     final j = Jalali.fromDateTime(date);
     return '${j.year}/${j.month.toString().padLeft(2, '0')}/${j.day.toString().padLeft(2, '0')}';
@@ -363,6 +365,238 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
     );
   }
 
+  Future<Product?> _pickProductForInvoice(BuildContext context) async {
+    final productProvider = context.read<ProductProvider>();
+    final searchController = TextEditingController();
+
+    return showDialog<Product>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final query = searchController.text.trim().toLowerCase();
+            final filtered = productProvider.products.where((p) => p.name.toLowerCase().contains(query)).toList();
+            final exactMatch = productProvider.products.any((p) => p.name.toLowerCase() == query);
+
+            return AlertDialog(
+              backgroundColor: AppColors.card(dialogContext),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text('انتخاب محصول', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext), fontFamily: _fontFamily)),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 350,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: searchController,
+                      onChanged: (_) => setDialogState(() {}),
+                      style: TextStyle(color: AppColors.text(dialogContext), fontFamily: _fontFamily),
+                      decoration: InputDecoration(hintText: 'جستجو یا نام محصول جدید...', hintStyle: const TextStyle(fontFamily: _fontFamily), prefixIcon: const Icon(Icons.search), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? Center(child: Text('محصولی یافت نشد', style: TextStyle(color: AppColors.textSecondary(dialogContext), fontWeight: FontWeight.w600, fontFamily: _fontFamily)))
+                          : ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final product = filtered[index];
+                                final stock = productProvider.getStock(product.id!);
+                                return ListTile(
+                                  title: Text(product.name, style: TextStyle(color: AppColors.text(context), fontFamily: _fontFamily)),
+                                  trailing: Text(stock > 0 ? '${stock.toStringAsFixed(0)}' : 'موجود نیست', style: TextStyle(color: stock > 0 ? Colors.green : Colors.red, fontWeight: FontWeight.w600, fontFamily: _fontFamily)),
+                                  onTap: () => Navigator.pop(dialogContext, product),
+                                );
+                              },
+                            ),
+                    ),
+                    if (query.isNotEmpty && !exactMatch) ...[
+                      const Divider(),
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(colors: [Color(0xFF4F6BF5), Color(0xFF2B3FBE)])),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              final newProduct = await productProvider.getOrCreateProduct(searchController.text.trim());
+                              if (dialogContext.mounted) Navigator.pop(dialogContext, newProduct);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Center(
+                                child: Text('+ ایجاد محصول «${searchController.text.trim()}»', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13, fontFamily: _fontFamily)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _addItemToInvoice(BuildContext context, List<_LedgerRow> group) async {
+    final itemRows = group.where((r) => r.entry.productId != null).toList();
+    final isPurchase = itemRows.isNotEmpty ? itemRows.first.entry.sourceType == 'purchase' : true;
+    final invoiceId = group.first.entry.invoiceId;
+    if (invoiceId == null) return;
+
+    final product = await _pickProductForInvoice(context);
+    if (product == null || !context.mounted) return;
+
+    final quantityController = TextEditingController();
+    final priceController = TextEditingController();
+    final laborFeeController = TextEditingController();
+    String unit = 'count';
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final quantity = double.tryParse(quantityController.text) ?? 0;
+            final price = double.tryParse(priceController.text) ?? 0;
+            final showLabor = unit == 'ml' && !isPurchase;
+            final labor = showLabor ? (double.tryParse(laborFeeController.text) ?? 0) : 0.0;
+            final total = quantity * price + labor;
+
+            return AlertDialog(
+              backgroundColor: AppColors.card(dialogContext),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(product.name, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.text(dialogContext), fontFamily: _fontFamily)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setDialogState(() => unit = 'count'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(color: unit == 'count' ? const Color(0xFF4F6BF5) : Colors.grey.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+                              child: Center(child: Text('عدد', style: TextStyle(color: unit == 'count' ? Colors.white : AppColors.text(dialogContext), fontFamily: _fontFamily))),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setDialogState(() => unit = 'ml'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(color: unit == 'ml' ? const Color(0xFF4F6BF5) : Colors.grey.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+                              child: Center(child: Text('میل', style: TextStyle(color: unit == 'ml' ? Colors.white : AppColors.text(dialogContext), fontFamily: _fontFamily))),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: quantityController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setDialogState(() {}),
+                      style: TextStyle(color: AppColors.text(dialogContext), fontFamily: _fontFamily),
+                      decoration: InputDecoration(labelText: unit == 'ml' ? 'میل *' : 'تعداد *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: priceController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setDialogState(() {}),
+                      style: TextStyle(color: AppColors.text(dialogContext), fontFamily: _fontFamily),
+                      decoration: InputDecoration(labelText: 'قیمت واحد (تومان) *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                    ),
+                    if (showLabor) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: laborFeeController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => setDialogState(() {}),
+                        style: TextStyle(color: AppColors.text(dialogContext), fontFamily: _fontFamily),
+                        decoration: InputDecoration(labelText: 'کارمزد (اختیاری)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                      ),
+                    ],
+                    if (total > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text('مبلغ این قلم: ${formatAmount(total)} تومان', style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF2B3FBE))),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('انصراف', style: TextStyle(fontFamily: _fontFamily))),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (quantity <= 0 || price <= 0) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(const SnackBar(content: Text('تعداد و قیمت الزامی هستند', style: TextStyle(fontFamily: _fontFamily))));
+                      return;
+                    }
+                    if (!isPurchase) {
+                      final stock = context.read<ProductProvider>().getStock(product.id!);
+                      if (stock < quantity) {
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text('موجودی «${product.name}» کافی نیست (موجودی: ${stock.toStringAsFixed(0)})', style: const TextStyle(fontFamily: _fontFamily))));
+                        return;
+                      }
+                    }
+
+                    final productProvider = context.read<ProductProvider>();
+                    final ledgerProvider = context.read<LedgerProvider>();
+                    Map<String, dynamic> productResult;
+                    final now = DateTime.now();
+
+                    if (isPurchase) {
+                      productResult = await productProvider.recordPurchase(product: product, quantity: quantity, pricePerUnit: price, date: now, contactName: '${widget.personName} ${widget.personFamily}');
+                    } else {
+                      productResult = await productProvider.recordSale(product: product, quantity: quantity, pricePerUnit: price, date: now, laborFee: labor, contactName: '${widget.personName} ${widget.personFamily}');
+                    }
+
+                    final unitLabel = unit == 'ml' ? 'میل' : 'عدد';
+                    final itemDescription = '${product.name} (${quantity.toStringAsFixed(0)} $unitLabel)';
+
+                    await ledgerProvider.addEntry(LedgerEntry(
+                      personName: widget.personName,
+                      personFamily: widget.personFamily,
+                      date: now,
+                      description: itemDescription,
+                      creditAmount: isPurchase ? total : 0,
+                      debitAmount: isPurchase ? 0 : total,
+                      laborFee: labor,
+                      sourceType: isPurchase ? 'purchase' : 'sale',
+                      productId: product.id,
+                      quantity: quantity,
+                      unitPrice: price,
+                      unitCost: isPurchase ? null : (productResult['unitCost'] as double?),
+                      relatedProductTxId: productResult['productTransactionId'] as int?,
+                      linkedBatchId: isPurchase ? productResult['batchId'] as int? : null,
+                      invoiceId: invoiceId,
+                    ));
+
+                    if (dialogContext.mounted) Navigator.pop(dialogContext);
+                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('به فاکتور اضافه شد ✅', style: TextStyle(fontFamily: _fontFamily))));
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2B3FBE), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  child: const Text('افزودن به فاکتور', style: TextStyle(color: Colors.white, fontFamily: _fontFamily)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   List<List<_LedgerRow>> _groupRows(List<_LedgerRow> rows) {
     final List<List<_LedgerRow>> result = [];
     final Map<int, List<_LedgerRow>> invoiceMap = {};
@@ -489,6 +723,28 @@ class _ContactLedgerScreenState extends State<ContactLedgerScreen> {
           children: [
             ...itemRows.map((row) => Padding(padding: const EdgeInsets.only(bottom: 8), child: _buildGroupItemRow(context, row))),
             ...otherRows.map((row) => Padding(padding: const EdgeInsets.only(bottom: 8), child: _buildGroupItemRow(context, row))),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: (isPurchase ? const Color(0xFFE64A19) : const Color(0xFF11998E)).withOpacity(0.4))),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => _addItemToInvoice(context, group),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add, size: 16, color: isPurchase ? const Color(0xFFE64A19) : const Color(0xFF11998E)),
+                        const SizedBox(width: 6),
+                        Text('افزودن قلم به این فاکتور', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isPurchase ? const Color(0xFFE64A19) : const Color(0xFF11998E), fontFamily: _fontFamily)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
