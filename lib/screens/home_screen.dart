@@ -13,6 +13,7 @@ import 'return_from_purchase_screen.dart';
 import 'return_from_sale_screen.dart';
 import 'add_debt_screen.dart';
 import 'add_invoice_screen.dart';
+import 'add_discount_screen.dart';
 import 'add_bank_screen.dart';
 import 'debts_screen.dart';
 import 'banks_screen.dart';
@@ -89,6 +90,22 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AddInvoiceScreen(type: DebtType.receivable)));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_offer_outlined, color: Colors.deepOrange),
+              title: const Text('ثبت تخفیف از خرید', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDiscountScreen(type: DebtType.owed)));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_offer_outlined, color: Colors.teal),
+              title: const Text('ثبت تخفیف از فروش', style: TextStyle(fontFamily: 'YekanBakh')),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AddDiscountScreen(type: DebtType.receivable)));
               },
             ),
             ListTile(
