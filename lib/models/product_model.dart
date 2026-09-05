@@ -239,7 +239,7 @@ class ProductProvider extends ChangeNotifier {
     final trimmed = name.trim();
     final existing = products.where((p) => p.name == trimmed).toList();
     if (existing.isNotEmpty) return existing.first;
-    final newProduct = Product(id: DateTime.now().millisecondsSinceEpoch, name: trimmed);
+    final newProduct = Product(id: DateTime.now().microsecondsSinceEpoch, name: trimmed);
     await DatabaseHelper.insertProduct(newProduct);
     await loadAll();
     return newProduct;
@@ -259,8 +259,10 @@ class ProductProvider extends ChangeNotifier {
     required DateTime date,
     String? contactName,
   }) async {
+    // از میکروثانیه استفاده می‌کنیم تا وقتی چند قلم پشت‌سرهم (تو یه فاکتور) ثبت میشن،
+    // شماره‌ی رکوردهاشون هیچ‌وقت تکراری نشه و یکی جای اون یکی رو بی‌صدا عوض نکنه
     final batch = ProductBatch(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().microsecondsSinceEpoch,
       productId: product.id!,
       originalQuantity: quantity,
       remainingQuantity: quantity,
@@ -270,7 +272,7 @@ class ProductProvider extends ChangeNotifier {
     await DatabaseHelper.insertProductBatch(batch);
 
     final tx = ProductTransaction(
-      id: DateTime.now().millisecondsSinceEpoch + 1,
+      id: DateTime.now().microsecondsSinceEpoch,
       productId: product.id!,
       productName: product.name,
       quantity: quantity,
@@ -322,7 +324,7 @@ class ProductProvider extends ChangeNotifier {
     final profit = totalAmount - totalCost;
 
     final tx = ProductTransaction(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().microsecondsSinceEpoch,
       productId: product.id!,
       productName: product.name,
       quantity: quantity,
@@ -360,7 +362,7 @@ class ProductProvider extends ChangeNotifier {
   // برای برگشت از فروش: اضافه کردن یه بچ جدید به انبار با قیمت تمام‌شده‌ی همون فروش
   Future<int> addStockBatch(int productId, double quantity, double unitCost, DateTime date) async {
     final batch = ProductBatch(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().microsecondsSinceEpoch,
       productId: productId,
       originalQuantity: quantity,
       remainingQuantity: quantity,
@@ -389,7 +391,7 @@ class ProductProvider extends ChangeNotifier {
     String? contactName,
   }) async {
     final tx = ProductTransaction(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().microsecondsSinceEpoch,
       productId: product.id!,
       productName: product.name,
       quantity: quantity,
@@ -406,7 +408,6 @@ class ProductProvider extends ChangeNotifier {
 
   // ============ متدهای «برگردوندنِ» یه فاکتور که حذف شده ============
 
-  // برگردوندنِ یه خرید: فقط اگه هیچی از اون خرید هنوز فروخته نشده باشه اجازه میده
   Future<bool> reversePurchase({required int productTransactionId, required int batchId}) async {
     ProductBatch? batch;
     try {
@@ -423,7 +424,6 @@ class ProductProvider extends ChangeNotifier {
     return true;
   }
 
-  // برگردوندنِ یه فروش: کالا با قیمت تمام‌شده‌ی همون فروش به انبار برمی‌گرده
   Future<void> reverseSale({
     required int productId,
     required int productTransactionId,
@@ -433,7 +433,7 @@ class ProductProvider extends ChangeNotifier {
   }) async {
     await DatabaseHelper.deleteProductTransaction(productTransactionId);
     final batch = ProductBatch(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().microsecondsSinceEpoch,
       productId: productId,
       originalQuantity: quantity,
       remainingQuantity: quantity,
@@ -444,7 +444,6 @@ class ProductProvider extends ChangeNotifier {
     await loadAll();
   }
 
-  // لغوِ یه «برگشت از خرید»: موجودی دوباره از انبار خارج میشه و خرید اصلی ترمیم میشه
   Future<void> reverseReturnFromPurchase({
     required int productId,
     required int originalPurchaseTxId,
@@ -481,7 +480,6 @@ class ProductProvider extends ChangeNotifier {
     await loadAll();
   }
 
-  // لغوِ یه «برگشت از فروش»: کالای برگشتی دوباره از انبار کم میشه و فروش اصلی ترمیم میشه
   Future<void> reverseReturnFromSale({
     required int productId,
     required int originalSaleTxId,
