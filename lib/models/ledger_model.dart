@@ -14,8 +14,7 @@ class LedgerEntry extends HiveObject {
   final String? trackingCode;
   final double laborFee;
 
-  // فیلدهای ردیابی: برای اینکه حذف یه فاکتور بتونه همه‌ی اثراتش رو (انبار، بانک) برگردونه
-  final String? sourceType; // 'purchase' | 'sale' | 'returnFromPurchase' | 'returnFromSale'
+  final String? sourceType;
   final int? productId;
   final double? quantity;
   final double? unitPrice;
@@ -29,8 +28,6 @@ class LedgerEntry extends HiveObject {
   final double? feeAmount;
   final int? linkedTransactionId;
   final int? linkedFeeTransactionId;
-
-  // برای گروه‌بندی چند قلم کالا زیر یه فاکتور مشترک
   final int? invoiceId;
 
   LedgerEntry({
@@ -168,7 +165,6 @@ class LedgerEntryAdapter extends TypeAdapter<LedgerEntry> {
       linkedFeeTransactionId = reader.read() as int?;
     }
 
-    // فیلد جدید (برای رکوردهایی که قبل از این آپدیت ذخیره شدن، این فیلد رو ندارن)
     if (reader.availableBytes > 0) {
       invoiceId = reader.read() as int?;
     }
@@ -252,7 +248,9 @@ class LedgerProvider extends ChangeNotifier {
   }
 
   Future<int> addEntry(LedgerEntry entry) async {
-    final id = entry.id ?? DateTime.now().millisecondsSinceEpoch;
+    // از میکروثانیه استفاده می‌کنیم (نه میلی‌ثانیه) تا وقتی چند قلم پشت‌سرهم
+    // تو یه فاکتور ثبت میشن، شماره‌هاشون هیچ‌وقت تکراری نشه
+    final id = entry.id ?? DateTime.now().microsecondsSinceEpoch;
     final toSave = LedgerEntry(
       id: id,
       personName: entry.personName,
