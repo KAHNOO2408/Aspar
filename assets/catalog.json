@@ -1,0 +1,4559 @@
+{
+"version": 1,
+"built": "2026-10-17",
+"libs": [
+{
+"id": "flame",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game2d"
+],
+"title": "Flame — موتور بازی دوبعدی",
+"desc": "محبوب‌ترین موتور بازی برای Flutter. حلقه‌ی بازی، اسپرایت، انیمیشن، برخورد (Collision)، دوربین، ورودی لمسی و کیبورد را آماده دارد.",
+"when": "وقتی می‌خواهی بازی دوبعدی (پلتفرمر، شوتر، پازل، رانر) با Flutter بسازی.",
+"kw": "بازی دوبعدی موتور بازی اسپرایت انیمیشن برخورد حلقه بازی game engine 2d sprite",
+"example": "import 'package:flame/components.dart';\nimport 'package:flame/game.dart';\nimport 'package:flutter/widgets.dart';\n\nclass MyGame extends FlameGame {\n  @override\n  Future<void> onLoad() async {\n    add(CircleComponent(radius: 30, position: Vector2(100, 100)));\n  }\n}\n\nvoid main() => runApp(GameWidget(game: MyGame()));",
+"version": "1.38.2",
+"install": "flame: ^1.38.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "flame_audio",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game_audio"
+],
+"title": "Flame Audio — صدای بازی",
+"desc": "پخش افکت صوتی کوتاه و موسیقی پس‌زمینه در بازی‌های Flame، با کش کردن فایل‌ها برای پخش بدون تأخیر.",
+"when": "برای صدای شلیک، پرش، برخورد و موسیقی متن بازی.",
+"kw": "صدا موسیقی افکت صوتی آهنگ پس زمینه sound music sfx",
+"example": "import 'package:flame_audio/flame_audio.dart';\n\nawait FlameAudio.audioCache.loadAll(['jump.wav', 'bg.mp3']);\nFlameAudio.play('jump.wav');          // افکت کوتاه\nFlameAudio.bgm.play('bg.mp3');        // موسیقی پس‌زمینه\n// فایل‌ها در assets/audio/ قرار می‌گیرند",
+"version": "2.12.2",
+"install": "flame_audio: ^2.12.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "flame_forge2d",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game_physics"
+],
+"title": "Flame Forge2D — فیزیک بازی",
+"desc": "اتصال موتور فیزیک Box2D (نسخه‌ی Dart به نام Forge2D) به Flame. جاذبه، جرم، اصطکاک، فنر و مفصل.",
+"when": "وقتی اجسام بازی باید واقعی بیفتند، بپرند، بچرخند و به هم بخورند (مثل Angry Birds).",
+"kw": "فیزیک جاذبه برخورد جرم اصطکاک box2d physics gravity",
+"example": "import 'package:flame_forge2d/flame_forge2d.dart';\n\nclass Ball extends BodyComponent {\n  @override\n  Body createBody() {\n    final shape = CircleShape()..radius = 2;\n    final fixture = FixtureDef(shape, restitution: 0.8, density: 1);\n    final def = BodyDef(type: BodyType.dynamic, position: Vector2(0, 0));\n    return world.createBody(def)..createFixture(fixture);\n  }\n}\n\nclass PhysicsGame extends Forge2DGame {\n  PhysicsGame() : super(gravity: Vector2(0, 10));\n  @override\n  Future<void> onLoad() async => world.add(Ball());\n}",
+"version": "0.20.0",
+"install": "flame_forge2d: ^0.20.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "forge2d",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game_physics"
+],
+"title": "Forge2D — موتور فیزیک خالص",
+"desc": "پیاده‌سازی Box2D به زبان Dart، بدون وابستگی به Flame. برای شبیه‌سازی فیزیکی در هر برنامه‌ی Dart.",
+"when": "وقتی فیزیک می‌خواهی ولی از Flame استفاده نمی‌کنی.",
+"kw": "فیزیک box2d شبیه سازی physics",
+"example": "import 'package:forge2d/forge2d.dart';\n\nfinal world = World(Vector2(0, -10));\nfinal body = world.createBody(BodyDef(type: BodyType.dynamic));\nbody.createFixtureFromShape(CircleShape()..radius = 1, density: 1);\nworld.stepDt(1 / 60); // یک فریم شبیه‌سازی",
+"version": "0.15.2",
+"install": "forge2d: ^0.15.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/forge2d"
+},
+{
+"id": "flame_tiled",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game_maps"
+],
+"title": "Flame Tiled — نقشه‌های Tiled",
+"desc": "بارگذاری نقشه‌هایی که در نرم‌افزار رایگان Tiled می‌کشی (فایل tmx) داخل بازی Flame، همراه با لایه‌ها و اشیا.",
+"when": "برای ساخت مرحله‌های بازی با ویرایشگر گرافیکی به‌جای کدنویسی.",
+"kw": "نقشه مرحله لول tiled tilemap کاشی",
+"example": "import 'package:flame_tiled/flame_tiled.dart';\n\nfinal map = await TiledComponent.load('level1.tmx', Vector2.all(16));\nworld.add(map);\n// فایل‌ها در assets/tiles/ قرار می‌گیرند",
+"version": "3.1.2",
+"install": "flame_tiled: ^3.1.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "tiled",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game_maps"
+],
+"title": "Tiled — خواندن فایل نقشه",
+"desc": "پارسر فایل‌های tmx و tsx نرم‌افزار Tiled. Flame Tiled از این استفاده می‌کند.",
+"when": "وقتی خودت می‌خواهی داده‌های نقشه را بخوانی.",
+"kw": "نقشه tiled tmx پارسر",
+"example": "import 'package:tiled/tiled.dart';\n\nfinal map = TileMapParser.parseTmx(xmlString);\nprint(map.layers.length);",
+"version": "0.12.0",
+"install": "tiled: ^0.12.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/tiled.dart"
+},
+{
+"id": "flame_bloc",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game2d",
+"state"
+],
+"title": "Flame Bloc — مدیریت وضعیت بازی",
+"desc": "اتصال Bloc به اجزای بازی Flame. برای نگه داشتن امتیاز، جان و مرحله و هماهنگ کردنشان با UI.",
+"when": "وقتی بازی‌ات منو، امتیاز و وضعیت پیچیده دارد.",
+"kw": "وضعیت امتیاز bloc state بازی",
+"example": "class ScoreText extends TextComponent\n    with FlameBlocListenable<ScoreCubit, int> {\n  @override\n  void onNewState(int state) => text = 'امتیاز: $state';\n}",
+"version": "1.12.24",
+"install": "flame_bloc: ^1.12.24",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "flame_riverpod",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game2d",
+"state"
+],
+"title": "Flame Riverpod",
+"desc": "استفاده از Riverpod داخل کامپوننت‌های Flame.",
+"when": "اگر در بقیه‌ی برنامه از Riverpod استفاده می‌کنی و می‌خواهی بازی هم به همان وضعیت وصل شود.",
+"kw": "riverpod وضعیت بازی state",
+"example": "class Hud extends PositionComponent with RiverpodComponentMixin {\n  @override\n  void onMount() {\n    addToGameWidgetBuild(() => ref.listen(scoreProvider, (_, s) {}));\n    super.onMount();\n  }\n}",
+"version": "5.5.5",
+"install": "flame_riverpod: ^5.5.5",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "flame_svg",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game2d"
+],
+"title": "Flame SVG",
+"desc": "نمایش تصاویر SVG در بازی Flame.",
+"when": "برای گرافیک برداری که در هر اندازه‌ای تیز می‌ماند.",
+"kw": "svg برداری وکتور تصویر",
+"example": "final svg = await Svg.load('images/ship.svg');\nadd(SvgComponent(svg: svg, size: Vector2.all(64)));",
+"version": "2.0.0",
+"install": "flame_svg: ^2.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "flame_lottie",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game2d"
+],
+"title": "Flame Lottie",
+"desc": "پخش انیمیشن‌های Lottie داخل بازی Flame.",
+"when": "برای انیمیشن‌های آماده‌ی سبک (انفجار، جایزه، لودینگ).",
+"kw": "انیمیشن lottie جلوه",
+"example": "final c = await loadLottie(Lottie.asset('assets/boom.json'));\nadd(LottieComponent(c, size: Vector2.all(128)));",
+"version": "0.4.3+23",
+"install": "flame_lottie: ^0.4.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "flame_noise",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game2d"
+],
+"title": "Flame Noise — لرزش و نویز",
+"desc": "افکت‌های نویز Perlin برای لرزش دوربین، حرکت طبیعی و ساخت نقشه‌ی تصادفی.",
+"when": "برای لرزش صفحه هنگام انفجار یا ساخت زمین تصادفی.",
+"kw": "نویز پرلین لرزش دوربین تصادفی procedural",
+"example": "camera.viewfinder.add(MoveEffect.by(Vector2(5, 5),\n  NoiseEffectController(duration: 0.5, noise: PerlinNoise(frequency: 20))));",
+"version": "0.3.3+23",
+"install": "flame_noise: ^0.3.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flame-engine/flame"
+},
+{
+"id": "bonfire",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game2d",
+"game_maps"
+],
+"title": "Bonfire — بازی RPG از بالا",
+"desc": "فریم‌ورک ساخته‌شده روی Flame برای بازی‌های RPG و ماجرایی از نمای بالا: بازیکن، دشمن، جوی‌استیک، نور، مسیریابی و نقشه‌ی Tiled.",
+"when": "برای بازی به سبک زلدا یا پوکمون یا یک RPG ساده خیلی سریع جلو می‌بردت.",
+"kw": "rpg نقشه بالا دشمن جوی استیک ماجرایی top down",
+"example": "BonfireWidget(\n  map: WorldMapByTiled(WorldMapReader.fromAsset('map.tmj')),\n  playerControllers: [Joystick(directional: JoystickDirectional())],\n  player: MyPlayer(Vector2(100, 100)),\n)",
+"version": "4.0.0",
+"install": "bonfire: ^4.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/RafaelBarbosatec/bonfire"
+},
+{
+"id": "audioplayers",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game_audio",
+"media"
+],
+"title": "AudioPlayers — پخش صدا",
+"desc": "پخش فایل صوتی از assets، فایل یا اینترنت. روی همه‌ی پلتفرم‌ها کار می‌کند.",
+"when": "برای پخش صدا در برنامه یا بازی، حتی بدون Flame.",
+"kw": "صدا پخش موزیک mp3 آهنگ audio",
+"example": "import 'package:audioplayers/audioplayers.dart';\n\nfinal player = AudioPlayer();\nawait player.play(AssetSource('sounds/click.mp3'));",
+"version": "6.8.1",
+"install": "audioplayers: ^6.8.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/bluefireteam/audioplayers"
+},
+{
+"id": "sensors_plus",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"device",
+"game2d"
+],
+"title": "Sensors Plus — سنسورها",
+"desc": "دسترسی به شتاب‌سنج، ژیروسکوپ و مغناطیس‌سنج گوشی.",
+"when": "برای کنترل بازی با کج کردن گوشی یا تشخیص تکان خوردن.",
+"kw": "سنسور شتاب سنج ژیروسکوپ کج کردن تکان",
+"example": "import 'package:sensors_plus/sensors_plus.dart';\n\naccelerometerEventStream().listen((e) {\n  print('x=${e.x} y=${e.y}');\n});",
+"version": "7.1.1",
+"install": "sensors_plus: ^7.1.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/fluttercommunity/plus_plugins"
+},
+{
+"id": "vector_math",
+"eco": "flutter",
+"cat": "game",
+"topics": [
+"game_physics"
+],
+"title": "Vector Math — ریاضی برداری",
+"desc": "بردار، ماتریس و کواترنیون برای محاسبات دوبعدی و سه‌بعدی.",
+"when": "برای محاسبات حرکت، زاویه و فاصله در بازی.",
+"kw": "بردار ماتریس ریاضی زاویه vector",
+"example": "import 'package:vector_math/vector_math.dart';\n\nfinal a = Vector2(3, 4);\nprint(a.length); // 5",
+"version": "2.4.3",
+"install": "vector_math: ^2.4.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/core-packages"
+},
+{
+"id": "provider",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Provider — مدیریت وضعیت ساده",
+"desc": "ساده‌ترین روش رسمی برای اشتراک داده بین ویجت‌ها.",
+"when": "برای برنامه‌های کوچک و متوسط و برای شروع یادگیری.",
+"kw": "وضعیت state مدیریت داده اشتراک",
+"example": "class Counter extends ChangeNotifier {\n  int value = 0;\n  void inc() { value++; notifyListeners(); }\n}\n\nChangeNotifierProvider(create: (_) => Counter(), child: MyApp());\n// در ویجت:\nfinal c = context.watch<Counter>();",
+"version": "6.1.5+1",
+"install": "provider: ^6.1.5",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/rrousselGit/provider"
+},
+{
+"id": "flutter_riverpod",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Riverpod — مدیریت وضعیت حرفه‌ای",
+"desc": "نسخه‌ی پیشرفته و امن‌تر Provider. وابستگی‌ها را مدیریت می‌کند و تست‌پذیری بالایی دارد.",
+"when": "برای برنامه‌های متوسط و بزرگ. انتخاب پیشنهادی برای پروژه‌ی جدید.",
+"kw": "وضعیت state riverpod مدیریت",
+"example": "final counterProvider = NotifierProvider<Counter, int>(Counter.new);\n\nclass Counter extends Notifier<int> {\n  @override\n  int build() => 0;\n  void inc() => state++;\n}\n\n// main: runApp(ProviderScope(child: MyApp()));\n// ویجت: class Home extends ConsumerWidget { ... ref.watch(counterProvider) }",
+"version": "3.4.3",
+"install": "flutter_riverpod: ^3.4.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/rrousselGit/riverpod"
+},
+{
+"id": "riverpod",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Riverpod (Dart خالص)",
+"desc": "هسته‌ی Riverpod بدون Flutter، برای برنامه‌های خط فرمان یا سرور.",
+"when": "وقتی Flutter نداری.",
+"kw": "riverpod وضعیت dart",
+"example": "final container = ProviderContainer();\nprint(container.read(myProvider));",
+"version": "3.4.3",
+"install": "riverpod: ^3.4.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/rrousselGit/riverpod"
+},
+{
+"id": "hooks_riverpod",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Hooks Riverpod",
+"desc": "ترکیب Riverpod با Flutter Hooks.",
+"when": "اگر از هوک‌ها خوشت می‌آید.",
+"kw": "hook riverpod",
+"example": "class Home extends HookConsumerWidget {\n  @override\n  Widget build(context, ref) {\n    final ctrl = useTextEditingController();\n    return TextField(controller: ctrl);\n  }\n}",
+"version": "3.4.3",
+"install": "hooks_riverpod: ^3.4.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/rrousselGit/riverpod"
+},
+{
+"id": "flutter_hooks",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Flutter Hooks",
+"desc": "هوک‌های شبیه React برای کم کردن کد تکراری مثل کنترلرها و انیمیشن‌ها.",
+"when": "برای ویجت‌هایی که چند کنترلر دارند.",
+"kw": "هوک hook کنترلر",
+"example": "class Fade extends HookWidget {\n  @override\n  Widget build(BuildContext context) {\n    final c = useAnimationController(duration: const Duration(seconds: 1));\n    return FadeTransition(opacity: c, child: const Text('سلام'));\n  }\n}",
+"version": "0.21.3+1",
+"install": "flutter_hooks: ^0.21.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/rrousselGit/flutter_hooks"
+},
+{
+"id": "flutter_bloc",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Bloc — معماری رویدادمحور",
+"desc": "الگوی Bloc و Cubit که منطق را کاملاً از UI جدا می‌کند. در تیم‌های بزرگ رایج است.",
+"when": "برای پروژه‌های بزرگ و ساختاریافته.",
+"kw": "bloc cubit وضعیت معماری state",
+"example": "class CounterCubit extends Cubit<int> {\n  CounterCubit() : super(0);\n  void inc() => emit(state + 1);\n}\n\nBlocProvider(create: (_) => CounterCubit(), child: ...);\nBlocBuilder<CounterCubit, int>(builder: (_, n) => Text('$n'));",
+"version": "9.1.1",
+"install": "flutter_bloc: ^9.1.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/felangel/bloc"
+},
+{
+"id": "bloc",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Bloc (هسته)",
+"desc": "هسته‌ی کتابخانه‌ی Bloc بدون Flutter.",
+"when": "وقتی Flutter نداری.",
+"kw": "bloc",
+"example": "final c = CounterCubit(); c.inc();",
+"version": "9.2.1",
+"install": "bloc: ^9.2.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/felangel/bloc"
+},
+{
+"id": "hydrated_bloc",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state",
+"storage_kv"
+],
+"title": "Hydrated Bloc — وضعیت ماندگار",
+"desc": "وضعیت Bloc را خودکار ذخیره می‌کند تا بعد از بستن برنامه برگردد.",
+"when": "برای حفظ تنظیمات، سبد خرید و پیشرفت بازی.",
+"kw": "ذخیره وضعیت ماندگار bloc persist",
+"example": "class ThemeCubit extends HydratedCubit<bool> {\n  ThemeCubit() : super(false);\n  @override bool fromJson(Map<String, dynamic> j) => j['dark'] as bool;\n  @override Map<String, dynamic> toJson(bool s) => {'dark': s};\n}",
+"version": "11.0.0",
+"install": "hydrated_bloc: ^11.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/felangel/bloc"
+},
+{
+"id": "get",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state",
+"routing"
+],
+"title": "GetX — همه‌کاره",
+"desc": "مدیریت وضعیت، ناوبری و تزریق وابستگی در یک پکیج. سریع شروع می‌شود ولی در پروژه‌ی بزرگ نگهداری‌اش سخت می‌شود.",
+"when": "برای نمونه‌های سریع و برنامه‌های کوچک.",
+"kw": "getx وضعیت ناوبری سریع",
+"example": "final count = 0.obs;\nObx(() => Text('$count'));\nGet.to(() => const SecondPage());",
+"version": "4.6.1",
+"install": "get: ^4.6.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/jonataslaw/getx"
+},
+{
+"id": "get_it",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "GetIt — سرویس لوکیتور",
+"desc": "دسترسی به سرویس‌ها (مثل API و دیتابیس) از هر جای برنامه.",
+"when": "برای جدا کردن لایه‌ی داده از UI.",
+"kw": "تزریق وابستگی سرویس di singleton",
+"example": "final getIt = GetIt.instance;\ngetIt.registerSingleton<Api>(Api());\nfinal api = getIt<Api>();",
+"version": "9.3.0",
+"install": "get_it: ^9.3.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter-it/get_it"
+},
+{
+"id": "equatable",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Equatable — مقایسه‌ی آسان اشیا",
+"desc": "بدون نوشتن == و hashCode، دو شیء را بر اساس مقادیرشان مقایسه می‌کند.",
+"when": "در مدل‌های داده و وضعیت‌های Bloc.",
+"kw": "مقایسه مدل برابری",
+"example": "class User extends Equatable {\n  const User(this.id, this.name);\n  final int id; final String name;\n  @override List<Object?> get props => [id, name];\n}",
+"version": "3.0.0",
+"install": "equatable: ^3.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/felangel/equatable"
+},
+{
+"id": "freezed_annotation",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "Freezed Annotation",
+"desc": "انوتیشن‌های Freezed برای مدل‌های تغییرناپذیر. نکته: خود ابزار تولید کد (build_runner و freezed) در این بسته نیست و برای تولید کد اینترنت لازم است.",
+"when": "اگر کد تولیدشده‌ی Freezed را از قبل داری.",
+"kw": "مدل freezed immutable",
+"example": "@freezed\nabstract class User with _$User {\n  const factory User({required String name}) = _User;\n}",
+"version": "3.1.0",
+"install": "freezed_annotation: ^3.1.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/rrousselGit/freezed"
+},
+{
+"id": "json_annotation",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"network"
+],
+"title": "JSON Annotation",
+"desc": "انوتیشن‌های json_serializable. ابزار تولید کد جداگانه است.",
+"when": "همراه کد تولیدشده‌ی JSON.",
+"kw": "json مدل سریال",
+"example": "@JsonSerializable()\nclass User { final String name; User(this.name); }",
+"version": "4.12.0",
+"install": "json_annotation: ^4.12.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/google/json_serializable.dart"
+},
+{
+"id": "rxdart",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "RxDart — استریم‌های پیشرفته",
+"desc": "عملگرهای ReactiveX مثل debounce، combineLatest و BehaviorSubject روی استریم‌های Dart.",
+"when": "برای جستجوی زنده (debounce) و ترکیب چند منبع داده.",
+"kw": "استریم stream debounce جستجو زنده",
+"example": "searchController.stream\n  .debounceTime(const Duration(milliseconds: 400))\n  .listen(search);",
+"version": "0.28.0",
+"install": "rxdart: ^0.28.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/ReactiveX/rxdart"
+},
+{
+"id": "fpdart",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"state"
+],
+"title": "fpdart — برنامه‌نویسی تابعی",
+"desc": "Either، Option و Task برای مدیریت خطا بدون try/catch.",
+"when": "برای کد تمیزتر در لایه‌ی داده.",
+"kw": "تابعی either خطا functional",
+"example": "Either<String, int> parse(String s) =>\n  int.tryParse(s) == null ? left('نامعتبر') : right(int.parse(s));",
+"version": "1.2.0",
+"install": "fpdart: ^1.2.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/SandroMaglione/fpdart"
+},
+{
+"id": "http",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"network"
+],
+"title": "http — درخواست اینترنتی ساده",
+"desc": "پکیج رسمی و سبک برای درخواست‌های GET و POST.",
+"when": "برای APIهای ساده.",
+"kw": "اینترنت درخواست سرور api get post وب",
+"example": "import 'dart:convert';\nimport 'package:http/http.dart' as http;\n\nfinal res = await http.get(Uri.parse('https://example.com/api/items'));\nif (res.statusCode == 200) {\n  final data = jsonDecode(res.body);\n}",
+"version": "1.6.0",
+"install": "http: ^1.6.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/dart-lang/http"
+},
+{
+"id": "dio",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"network",
+"sec_network"
+],
+"title": "Dio — کلاینت HTTP حرفه‌ای",
+"desc": "Interceptor، تایم‌اوت، لغو درخواست، آپلود و دانلود فایل با درصد پیشرفت، و certificate pinning.",
+"when": "برای برنامه‌های واقعی با API زیاد، توکن و آپلود فایل.",
+"kw": "اینترنت درخواست سرور api دانلود آپلود توکن interceptor",
+"example": "final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api',\n    connectTimeout: const Duration(seconds: 10)));\ndio.interceptors.add(InterceptorsWrapper(onRequest: (o, h) {\n  o.headers['Authorization'] = 'Bearer $token';\n  h.next(o);\n}));\nfinal r = await dio.get('/items');\nawait dio.download(url, savePath, onReceiveProgress: (a, b) => print(a / b));",
+"version": "5.11.1",
+"install": "dio: ^5.11.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/cfug/dio"
+},
+{
+"id": "web_socket_channel",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"network"
+],
+"title": "WebSocket — ارتباط زنده",
+"desc": "اتصال دوطرفه و زنده به سرور.",
+"when": "برای چت، بازی آنلاین و قیمت لحظه‌ای.",
+"kw": "وب سوکت چت زنده real time socket",
+"example": "final ch = WebSocketChannel.connect(Uri.parse('wss://example.com/ws'));\nch.stream.listen((m) => print(m));\nch.sink.add('سلام');",
+"version": "3.0.3",
+"install": "web_socket_channel: ^3.0.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/dart-lang/http"
+},
+{
+"id": "connectivity_plus",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"network",
+"device"
+],
+"title": "Connectivity Plus — وضعیت اینترنت",
+"desc": "تشخیص وصل بودن به وای‌فای، دیتای موبایل یا قطع بودن.",
+"when": "برای نمایش پیام «اینترنت قطع است».",
+"kw": "اینترنت قطع وصل وای فای شبکه",
+"example": "final r = await Connectivity().checkConnectivity();\nif (r.contains(ConnectivityResult.none)) print('آفلاین');",
+"version": "7.3.2",
+"install": "connectivity_plus: ^7.3.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/fluttercommunity/plus_plugins"
+},
+{
+"id": "shared_preferences",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"storage_kv"
+],
+"title": "Shared Preferences — ذخیره‌ی تنظیمات",
+"desc": "ذخیره‌ی مقادیر کوچک (عدد، متن، true/false) که بعد از بستن برنامه می‌مانند.",
+"when": "برای تنظیمات، تم، زبان و «اولین اجرا».",
+"kw": "ذخیره تنظیمات کلید مقدار حافظه",
+"example": "final prefs = await SharedPreferences.getInstance();\nawait prefs.setBool('dark', true);\nfinal dark = prefs.getBool('dark') ?? false;",
+"version": "2.5.6",
+"install": "shared_preferences: ^2.5.6",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "sqflite",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"database"
+],
+"title": "sqflite — دیتابیس SQLite",
+"desc": "دیتابیس SQL محلی برای اندروید و iOS.",
+"when": "برای داده‌های جدولی مثل حسابداری، لیست کالا و یادداشت.",
+"kw": "دیتابیس پایگاه داده sql جدول sqlite",
+"example": "final db = await openDatabase('app.db', version: 1,\n  onCreate: (db, v) => db.execute(\n    'CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT, price INTEGER)'));\nawait db.insert('items', {'name': 'هدفون', 'price': 1500000});\nfinal rows = await db.query('items');",
+"version": "2.4.4+2",
+"install": "sqflite: ^2.4.4",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/tekartik/sqflite"
+},
+{
+"id": "sqflite_common_ffi",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"database"
+],
+"title": "sqflite برای ویندوز و لینوکس",
+"desc": "همان API پکیج sqflite روی دسکتاپ.",
+"when": "برای برنامه‌های Flutter ویندوز مثل نرم‌افزار حسابداری.",
+"kw": "دیتابیس ویندوز دسکتاپ sqlite",
+"example": "import 'package:sqflite_common_ffi/sqflite_ffi.dart';\n\nsqfliteFfiInit();\ndatabaseFactory = databaseFactoryFfi;\nfinal db = await openDatabase('app.db');",
+"version": "2.4.4",
+"install": "sqflite_common_ffi: ^2.4.4",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/tekartik/sqflite"
+},
+{
+"id": "sqlite3",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"database"
+],
+"title": "sqlite3 — SQLite مستقیم و سریع",
+"desc": "دسترسی مستقیم و همزمان (sync) به SQLite روی همه‌ی پلتفرم‌ها.",
+"when": "برای کارایی بالا و کنترل کامل.",
+"kw": "دیتابیس sqlite سریع",
+"example": "final db = sqlite3.open('app.db');\ndb.execute('CREATE TABLE IF NOT EXISTS t(x TEXT)');\nfinal rs = db.select('SELECT * FROM t');",
+"version": "3.7.1",
+"install": "sqlite3: ^3.7.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/simolus3/sqlite3.dart"
+},
+{
+"id": "hive_ce",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"database",
+"storage_kv"
+],
+"title": "Hive CE — دیتابیس NoSQL سریع",
+"desc": "دیتابیس کلید و مقدار خیلی سریع و سبک، با پشتیبانی رمزنگاری.",
+"when": "برای کش، داده‌ی آفلاین و تنظیمات زیاد.",
+"kw": "دیتابیس nosql سریع کش hive",
+"example": "await Hive.initFlutter();\nfinal box = await Hive.openBox('settings');\nawait box.put('name', 'بنیامین');\nprint(box.get('name'));",
+"version": "2.22.0",
+"install": "hive_ce: ^2.22.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/IO-Design-Team/hive_ce"
+},
+{
+"id": "hive_ce_flutter",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"database"
+],
+"title": "Hive CE Flutter",
+"desc": "ابزارهای Flutter برای Hive، مثل initFlutter و ValueListenableBuilder.",
+"when": "همراه hive_ce.",
+"kw": "hive",
+"example": "await Hive.initFlutter();",
+"version": "2.5.0",
+"install": "hive_ce_flutter: ^2.5.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/IO-Design-Team/hive_ce"
+},
+{
+"id": "path_provider",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files",
+"storage_kv"
+],
+"title": "Path Provider — مسیر پوشه‌ها",
+"desc": "مسیر پوشه‌های اسناد، موقت و پشتیبانی برنامه روی هر سیستم‌عامل.",
+"when": "برای ذخیره‌ی فایل.",
+"kw": "مسیر پوشه فایل ذخیره documents",
+"example": "final dir = await getApplicationDocumentsDirectory();\nfinal file = File('${dir.path}/note.txt');\nawait file.writeAsString('سلام');",
+"version": "2.1.6",
+"install": "path_provider: ^2.1.6",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "path",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "Path — کار با مسیر فایل",
+"desc": "اتصال و جدا کردن مسیرها به‌صورت صحیح در همه‌ی سیستم‌عامل‌ها.",
+"when": "به‌جای چسباندن دستی رشته‌ها.",
+"kw": "مسیر path پسوند فایل",
+"example": "import 'package:path/path.dart' as p;\nfinal full = p.join(dir, 'images', 'a.png');\nprint(p.extension(full)); // .png",
+"version": "1.9.1",
+"install": "path: ^1.9.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/dart-lang/core"
+},
+{
+"id": "go_router",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"routing"
+],
+"title": "GoRouter — ناوبری بین صفحات",
+"desc": "مسیریابی رسمی با آدرس، پارامتر، ریدایرکت (مثلاً برای لاگین) و deep link.",
+"when": "برای هر برنامه‌ای با بیش از چند صفحه.",
+"kw": "ناوبری صفحه مسیر route رفتن به صفحه",
+"example": "final router = GoRouter(routes: [\n  GoRoute(path: '/', builder: (_, __) => const Home()),\n  GoRoute(path: '/item/:id', builder: (_, s) => Item(id: s.pathParameters['id']!)),\n]);\nMaterialApp.router(routerConfig: router);\ncontext.go('/item/42');",
+"version": "18.1.0",
+"install": "go_router: ^18.1.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "cached_network_image",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"images",
+"network"
+],
+"title": "Cached Network Image — عکس با کش",
+"desc": "عکس‌های اینترنتی را دانلود و کش می‌کند تا دفعه‌ی بعد بدون اینترنت و سریع نمایش داده شوند.",
+"when": "برای عکس محصولات فروشگاه و پروفایل.",
+"kw": "عکس تصویر کش اینترنت دانلود",
+"example": "CachedNetworkImage(\n  imageUrl: 'https://example.com/p.jpg',\n  placeholder: (_, __) => const CircularProgressIndicator(),\n  errorWidget: (_, __, ___) => const Icon(Icons.error),\n)",
+"version": "4.0.4",
+"install": "cached_network_image: ^4.0.4",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/Baseflow/flutter_cached_network_image"
+},
+{
+"id": "flutter_svg",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"images"
+],
+"title": "Flutter SVG — نمایش SVG",
+"desc": "نمایش آیکون و تصاویر برداری SVG.",
+"when": "برای آیکون‌ها و لوگو.",
+"kw": "svg آیکون لوگو برداری",
+"example": "SvgPicture.asset('assets/logo.svg', width: 64)",
+"version": "2.3.1",
+"install": "flutter_svg: ^2.3.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "lottie",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets",
+"images"
+],
+"title": "Lottie — انیمیشن آماده",
+"desc": "پخش انیمیشن‌های JSON ساخته‌شده در After Effects.",
+"when": "برای لودینگ، صفحه‌ی خوش‌آمد و پیام موفقیت.",
+"kw": "انیمیشن lottie لودینگ",
+"example": "Lottie.asset('assets/success.json', repeat: false)",
+"version": "3.6.1",
+"install": "lottie: ^3.6.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/xvrh/lottie-flutter"
+},
+{
+"id": "fl_chart",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"charts"
+],
+"title": "FL Chart — نمودار",
+"desc": "نمودار خطی، میله‌ای، دایره‌ای و راداری با انیمیشن.",
+"when": "برای گزارش فروش و داشبورد حسابداری.",
+"kw": "نمودار چارت گزارش آمار میله ای دایره ای chart",
+"example": "LineChart(LineChartData(lineBarsData: [\n  LineChartBarData(spots: const [FlSpot(0, 1), FlSpot(1, 3), FlSpot(2, 2)]),\n]))",
+"version": "1.2.0",
+"install": "fl_chart: ^1.2.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/imaNNeo/fl_chart"
+},
+{
+"id": "table_calendar",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets",
+"persian_date"
+],
+"title": "Table Calendar — تقویم",
+"desc": "ویجت تقویم ماهانه و هفتگی با انتخاب روز و رویداد.",
+"when": "برای رزرو، برنامه‌ریزی و یادآور.",
+"kw": "تقویم روز رویداد calendar",
+"example": "TableCalendar(\n  firstDay: DateTime(2020), lastDay: DateTime(2030),\n  focusedDay: DateTime.now(),\n)",
+"version": "3.3.0",
+"install": "table_calendar: ^3.3.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/aleksanderwozniak/table_calendar"
+},
+{
+"id": "shimmer",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Shimmer — افکت بارگذاری",
+"desc": "افکت درخشش اسکلتی هنگام بارگذاری.",
+"when": "به‌جای چرخنده‌ی ساده.",
+"kw": "لودینگ اسکلت بارگذاری skeleton",
+"example": "Shimmer.fromColors(baseColor: Colors.grey.shade300, highlightColor: Colors.white, child: Container(height: 80, color: Colors.white))",
+"version": "4.0.0",
+"install": "shimmer: ^4.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/hnvn/flutter_shimmer"
+},
+{
+"id": "carousel_slider",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Carousel Slider — اسلایدر",
+"desc": "اسلایدر بنر و تصاویر با پخش خودکار.",
+"when": "برای بنر صفحه‌ی اول فروشگاه.",
+"kw": "اسلایدر بنر کاروسل",
+"example": "CarouselSlider(options: CarouselOptions(autoPlay: true), items: banners)",
+"version": "5.1.2",
+"install": "carousel_slider: ^5.1.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/serenader2014/flutter_carousel_slider"
+},
+{
+"id": "flutter_slidable",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Slidable — کشیدن آیتم لیست",
+"desc": "دکمه‌های حذف و ویرایش با کشیدن آیتم به چپ یا راست.",
+"when": "در لیست‌ها.",
+"kw": "کشیدن حذف لیست سوایپ swipe",
+"example": "Slidable(endActionPane: ActionPane(motion: const DrawerMotion(), children: [\n  SlidableAction(onPressed: (_) {}, icon: Icons.delete, label: 'حذف'),\n]), child: const ListTile(title: Text('آیتم')))",
+"version": "4.0.3",
+"install": "flutter_slidable: ^4.0.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/letsar/flutter_slidable"
+},
+{
+"id": "smooth_page_indicator",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Smooth Page Indicator",
+"desc": "نقطه‌های نشانگر صفحه با انیمیشن.",
+"when": "زیر اسلایدر یا صفحات معرفی.",
+"kw": "نقطه صفحه نشانگر indicator",
+"example": "SmoothPageIndicator(controller: pageController, count: 3)",
+"version": "3.0.0",
+"install": "smooth_page_indicator: ^3.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/Milad-Akarie/smooth_page_indicator"
+},
+{
+"id": "flutter_staggered_grid_view",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Staggered Grid — گرید نامنظم",
+"desc": "گرید با خانه‌های هم‌اندازه نبودن (مثل پینترست).",
+"when": "برای گالری و لیست محصولات.",
+"kw": "گرید شبکه گالری پینترست",
+"example": "MasonryGridView.count(crossAxisCount: 2, itemCount: 20, itemBuilder: (_, i) => Card(child: Text('$i')))",
+"version": "1.0.0",
+"install": "flutter_staggered_grid_view: ^1.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/letsar/flutter_staggered_grid_view"
+},
+{
+"id": "badges",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Badges — نشان عدد",
+"desc": "نمایش عدد روی آیکون، مثلاً تعداد سبد خرید.",
+"when": "برای سبد خرید و اعلان‌ها.",
+"kw": "بج عدد سبد خرید نشان",
+"example": "badges.Badge(badgeContent: const Text('3'), child: const Icon(Icons.shopping_cart))",
+"version": "4.0.1",
+"install": "badges: ^4.0.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/yako-dev/flutter_badges"
+},
+{
+"id": "auto_size_text",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Auto Size Text",
+"desc": "متن را کوچک می‌کند تا در فضا جا شود.",
+"when": "برای عنوان‌های بلند.",
+"kw": "متن اندازه خودکار",
+"example": "AutoSizeText('عنوان خیلی بلند محصول', maxLines: 1)",
+"version": "3.0.0",
+"install": "auto_size_text: ^3.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/leisim/auto_size_text"
+},
+{
+"id": "photo_view",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"images"
+],
+"title": "Photo View — زوم عکس",
+"desc": "زوم و جابه‌جایی عکس با دو انگشت.",
+"when": "برای گالری محصول.",
+"kw": "زوم عکس بزرگنمایی گالری",
+"example": "PhotoView(imageProvider: const AssetImage('assets/p.jpg'))",
+"version": "0.15.0",
+"install": "photo_view: ^0.15.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/bluefireteam/photo_view"
+},
+{
+"id": "animations",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Animations — انیمیشن‌های متریال",
+"desc": "انتقال‌های آماده‌ی رسمی گوگل مثل Container Transform.",
+"when": "برای انتقال زیبا بین صفحات.",
+"kw": "انیمیشن انتقال صفحه transition",
+"example": "OpenContainer(closedBuilder: (_, open) => const Card(), openBuilder: (_, __) => const Detail())",
+"version": "3.0.0",
+"install": "animations: ^3.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "flutter_animate",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Flutter Animate",
+"desc": "اضافه کردن انیمیشن با یک خط کد: محو، لغزش و لرزش.",
+"when": "برای جلوه‌های سریع UI.",
+"kw": "انیمیشن fade لرزش",
+"example": "const Text('سلام').animate().fadeIn().slideY()",
+"version": "4.5.2",
+"install": "flutter_animate: ^4.5.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/gskinner/flutter_animate"
+},
+{
+"id": "flutter_markdown_plus",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Markdown — نمایش متن مارک‌داون",
+"desc": "نمایش متن Markdown با تیتر، لیست و لینک.",
+"when": "برای راهنما و توضیحات.",
+"kw": "مارکداون متن markdown",
+"example": "MarkdownBody(data: '# عنوان\\n**پررنگ**')",
+"version": "1.0.12",
+"install": "flutter_markdown_plus: ^1.0.12",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/foresightmobile/flutter_markdown_plus"
+},
+{
+"id": "cupertino_icons",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"ui_widgets"
+],
+"title": "Cupertino Icons",
+"desc": "آیکون‌های سبک iOS.",
+"when": "پیش‌فرض پروژه‌های جدید.",
+"kw": "آیکون",
+"example": "Icon(CupertinoIcons.heart)",
+"version": "2.0.0",
+"install": "cupertino_icons: ^2.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "flutter_lints",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"code_quality"
+],
+"title": "Flutter Lints — قوانین کد تمیز",
+"desc": "قوانین رسمی تحلیل کد Flutter. در هر پروژه‌ی جدید هست.",
+"when": "همیشه به‌عنوان dev_dependency.",
+"kw": "lint کد تمیز تحلیل",
+"example": "# analysis_options.yaml\ninclude: package:flutter_lints/flutter.yaml",
+"version": "6.0.0",
+"install": "flutter_lints: ^6.0.0",
+"dev": true,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "lints",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"code_quality"
+],
+"title": "Lints",
+"desc": "قوانین رسمی تحلیل کد Dart.",
+"when": "برای پروژه‌های Dart خالص.",
+"kw": "lint",
+"example": "include: package:lints/recommended.yaml",
+"version": "6.1.0",
+"install": "lints: ^6.1.0",
+"dev": true,
+"offline": true,
+"repo": "https://github.com/dart-lang/core"
+},
+{
+"id": "image_picker",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"media",
+"images"
+],
+"title": "Image Picker — انتخاب عکس",
+"desc": "انتخاب عکس از گالری یا گرفتن با دوربین.",
+"when": "برای عکس پروفایل و ارسال عکس.",
+"kw": "گالری دوربین عکس انتخاب",
+"example": "final img = await ImagePicker().pickImage(source: ImageSource.gallery);\nif (img != null) print(img.path);",
+"version": "1.2.4",
+"install": "image_picker: ^1.2.4",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "file_picker",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "File Picker — انتخاب فایل",
+"desc": "باز کردن پنجره‌ی انتخاب فایل و پوشه روی همه‌ی سیستم‌ها.",
+"when": "برای وارد کردن فایل اکسل یا PDF.",
+"kw": "انتخاب فایل پوشه باز کردن",
+"example": "final r = await FilePicker.platform.pickFiles(allowedExtensions: ['xlsx'], type: FileType.custom);\nfinal path = r?.files.single.path;",
+"version": "13.1.0",
+"install": "file_picker: ^13.1.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/miguelpruivo/flutter_file_picker"
+},
+{
+"id": "url_launcher",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"device"
+],
+"title": "URL Launcher — باز کردن لینک",
+"desc": "باز کردن سایت، شماره‌گیری تلفن، ارسال پیامک و ایمیل.",
+"when": "برای دکمه‌های تماس و لینک.",
+"kw": "لینک تماس تلفن پیامک ایمیل مرورگر",
+"example": "await launchUrl(Uri.parse('tel:09120000000'));",
+"version": "6.3.3",
+"install": "url_launcher: ^6.3.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "permission_handler",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"device"
+],
+"title": "Permission Handler — مجوزها",
+"desc": "درخواست و بررسی مجوزها مثل دوربین، مکان، فایل و اعلان.",
+"when": "قبل از دسترسی به امکانات حساس گوشی.",
+"kw": "مجوز دسترسی permission اجازه",
+"example": "final s = await Permission.camera.request();\nif (s.isGranted) { /* ... */ }",
+"version": "13.0.2",
+"install": "permission_handler: ^13.0.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/Baseflow/flutter-permission-handler"
+},
+{
+"id": "device_info_plus",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"device"
+],
+"title": "Device Info — مشخصات دستگاه",
+"desc": "مدل گوشی، نسخه‌ی اندروید و سازنده.",
+"when": "برای گزارش خطا و آمار.",
+"kw": "مدل گوشی دستگاه اندروید نسخه",
+"example": "final a = await DeviceInfoPlugin().androidInfo; print(a.model);",
+"version": "13.3.0",
+"install": "device_info_plus: ^13.3.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/fluttercommunity/plus_plugins"
+},
+{
+"id": "package_info_plus",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"device"
+],
+"title": "Package Info — نسخه‌ی برنامه",
+"desc": "نام و شماره‌ی نسخه‌ی برنامه‌ی خودت.",
+"when": "برای صفحه‌ی «درباره» و بررسی آپدیت.",
+"kw": "نسخه ورژن برنامه آپدیت",
+"example": "final i = await PackageInfo.fromPlatform(); print(i.version);",
+"version": "10.2.2",
+"install": "package_info_plus: ^10.2.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/fluttercommunity/plus_plugins"
+},
+{
+"id": "share_plus",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"device"
+],
+"title": "Share Plus — اشتراک‌گذاری",
+"desc": "پنجره‌ی اشتراک‌گذاری سیستم برای متن و فایل.",
+"when": "برای ارسال فاکتور و لینک.",
+"kw": "اشتراک گذاری ارسال share",
+"example": "await SharePlus.instance.share(ShareParams(text: 'سلام'));",
+"version": "13.3.1",
+"install": "share_plus: ^13.3.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/fluttercommunity/plus_plugins"
+},
+{
+"id": "battery_plus",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"device"
+],
+"title": "Battery Plus — باتری",
+"desc": "درصد و وضعیت شارژ باتری.",
+"when": "برای حالت کم‌مصرف.",
+"kw": "باتری شارژ",
+"example": "print(await Battery().batteryLevel);",
+"version": "7.1.2",
+"install": "battery_plus: ^7.1.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/fluttercommunity/plus_plugins"
+},
+{
+"id": "camera",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"media"
+],
+"title": "Camera — دوربین",
+"desc": "کنترل کامل دوربین: پیش‌نمایش، عکس، فیلم و استریم تصویر.",
+"when": "برای اسکن، فیلتر و پردازش تصویر.",
+"kw": "دوربین عکس فیلم camera",
+"example": "final cams = await availableCameras();\nfinal c = CameraController(cams.first, ResolutionPreset.high);\nawait c.initialize();\nCameraPreview(c);",
+"version": "0.12.1",
+"install": "camera: ^0.12.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "video_player",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"media"
+],
+"title": "Video Player — پخش ویدیو",
+"desc": "پخش ویدیو از فایل یا اینترنت.",
+"when": "برای معرفی محصول و آموزش.",
+"kw": "ویدیو فیلم پخش",
+"example": "final c = VideoPlayerController.networkUrl(Uri.parse(url));\nawait c.initialize(); c.play();\nVideoPlayer(c);",
+"version": "2.14.1",
+"install": "video_player: ^2.14.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "webview_flutter",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"media",
+"network"
+],
+"title": "WebView — نمایش سایت",
+"desc": "نمایش صفحه‌ی وب داخل برنامه.",
+"when": "برای درگاه پرداخت و صفحات سایت.",
+"kw": "وب ویو سایت مرورگر درگاه پرداخت",
+"example": "final c = WebViewController()..loadRequest(Uri.parse('https://example.com'));\nWebViewWidget(controller: c);",
+"version": "4.14.1",
+"install": "webview_flutter: ^4.14.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "geolocator",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"location_maps"
+],
+"title": "Geolocator — موقعیت مکانی",
+"desc": "گرفتن مختصات GPS و دنبال کردن حرکت.",
+"when": "برای ارسال سفارش و پیک.",
+"kw": "مکان gps موقعیت لوکیشن",
+"example": "final p = await Geolocator.getCurrentPosition(); print('${p.latitude}, ${p.longitude}');",
+"version": "14.1.1",
+"install": "geolocator: ^14.1.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/Baseflow/flutter-geolocator"
+},
+{
+"id": "flutter_map",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"location_maps"
+],
+"title": "Flutter Map — نقشه بدون گوگل",
+"desc": "نقشه‌ی تعاملی با OpenStreetMap و هر سرور کاشی. بدون نیاز به کلید گوگل.",
+"when": "برای نمایش نقشه در ایران که سرویس گوگل محدود است.",
+"kw": "نقشه map openstreetmap مکان",
+"example": "FlutterMap(\n  options: const MapOptions(initialCenter: LatLng(29.61, 52.53), initialZoom: 13),\n  children: [TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png')],\n)",
+"version": "8.3.2",
+"install": "flutter_map: ^8.3.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/fleaflet/flutter_map"
+},
+{
+"id": "latlong2",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"location_maps"
+],
+"title": "LatLong2 — مختصات و فاصله",
+"desc": "نوع داده‌ی مختصات و محاسبه‌ی فاصله بین دو نقطه.",
+"when": "همراه flutter_map.",
+"kw": "مختصات فاصله",
+"example": "const Distance().as(LengthUnit.Kilometer, const LatLng(29.6, 52.5), const LatLng(35.7, 51.4))",
+"version": "0.10.1",
+"install": "latlong2: ^0.10.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/jifalops/dart-latlong"
+},
+{
+"id": "mobile_scanner",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"media"
+],
+"title": "Mobile Scanner — اسکن بارکد و QR",
+"desc": "اسکن سریع QR و بارکد با دوربین.",
+"when": "برای انبارداری و اسکن کالا.",
+"kw": "بارکد qr اسکن",
+"example": "MobileScanner(onDetect: (c) => print(c.barcodes.first.rawValue))",
+"version": "7.4.2",
+"install": "mobile_scanner: ^7.4.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/juliansteenbakker/mobile_scanner"
+},
+{
+"id": "qr_flutter",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"images"
+],
+"title": "QR Flutter — ساخت QR",
+"desc": "ساخت تصویر QR از متن یا لینک.",
+"when": "برای فاکتور و اشتراک لینک.",
+"kw": "qr ساخت کیو آر",
+"example": "QrImageView(data: 'https://example.com', size: 200)",
+"version": "4.1.0",
+"install": "qr_flutter: ^4.1.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/theyakka/qr.flutter"
+},
+{
+"id": "flutter_local_notifications",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"notifications"
+],
+"title": "Local Notifications — اعلان",
+"desc": "نمایش اعلان محلی و زمان‌بندی‌شده بدون سرور.",
+"when": "برای یادآور و هشدار.",
+"kw": "اعلان نوتیفیکیشن یادآور notification",
+"example": "final n = FlutterLocalNotificationsPlugin();\nawait n.initialize(settings: const InitializationSettings(\n  android: AndroidInitializationSettings('@mipmap/ic_launcher')));\nawait n.show(id: 0, title: 'سلام', body: 'یادآوری',\n  notificationDetails: const NotificationDetails(\n    android: AndroidNotificationDetails('main', 'اصلی')));",
+"version": "22.3.2",
+"install": "flutter_local_notifications: ^22.3.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/MaikuB/flutter_local_notifications"
+},
+{
+"id": "intl",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"persian_date"
+],
+"title": "Intl — قالب‌بندی عدد و تاریخ",
+"desc": "جداکننده‌ی هزارگان، ارز و ترجمه.",
+"when": "برای نمایش قیمت به شکل ۱٬۲۵۰٬۰۰۰.",
+"kw": "عدد قیمت جداکننده ترجمه زبان",
+"example": "NumberFormat.decimalPattern('fa').format(1250000)",
+"version": "0.20.3",
+"install": "intl: ^0.20.3",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/dart-lang/i18n"
+},
+{
+"id": "shamsi_date",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"persian_date"
+],
+"title": "Shamsi Date — تاریخ شمسی",
+"desc": "تبدیل میلادی به شمسی و برعکس و قالب‌بندی تاریخ فارسی.",
+"when": "برای هر برنامه‌ی فارسی با تاریخ.",
+"kw": "تاریخ شمسی جلالی فارسی تقویم",
+"example": "final j = Jalali.now();\nprint('${j.year}/${j.month}/${j.day}');\nprint(j.formatter.wN); // نام روز هفته\nfinal g = Jalali(1405, 1, 1).toGregorian();",
+"version": "2.0.0",
+"install": "shamsi_date: ^2.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/FatulM/shamsi_date"
+},
+{
+"id": "pdf",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "PDF — ساخت فایل PDF",
+"desc": "ساخت PDF با متن، جدول و تصویر. با فونت فارسی راست‌به‌چپ هم کار می‌کند.",
+"when": "برای فاکتور، گزارش و رسید.",
+"kw": "pdf فاکتور گزارش رسید چاپ",
+"example": "final font = pw.Font.ttf(await rootBundle.load('assets/Vazirmatn.ttf'));\nfinal doc = pw.Document();\ndoc.addPage(pw.Page(build: (_) => pw.Directionality(\n  textDirection: pw.TextDirection.rtl,\n  child: pw.Text('فاکتور فروش', style: pw.TextStyle(font: font)))));\nfinal bytes = await doc.save();",
+"version": "3.13.1",
+"install": "pdf: ^3.13.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/DavBfr/dart_pdf"
+},
+{
+"id": "printing",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "Printing — چاپ و پیش‌نمایش",
+"desc": "پیش‌نمایش و چاپ PDF و اشتراک فایل.",
+"when": "همراه پکیج pdf.",
+"kw": "چاپ پرینت پیش نمایش",
+"example": "await Printing.layoutPdf(onLayout: (_) => doc.save());",
+"version": "5.15.2",
+"install": "printing: ^5.15.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/DavBfr/dart_pdf"
+},
+{
+"id": "excel",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "Excel — خواندن و ساخت اکسل",
+"desc": "خواندن و نوشتن فایل xlsx بدون نیاز به آفیس.",
+"when": "برای ورود و خروج لیست کالا و گزارش.",
+"kw": "اکسل xlsx جدول خروجی",
+"example": "final ex = Excel.createExcel();\nex['Sheet1'].appendRow([TextCellValue('کالا'), IntCellValue(1500)]);\nfinal bytes = ex.save();",
+"version": "5.0.0",
+"install": "excel: ^5.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/justkawal/excel"
+},
+{
+"id": "csv",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "CSV",
+"desc": "تبدیل CSV به لیست و برعکس.",
+"when": "برای خروجی ساده‌ی داده.",
+"kw": "csv خروجی جدول",
+"example": "final rows = const CsvToListConverter().convert(text);",
+"version": "8.0.0",
+"install": "csv: ^8.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/close2/csv"
+},
+{
+"id": "uuid",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "UUID — شناسه‌ی یکتا",
+"desc": "ساخت شناسه‌ی یکتا.",
+"when": "برای کلید رکوردها.",
+"kw": "شناسه یکتا آیدی id",
+"example": "final id = const Uuid().v4();",
+"version": "4.6.0",
+"install": "uuid: ^4.6.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/Daegalus/dart-uuid"
+},
+{
+"id": "logger",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"code_quality"
+],
+"title": "Logger — لاگ رنگی",
+"desc": "لاگ‌های خوانا و رنگی در کنسول.",
+"when": "برای دیباگ.",
+"kw": "لاگ دیباگ خطا log",
+"example": "final log = Logger(); log.i('شروع'); log.e('خطا');",
+"version": "2.8.0",
+"install": "logger: ^2.8.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/SourceHorizon/logger"
+},
+{
+"id": "collection",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"code_quality"
+],
+"title": "Collection — ابزار لیست و مپ",
+"desc": "توابع کمکی مثل groupBy، firstWhereOrNull و sortedBy.",
+"when": "تقریباً همه‌جا.",
+"kw": "لیست گروه بندی مرتب سازی",
+"example": "final byCat = groupBy(items, (i) => i.category);",
+"version": "1.19.1",
+"install": "collection: ^1.19.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/dart-lang/core"
+},
+{
+"id": "archive",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "Archive — فشرده‌سازی zip",
+"desc": "ساخت و باز کردن فایل‌های zip و tar.",
+"when": "برای پشتیبان‌گیری و بسته‌بندی.",
+"kw": "zip فشرده سازی بکاپ",
+"example": "final a = ZipDecoder().decodeBytes(bytes);\nfor (final f in a) { print(f.name); }",
+"version": "5.0.0",
+"install": "archive: ^5.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/brendan-duncan/archive"
+},
+{
+"id": "image",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"images"
+],
+"title": "Image — پردازش تصویر",
+"desc": "تغییر اندازه، برش، فیلتر و تبدیل فرمت عکس با Dart خالص.",
+"when": "برای کوچک کردن عکس قبل از آپلود.",
+"kw": "تصویر عکس تغییر اندازه فشرده برش",
+"example": "final img = decodeImage(bytes)!;\nfinal small = copyResize(img, width: 800);\nfinal jpg = encodeJpg(small, quality: 80);",
+"version": "4.12.0",
+"install": "image: ^4.12.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/brendan-duncan/image"
+},
+{
+"id": "xml",
+"eco": "flutter",
+"cat": "dev",
+"topics": [
+"files"
+],
+"title": "XML",
+"desc": "خواندن و ساخت XML.",
+"when": "برای فیدها و فایل‌های قدیمی.",
+"kw": "xml پارس",
+"example": "final doc = XmlDocument.parse(text);",
+"version": "7.1.0",
+"install": "xml: ^7.1.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/renggli/dart-xml"
+},
+{
+"id": "crypto",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_crypto"
+],
+"title": "Crypto — هش (SHA, MD5, HMAC)",
+"desc": "توابع هش رسمی Dart: SHA-256، SHA-1، MD5 و HMAC.",
+"when": "برای بررسی صحت فایل و امضای درخواست. برای پسورد کافی نیست؛ برای آن Argon2 یا PBKDF2 از cryptography لازم است.",
+"kw": "هش sha256 md5 hmac امضا",
+"example": "import 'dart:convert';\nimport 'package:crypto/crypto.dart';\n\nfinal h = sha256.convert(utf8.encode('متن')).toString();\nfinal sig = Hmac(sha256, utf8.encode(secret)).convert(utf8.encode(body));",
+"version": "3.0.7",
+"install": "crypto: ^3.0.7",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/dart-lang/core"
+},
+{
+"id": "encrypt",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_crypto"
+],
+"title": "Encrypt — رمزنگاری AES ساده",
+"desc": "رابط ساده برای AES و RSA روی PointyCastle.",
+"when": "برای رمز کردن متن یا فایل با کلید.",
+"kw": "رمزنگاری aes rsa رمز کردن کلید",
+"example": "final key = Key.fromSecureRandom(32);\nfinal iv = IV.fromSecureRandom(16);\nfinal e = Encrypter(AES(key, mode: AESMode.gcm));\nfinal enc = e.encrypt('متن محرمانه', iv: iv);\nfinal dec = e.decrypt(enc, iv: iv);",
+"version": "5.0.4",
+"install": "encrypt: ^5.0.4",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/leocavalcante/encrypt"
+},
+{
+"id": "pointycastle",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_crypto"
+],
+"title": "PointyCastle — کتابخانه‌ی کامل رمزنگاری",
+"desc": "پیاده‌سازی BouncyCastle در Dart: AES، RSA، ECDSA، انواع هش و تولید کلید.",
+"when": "برای نیازهای پیشرفته.",
+"kw": "رمزنگاری rsa ecdsa bouncycastle امضا دیجیتال",
+"example": "final d = Digest('SHA-256');\nfinal out = d.process(Uint8List.fromList([1, 2, 3]));",
+"version": "4.0.0",
+"install": "pointycastle: ^4.0.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/bcgit/pc-dart"
+},
+{
+"id": "cryptography",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_crypto",
+"sec_auth"
+],
+"title": "Cryptography — رمزنگاری مدرن",
+"desc": "AES-GCM، ChaCha20، Ed25519، X25519 و هش پسورد امن با Argon2id و PBKDF2.",
+"when": "انتخاب پیشنهادی برای رمزنگاری جدید و هش پسورد.",
+"kw": "رمزنگاری پسورد argon2 pbkdf2 chacha ed25519 هش پسورد",
+"example": "final algo = AesGcm.with256bits();\nfinal key = await algo.newSecretKey();\nfinal box = await algo.encryptString('متن', secretKey: key);\nfinal text = await algo.decryptString(box, secretKey: key);\n\nfinal pbkdf2 = Pbkdf2(macAlgorithm: Hmac.sha256(), iterations: 100000, bits: 256);\nfinal hash = await pbkdf2.deriveKeyFromPassword(password: pass, nonce: salt);",
+"version": "2.9.0",
+"install": "cryptography: ^2.9.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/dint-dev/cryptography"
+},
+{
+"id": "cryptography_flutter",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_crypto"
+],
+"title": "Cryptography Flutter",
+"desc": "شتاب سخت‌افزاری برای پکیج cryptography روی موبایل.",
+"when": "همراه cryptography برای سرعت بیشتر.",
+"kw": "رمزنگاری سرعت",
+"example": "FlutterCryptography.enable();",
+"version": "2.3.4",
+"install": "cryptography_flutter: ^2.3.4",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/dint-dev/cryptography"
+},
+{
+"id": "flutter_secure_storage",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_storage"
+],
+"title": "Secure Storage — ذخیره‌ی امن",
+"desc": "ذخیره‌ی توکن و رمز در Keystore اندروید، Keychain آیفون و DPAPI ویندوز.",
+"when": "برای توکن ورود، کلید API و پسورد. هرگز این‌ها را در shared_preferences نگذار.",
+"kw": "ذخیره امن توکن رمز keystore keychain",
+"example": "const s = FlutterSecureStorage();\nawait s.write(key: 'token', value: token);\nfinal t = await s.read(key: 'token');",
+"version": "11.2.0",
+"install": "flutter_secure_storage: ^11.2.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/juliansteenbakker/flutter_secure_storage"
+},
+{
+"id": "local_auth",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_auth"
+],
+"title": "Local Auth — اثر انگشت و چهره",
+"desc": "احراز هویت با اثر انگشت، چهره یا الگوی گوشی.",
+"when": "برای قفل برنامه یا تأیید پرداخت.",
+"kw": "اثر انگشت چهره بیومتریک قفل fingerprint",
+"example": "final ok = await LocalAuthentication().authenticate(\n  localizedReason: 'برای ورود اثر انگشت بزنید');",
+"version": "3.0.2",
+"install": "local_auth: ^3.0.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/flutter/packages"
+},
+{
+"id": "dart_jsonwebtoken",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_auth"
+],
+"title": "JWT — توکن ورود",
+"desc": "ساخت، امضا و بررسی توکن‌های JWT.",
+"when": "برای سیستم ورود و API.",
+"kw": "jwt توکن ورود لاگین احراز هویت",
+"example": "final jwt = JWT({'id': 1});\nfinal token = jwt.sign(SecretKey('secret'), expiresIn: const Duration(hours: 1));\nfinal v = JWT.verify(token, SecretKey('secret'));",
+"version": "3.4.1",
+"install": "dart_jsonwebtoken: ^3.4.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/jonasroussel/dart_jsonwebtoken"
+},
+{
+"id": "flutter_jailbreak_detection",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_app"
+],
+"title": "تشخیص روت و جیلبریک",
+"desc": "تشخیص روت بودن گوشی یا فعال بودن حالت توسعه‌دهنده.",
+"when": "برای برنامه‌های مالی یا جلوگیری از تقلب.",
+"kw": "روت جیلبریک تقلب امنیت گوشی root",
+"example": "final rooted = await FlutterJailbreakDetection.jailbroken;",
+"version": "1.10.0",
+"install": "flutter_jailbreak_detection: ^1.10.0",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/jeroentrappers/flutter_jailbreak_detection"
+},
+{
+"id": "no_screenshot",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_app"
+],
+"title": "No Screenshot — جلوگیری از اسکرین‌شات",
+"desc": "جلوگیری از اسکرین‌شات و ضبط صفحه.",
+"when": "برای صفحه‌های حساس مثل رمز و اطلاعات بانکی.",
+"kw": "اسکرین شات ضبط صفحه جلوگیری",
+"example": "await NoScreenshot.instance.screenshotOff();",
+"version": "2.0.1",
+"install": "no_screenshot: ^2.0.1",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/FlutterPlaza/no_screenshot"
+},
+{
+"id": "basic_utils",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_network"
+],
+"title": "Basic Utils — گواهی و کلید",
+"desc": "خواندن گواهی X509، کلیدهای PEM و ابزارهای دامنه و DNS.",
+"when": "برای certificate pinning و کار با کلیدها.",
+"kw": "گواهی ssl certificate pem x509",
+"example": "final cert = X509Utils.x509CertificateFromPem(pem);\nprint(cert.sha256Thumbprint);",
+"version": "5.8.2",
+"install": "basic_utils: ^5.8.2",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/Ephenodrom/Dart-Basic-Utils"
+},
+{
+"id": "asn1lib",
+"eco": "flutter",
+"cat": "security",
+"topics": [
+"sec_crypto"
+],
+"title": "ASN1 — کدگذاری کلیدها",
+"desc": "خواندن و نوشتن ساختار ASN.1 و DER.",
+"when": "پیش‌نیاز کار با کلیدهای RSA.",
+"kw": "asn1 der کلید",
+"example": "final p = ASN1Parser(bytes);",
+"version": "1.6.5",
+"install": "asn1lib: ^1.6.5",
+"dev": false,
+"offline": true,
+"repo": "https://github.com/wstrange/asn1lib"
+},
+{
+"id": "phantom_camera",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_camera"
+],
+"title": "Phantom Camera — دوربین هوشمند",
+"desc": "دوربین سینمایی دوبعدی و سه‌بعدی: دنبال کردن نرم بازیکن، سوم‌شخص، جابه‌جایی بین دوربین‌ها و لرزش. شبیه Cinemachine یونیتی.",
+"when": "برای دوربین پشت ماشین یا شخصیت در بازی‌های GTA‌مانند.",
+"kw": "دوربین سوم شخص دنبال کردن لرزش camera follow",
+"example": "# یک PhantomCameraHost زیر Camera3D اصلی بگذار\n# سپس نود PhantomCamera3D بساز:\n$PhantomCamera3D.follow_mode = PhantomCamera3D.FollowMode.THIRD_PERSON\n$PhantomCamera3D.follow_target = $Player\n$PhantomCamera3D.priority = 10   # دوربین با اولویت بالاتر فعال می‌شود",
+"version": "2026-10-07",
+"install": "res://addons/phantom_camera",
+"kind": "addon",
+"file": "godot/phantom_camera.zip",
+"folders": [
+"phantom_camera"
+],
+"size": 816820,
+"offline": true,
+"repo": "https://github.com/ramokz/phantom-camera"
+},
+{
+"id": "dialogic",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_dialog"
+],
+"title": "Dialogic 2 — دیالوگ و داستان",
+"desc": "ساخت دیالوگ، انتخاب‌ها، شخصیت‌ها و میان‌پرده با ویرایشگر گرافیکی. از متن فارسی پشتیبانی می‌کند.",
+"when": "برای مأموریت‌ها و گفتگو با NPCها.",
+"kw": "دیالوگ گفتگو داستان مأموریت شخصیت میان پرده dialog",
+"example": "Dialogic.start(\"mission_1\")\nDialogic.signal_event.connect(func(arg): print(arg))",
+"version": "2026-08-30",
+"install": "res://addons/dialogic",
+"kind": "addon",
+"file": "godot/dialogic.zip",
+"folders": [
+"dialogic"
+],
+"size": 6112067,
+"offline": true,
+"repo": "https://github.com/dialogic-godot/dialogic"
+},
+{
+"id": "dialogue_manager",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_dialog"
+],
+"title": "Dialogue Manager — دیالوگ متنی",
+"desc": "نوشتن دیالوگ در فایل متنی ساده با شرط و متغیر. سبک‌تر از Dialogic.",
+"when": "وقتی دیالوگ زیاد داری و نوشتن متنی را ترجیح می‌دهی.",
+"kw": "دیالوگ گفتگو متن شرط",
+"example": "# فایل res://dialogue/main.dialogue:\n# ~ start\n# راننده: سلام! کجا می‌ری؟\n# - ارگ کریمخان => arg\nDialogueManager.show_example_dialogue_balloon(load(\"res://dialogue/main.dialogue\"), \"start\")",
+"version": "2026-10-17",
+"install": "res://addons/dialogue_manager",
+"kind": "addon",
+"file": "godot/dialogue_manager.zip",
+"folders": [
+"dialogue_manager"
+],
+"size": 235602,
+"offline": true,
+"repo": "https://github.com/nathanhoad/godot_dialogue_manager"
+},
+{
+"id": "beehave",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ai"
+],
+"title": "Beehave — هوش مصنوعی با درخت رفتار",
+"desc": "Behavior Tree برای NPCها: گشت‌زنی، تعقیب، فرار و حمله، با دیباگر گرافیکی.",
+"when": "برای پلیس، رهگذر و دشمن.",
+"kw": "هوش مصنوعی ai npc دشمن پلیس رفتار تعقیب behavior tree",
+"example": "# BeehaveTree → SelectorComposite → SequenceComposite → ActionLeaf\nextends ActionLeaf\nfunc tick(actor, blackboard):\n    actor.move_towards(blackboard.get_value(\"target\"))\n    return RUNNING",
+"version": "2026-09-20",
+"install": "res://addons/beehave",
+"kind": "addon",
+"file": "godot/beehave.zip",
+"folders": [
+"beehave"
+],
+"size": 109573,
+"offline": true,
+"repo": "https://github.com/bitbrain/beehave"
+},
+{
+"id": "godot_state_charts",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ai"
+],
+"title": "State Charts — ماشین حالت",
+"desc": "ماشین حالت سلسله‌مراتبی برای بازیکن و NPC، مثلاً پیاده، رانندگی، شنا یا مرده.",
+"when": "برای مدیریت حالت‌های بازیکن بدون if و else زیاد.",
+"kw": "حالت state machine ماشین حالت بازیکن",
+"example": "$StateChart.send_event(\"enter_car\")\nfunc _on_driving_state_physics_processing(delta):\n    drive(delta)",
+"version": "2026-06-26",
+"install": "res://addons/godot_state_charts",
+"kind": "addon",
+"file": "godot/godot_state_charts.zip",
+"folders": [
+"godot_state_charts"
+],
+"size": 90220,
+"offline": true,
+"repo": "https://github.com/derkork/godot-statecharts"
+},
+{
+"id": "yafsm",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ai"
+],
+"title": "YAFSM — ماشین حالت گرافیکی",
+"desc": "ماشین حالت با ویرایشگر گرافیکی.",
+"when": "اگر طراحی گرافیکی حالت‌ها را دوست داری.",
+"kw": "ماشین حالت state",
+"example": "$StateMachinePlayer.set_trigger(\"jump\")",
+"version": "2025-11-01",
+"install": "res://addons/imjp94.yafsm",
+"kind": "addon",
+"file": "godot/yafsm.zip",
+"folders": [
+"imjp94.yafsm"
+],
+"size": 71265,
+"offline": true,
+"repo": "https://github.com/imjp94/gd-YAFSM"
+},
+{
+"id": "gut",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_testing"
+],
+"title": "GUT — تست واحد",
+"desc": "فریم‌ورک تست برای GDScript.",
+"when": "برای اطمینان از درست کار کردن منطق بازی.",
+"kw": "تست unit test",
+"example": "extends GutTest\nfunc test_money():\n    var p = Player.new()\n    p.add_money(100)\n    assert_eq(p.money, 100)",
+"version": "2026-08-18",
+"install": "res://addons/gut",
+"kind": "addon",
+"file": "godot/gut.zip",
+"folders": [
+"gut"
+],
+"size": 1103308,
+"offline": true,
+"repo": "https://github.com/bitwes/Gut"
+},
+{
+"id": "gdunit4",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_testing"
+],
+"title": "GdUnit4 — تست پیشرفته",
+"desc": "تست واحد و تست صحنه با گزارش داخل ویرایشگر.",
+"when": "برای پروژه‌های بزرگ.",
+"kw": "تست unit test",
+"example": "extends GdUnitTestSuite\nfunc test_add():\n    assert_int(1 + 1).is_equal(2)",
+"version": "2026-10-17",
+"install": "res://addons/gdUnit4",
+"kind": "addon",
+"file": "godot/gdunit4.zip",
+"folders": [
+"gdUnit4"
+],
+"size": 843215,
+"offline": true,
+"repo": "https://github.com/MikeSchulze/gdUnit4"
+},
+{
+"id": "smartshape2d",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_terrain"
+],
+"title": "SmartShape2D — زمین دوبعدی",
+"desc": "کشیدن زمین و سکوی دوبعدی با منحنی و بافت خودکار.",
+"when": "برای بازی‌های پلتفرمر دوبعدی.",
+"kw": "زمین دوبعدی سکو terrain 2d",
+"example": "# نود SS2D_Shape بساز و نقاط را در ویرایشگر بکش",
+"version": "2026-08-07",
+"install": "res://addons/rmsmartshape",
+"kind": "addon",
+"file": "godot/smartshape2d.zip",
+"folders": [
+"rmsmartshape"
+],
+"size": 13386923,
+"offline": true,
+"repo": "https://github.com/SirRamEsq/SmartShape2D"
+},
+{
+"id": "proton_scatter",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_terrain"
+],
+"title": "Proton Scatter — پخش درخت و اشیا",
+"desc": "پخش خودکار درخت، سنگ، چراغ و نیمکت روی زمین یا کنار مسیر، با قانون فاصله و چرخش تصادفی.",
+"when": "برای درخت‌های بلوار و تیر چراغ برق شهر.",
+"kw": "درخت پخش اشیا گیاه جنگل scatter",
+"example": "# نود ProtonScatter بساز، یک ScatterItem با مدل درخت اضافه کن\n# و ScatterShape را روی محدوده‌ی بلوار بکش",
+"version": "2026-09-27",
+"install": "res://addons/proton_scatter",
+"kind": "addon",
+"file": "godot/proton_scatter.zip",
+"folders": [
+"proton_scatter"
+],
+"size": 10107583,
+"offline": true,
+"repo": "https://github.com/HungryProton/scatter"
+},
+{
+"id": "road_generator",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_terrain",
+"godot_vehicle"
+],
+"title": "Road Generator — ساخت جاده و تقاطع",
+"desc": "ساخت جاده‌ی سه‌بعدی با لاین، تقاطع و خط‌کشی، به‌همراه مسیر خودکار برای ماشین‌های ترافیک (AI).",
+"when": "برای ساخت خیابان‌های شیراز و ماشین‌های ترافیک.",
+"kw": "جاده خیابان تقاطع ترافیک ماشین road lane",
+"example": "# RoadManager → RoadContainer → RoadPoint ها را در ویرایشگر بچین\n# گزینه‌ی generate_ai_lanes را برای مسیر ترافیک روشن کن",
+"version": "2026-10-12",
+"install": "res://addons/road-generator",
+"kind": "addon",
+"file": "godot/road_generator.zip",
+"folders": [
+"road-generator"
+],
+"size": 1805900,
+"offline": true,
+"repo": "https://github.com/TheDuckCow/godot-road-generator"
+},
+{
+"id": "hterrain",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_terrain"
+],
+"title": "HTerrain — زمین بزرگ با هایت‌مپ",
+"desc": "زمین سه‌بعدی بزرگ از روی تصویر ارتفاع (heightmap)، همراه با قلم‌موی نقاشی بافت و چمن.",
+"when": "برای کوه و تپه‌های اطراف شهر.",
+"kw": "زمین ارتفاع کوه heightmap terrain",
+"example": "# نود HTerrain بساز، Import → heightmap.png\n# با ابزار Paint بافت خاک و چمن بکش",
+"version": "2026-07-30",
+"install": "res://addons/zylann.hterrain",
+"kind": "addon",
+"file": "godot/hterrain.zip",
+"folders": [
+"zylann.hterrain"
+],
+"size": 10272386,
+"offline": true,
+"repo": "https://github.com/Zylann/godot_heightmap_plugin"
+},
+{
+"id": "spatial_gardener",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_terrain"
+],
+"title": "Spatial Gardener — نقاشی گیاه",
+"desc": "کشیدن درخت و بوته با قلم‌مو روی هر سطح، با LOD برای سرعت.",
+"when": "برای فضای سبز پارک‌ها.",
+"kw": "گیاه درخت بوته پارک فضای سبز",
+"example": "# نود Gardener بساز و با قلم‌مو گیاه بکش",
+"version": "2025-03-05",
+"install": "res://addons/dreadpon.spatial_gardener",
+"kind": "addon",
+"file": "godot/spatial_gardener.zip",
+"folders": [
+"dreadpon.spatial_gardener"
+],
+"size": 361725,
+"offline": true,
+"repo": "https://github.com/dreadpon/godot_spatial_gardener"
+},
+{
+"id": "func_godot",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_terrain"
+],
+"title": "FuncGodot — نقشه با TrenchBroom",
+"desc": "ساخت مرحله‌ی سه‌بعدی با ویرایشگر TrenchBroom (سبک Quake).",
+"when": "برای ساختمان‌ها و فضای داخلی ساده.",
+"kw": "ساختمان نقشه مرحله trenchbroom",
+"example": "# FuncGodotMap → map_file = res://maps/level.map → Build",
+"version": "2026-10-12",
+"install": "res://addons/func_godot",
+"kind": "addon",
+"file": "godot/func_godot.zip",
+"folders": [
+"func_godot"
+],
+"size": 146428,
+"offline": true,
+"repo": "https://github.com/func-godot/func_godot_plugin"
+},
+{
+"id": "sky3d",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_terrain"
+],
+"title": "Sky3D — آسمان و چرخه‌ی روز و شب",
+"desc": "آسمان واقعی، خورشید، ماه، ابر و چرخه‌ی روز و شب با تنظیم ساعت.",
+"when": "برای روز و شب بازی شیراز.",
+"kw": "آسمان روز شب خورشید ماه ابر sky day night",
+"example": "$Sky3D.current_time = 18.5   # ساعت ۶:۳۰ عصر\n$Sky3D.minutes_per_day = 24     # هر روز بازی ۲۴ دقیقه‌ی واقعی",
+"version": "2026-05-19",
+"install": "res://addons/sky_3d",
+"kind": "addon",
+"file": "godot/sky3d.zip",
+"folders": [
+"sky_3d"
+],
+"size": 11332129,
+"offline": true,
+"repo": "https://github.com/TokisanGames/Sky3D"
+},
+{
+"id": "guide",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_input"
+],
+"title": "G.U.I.D.E — سیستم ورودی پیشرفته",
+"desc": "ورودی مدرن: کیبورد، گیم‌پد و لمس، با تغییر کلید در منوی تنظیمات.",
+"when": "برای کنترل‌های ماشین و پیاده با تنظیم کلید.",
+"kw": "ورودی کنترل کیبورد گیم پد دسته input",
+"example": "GUIDE.enable_mapping_context(driving_context)\nif accelerate_action.is_triggered(): speed_up()",
+"version": "2026-10-16",
+"install": "res://addons/guide",
+"kind": "addon",
+"file": "godot/guide.zip",
+"folders": [
+"guide"
+],
+"size": 782753,
+"offline": true,
+"repo": "https://github.com/godotneers/G.U.I.D.E"
+},
+{
+"id": "input_helper",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_input"
+],
+"title": "Input Helper",
+"desc": "تشخیص دستگاه ورودی (کیبورد یا دسته) و نمایش آیکون مناسب.",
+"when": "برای راهنمای کلیدها.",
+"kw": "ورودی دسته کیبورد",
+"example": "InputHelper.device_changed.connect(func(d, i): print(d))",
+"version": "2025-06-08",
+"install": "res://addons/input_helper",
+"kind": "addon",
+"file": "godot/input_helper.zip",
+"folders": [
+"input_helper"
+],
+"size": 17870,
+"offline": true,
+"repo": "https://github.com/nathanhoad/godot_input_helper"
+},
+{
+"id": "virtual_joystick",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_input"
+],
+"title": "Virtual Joystick — جوی‌استیک موبایل",
+"desc": "جوی‌استیک لمسی برای نسخه‌ی اندروید بازی.",
+"when": "برای اجرای بازی روی گوشی S23.",
+"kw": "جوی استیک موبایل لمسی اندروید joystick touch",
+"example": "# صحنه‌ی virtual_joystick.tscn را به UI اضافه کن\n# action_left/right/up/down را به اکشن‌های Input Map وصل کن",
+"version": "2025-01-19",
+"install": "res://addons/virtual_joystick",
+"kind": "addon",
+"file": "godot/virtual_joystick.zip",
+"folders": [
+"virtual_joystick"
+],
+"size": 460617,
+"offline": true,
+"repo": "https://github.com/MarcoFazioRandom/Virtual-Joystick-Godot"
+},
+{
+"id": "maaacks_menus",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ui"
+],
+"title": "Maaack's Menus — منوی آماده",
+"desc": "منوی اصلی، تنظیمات صدا و گرافیک، توقف، تیتراژ و صفحه‌ی بارگذاری آماده.",
+"when": "برای اینکه منوها را از صفر نسازی.",
+"kw": "منو تنظیمات توقف بارگذاری loading menu",
+"example": "# از منوی Project → Tools → Copy Maaack's Menus Template استفاده کن",
+"version": "2026-09-10",
+"install": "res://addons/maaacks_menus_template, res://addons/maaacks_music_controller, res://addons/maaacks_scene_loader, res://addons/maaacks_ui_sound_controller, res://addons/plugin_updater",
+"kind": "addon",
+"file": "godot/maaacks_menus.zip",
+"folders": [
+"maaacks_menus_template",
+"maaacks_music_controller",
+"maaacks_scene_loader",
+"maaacks_ui_sound_controller",
+"plugin_updater"
+],
+"size": 6706155,
+"offline": true,
+"repo": "https://github.com/Maaack/Godot-Menus-Template"
+},
+{
+"id": "scene_manager",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ui"
+],
+"title": "Scene Manager — جابه‌جایی صحنه",
+"desc": "تعویض صحنه با افکت محو شدن.",
+"when": "برای رفتن از منو به بازی.",
+"kw": "صحنه تعویض انتقال scene",
+"example": "SceneManager.change_scene(\"res://game.tscn\")",
+"version": "2024-07-06",
+"install": "res://addons/scene_manager",
+"kind": "addon",
+"file": "godot/scene_manager.zip",
+"folders": [
+"scene_manager"
+],
+"size": 1144845,
+"offline": true,
+"repo": "https://github.com/maktoobgar/scene_manager"
+},
+{
+"id": "panku_console",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ui",
+"godot_testing"
+],
+"title": "Panku Console — کنسول دیباگ",
+"desc": "کنسول داخل بازی برای اجرای دستور و دیدن متغیرها.",
+"when": "برای تست سریع، مثلاً دادن ماشین یا پول در نسخه‌ی تست (در نسخه‌ی فروشی حذفش کن).",
+"kw": "کنسول دیباگ تقلب تست console",
+"example": "# کلید ~ را بزن و بنویس: player.money = 99999",
+"version": "2025-01-25",
+"install": "res://addons/panku_console",
+"kind": "addon",
+"file": "godot/panku_console.zip",
+"folders": [
+"panku_console"
+],
+"size": 167235,
+"offline": true,
+"repo": "https://github.com/Ark2000/PankuConsole"
+},
+{
+"id": "sound_manager",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ui"
+],
+"title": "Sound Manager — مدیریت صدا",
+"desc": "پخش موسیقی و افکت با کنترل حجم و محو شدن.",
+"when": "برای رادیوی ماشین و صداهای محیط.",
+"kw": "صدا موسیقی رادیو sound",
+"example": "SoundManager.play_music(load(\"res://radio.ogg\"))",
+"version": "2026-03-29",
+"install": "res://addons/sound_manager",
+"kind": "addon",
+"file": "godot/sound_manager.zip",
+"folders": [
+"sound_manager"
+],
+"size": 9042,
+"offline": true,
+"repo": "https://github.com/nathanhoad/godot_sound_manager"
+},
+{
+"id": "save_made_easy",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_save"
+],
+"title": "Save Made Easy — ذخیره‌ی بازی",
+"desc": "ذخیره و بارگذاری آسان با رمزنگاری.",
+"when": "برای ذخیره‌ی پول، ماشین‌ها و مأموریت‌ها.",
+"kw": "ذخیره بازی سیو save load",
+"example": "SaveSystem.set_var(\"money\", 5000)\nSaveSystem.save()\nvar m = SaveSystem.get_var(\"money\")",
+"version": "2025-01-01",
+"install": "res://addons/save_system",
+"kind": "addon",
+"file": "godot/save_made_easy.zip",
+"folders": [
+"save_system"
+],
+"size": 124000,
+"offline": true,
+"repo": "https://github.com/AdamKormos/SaveMadeEasy"
+},
+{
+"id": "destruction",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_vehicle"
+],
+"title": "Destruction — تخریب اجسام",
+"desc": "شکستن اجسام به تکه‌های فیزیکی.",
+"when": "برای شکستن جعبه، شیشه و صندوق.",
+"kw": "تخریب شکستن انفجار",
+"example": "$Destruction.destroy()",
+"version": "2024-06-23",
+"install": "res://addons/destruction",
+"kind": "addon",
+"file": "godot/destruction.zip",
+"folders": [
+"destruction"
+],
+"size": 5507,
+"offline": true,
+"repo": "https://github.com/Jummit/godot-destruction-plugin"
+},
+{
+"id": "aseprite_wizard",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ui"
+],
+"title": "Aseprite Wizard",
+"desc": "وارد کردن مستقیم انیمیشن‌های Aseprite.",
+"when": "برای بازی‌های پیکسلی.",
+"kw": "پیکسل انیمیشن aseprite اسپرایت",
+"example": "# فایل ase را بکش روی AnimatedSprite2D",
+"version": "2026-08-17",
+"install": "res://addons/AsepriteWizard",
+"kind": "addon",
+"file": "godot/aseprite_wizard.zip",
+"folders": [
+"AsepriteWizard"
+],
+"size": 111567,
+"offline": true,
+"repo": "https://github.com/viniciusgerevini/godot-aseprite-wizard"
+},
+{
+"id": "gif_exporter",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ui"
+],
+"title": "GIF Exporter",
+"desc": "ضبط گیف از بازی.",
+"when": "برای ساخت گیف تبلیغاتی.",
+"kw": "گیف ضبط",
+"example": "var exporter = GIFExporter.new(w, h)",
+"version": "2026-10-16",
+"install": "res://addons/gdgifexporter",
+"kind": "addon",
+"file": "godot/gif_exporter.zip",
+"folders": [
+"gdgifexporter"
+],
+"size": 18715,
+"offline": true,
+"repo": "https://github.com/Orama-Interactive/Pixelorama"
+},
+{
+"id": "icon_explorer",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ui"
+],
+"title": "Icon Explorer",
+"desc": "جستجو و استفاده از هزاران آیکون رایگان در ویرایشگر.",
+"when": "برای آیکون UI.",
+"kw": "آیکون",
+"example": "# Project → Tools → Icon Explorer",
+"version": "2026-08-14",
+"install": "res://addons/icon_explorer",
+"kind": "addon",
+"file": "godot/icon_explorer.zip",
+"folders": [
+"icon_explorer"
+],
+"size": 61041,
+"offline": true,
+"repo": "https://github.com/kenyoni-software/godot-addons"
+},
+{
+"id": "tpl_kenney_racing",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_vehicle",
+"godot_starters"
+],
+"title": "پروژه‌ی آماده: مسابقه‌ی ماشین (Kenney)",
+"desc": "پروژه‌ی کامل Godot 4 با ماشین فیزیکی، پیست و دوربین. کد ماشینش نقطه‌ی شروع خوبی برای رانندگی بازی شیراز است.",
+"when": "برای یادگیری فیزیک ماشین و رانندگی.",
+"kw": "ماشین رانندگی مسابقه vehicle car racing",
+"example": "# پروژه را باز کن و اسکریپت vehicle.gd را بخوان",
+"version": "2026-08-21",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_kenney_racing.zip",
+"folders": [],
+"size": 1526192,
+"offline": true,
+"repo": "https://github.com/KenneyNL/Starter-Kit-Racing"
+},
+{
+"id": "tpl_truck_town",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_vehicle",
+"godot_starters"
+],
+"title": "دموی رسمی: Truck Town (ماشین با VehicleBody3D)",
+"desc": "دموی رسمی Godot از رانندگی چند ماشین در یک شهر کوچک با VehicleBody3D.",
+"when": "برای فهم VehicleWheel3D، تعلیق و فرمان.",
+"kw": "ماشین کامیون شهر رانندگی vehicle",
+"example": "# فایل vehicle.gd را ببین",
+"version": "2026-10-08",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_truck_town.zip",
+"folders": [],
+"size": 8379529,
+"offline": true,
+"repo": "https://github.com/godotengine/godot-demo-projects"
+},
+{
+"id": "tpl_kenney_city",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_starters",
+"godot_terrain"
+],
+"title": "پروژه‌ی آماده: شهرساز (Kenney)",
+"desc": "ساخت شهر روی شبکه با جاده و ساختمان.",
+"when": "ایده برای ساخت سریع بلوک‌های شهر.",
+"kw": "شهر ساختمان شهرسازی city builder",
+"example": "# پروژه را باز کن",
+"version": "2026-03-12",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_kenney_city.zip",
+"folders": [],
+"size": 1665872,
+"offline": true,
+"repo": "https://github.com/KenneyNL/Starter-Kit-City-Builder"
+},
+{
+"id": "tpl_kenney_platformer",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_starters"
+],
+"title": "پروژه‌ی آماده: پلتفرمر سه‌بعدی (Kenney)",
+"desc": "کنترل شخصیت سه‌بعدی، پرش، سکه و دوربین.",
+"when": "برای یادگیری کنترل شخصیت.",
+"kw": "شخصیت پرش سکوبازی platformer",
+"example": "# پروژه را باز کن",
+"version": "2026-03-12",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_kenney_platformer.zip",
+"folders": [],
+"size": 4547312,
+"offline": true,
+"repo": "https://github.com/KenneyNL/Starter-Kit-3D-Platformer"
+},
+{
+"id": "tpl_kenney_fps",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_starters"
+],
+"title": "پروژه‌ی آماده: اول‌شخص شوتر (Kenney)",
+"desc": "کنترل اول‌شخص، اسلحه و دشمن.",
+"when": "برای یادگیری شلیک و دشمن.",
+"kw": "تیراندازی اسلحه اول شخص fps شوتر",
+"example": "# پروژه را باز کن",
+"version": "2026-03-12",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_kenney_fps.zip",
+"folders": [],
+"size": 4567837,
+"offline": true,
+"repo": "https://github.com/KenneyNL/Starter-Kit-FPS"
+},
+{
+"id": "tpl_third_person",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_starters"
+],
+"title": "پروژه‌ی آماده: شخصیت سوم‌شخص (GDQuest)",
+"desc": "کنترل سوم‌شخص حرفه‌ای با دوربین، انیمیشن دویدن و پرش و دشمن.",
+"when": "برای پیاده‌روی شخصیت در بازی GTA‌مانند.",
+"kw": "سوم شخص شخصیت دویدن third person character",
+"example": "# پروژه را باز کن",
+"version": "2026-08-15",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_third_person.zip",
+"folders": [],
+"size": 28922174,
+"offline": true,
+"repo": "https://github.com/gdquest-demos/godot-4-3d-third-person-controller"
+},
+{
+"id": "tpl_platformer3d",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_starters"
+],
+"title": "دموی رسمی: پلتفرمر سه‌بعدی",
+"desc": "دموی رسمی Godot.",
+"when": "برای یادگیری.",
+"kw": "پلتفرمر سه بعدی دمو",
+"example": "# پروژه را باز کن",
+"version": "2026-10-08",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_platformer3d.zip",
+"folders": [],
+"size": 2572790,
+"offline": true,
+"repo": "https://github.com/godotengine/godot-demo-projects"
+},
+{
+"id": "tpl_squash_creeps",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_starters"
+],
+"title": "دموی رسمی: Squash the Creeps",
+"desc": "پروژه‌ی آموزش رسمی Godot برای اولین بازی سه‌بعدی.",
+"when": "اگر تازه شروع کرده‌ای، از این شروع کن.",
+"kw": "آموزش اولین بازی شروع مبتدی",
+"example": "# پروژه را باز کن",
+"version": "2026-10-08",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_squash_creeps.zip",
+"folders": [],
+"size": 1981346,
+"offline": true,
+"repo": "https://github.com/godotengine/godot-demo-projects"
+},
+{
+"id": "tpl_navigation",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_ai",
+"godot_starters"
+],
+"title": "دموی رسمی: مسیریابی",
+"desc": "NavigationAgent3D برای حرکت NPC روی نقشه.",
+"when": "برای رهگذرهایی که در پیاده‌رو راه می‌روند.",
+"kw": "مسیریابی navigation npc پیدا کردن مسیر",
+"example": "$NavigationAgent3D.target_position = target",
+"version": "2026-10-08",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_navigation.zip",
+"folders": [],
+"size": 396567,
+"offline": true,
+"repo": "https://github.com/godotengine/godot-demo-projects"
+},
+{
+"id": "tpl_ragdoll",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_vehicle",
+"godot_starters"
+],
+"title": "دموی رسمی: رگ‌دال",
+"desc": "شخصیتی که بعد از ضربه مثل عروسک می‌افتد.",
+"when": "برای وقتی ماشین به کسی می‌خورد.",
+"kw": "رگدال افتادن ضربه ragdoll",
+"example": "# Skeleton3D → PhysicalBoneSimulator3D",
+"version": "2026-10-08",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_ragdoll.zip",
+"folders": [],
+"size": 2707072,
+"offline": true,
+"repo": "https://github.com/godotengine/godot-demo-projects"
+},
+{
+"id": "tpl_voxel",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_starters"
+],
+"title": "دموی رسمی: دنیای وکسلی",
+"desc": "دنیای مکعبی شبیه ماینکرفت.",
+"when": "برای یادگیری ساخت دنیا با کد.",
+"kw": "وکسل ماینکرفت مکعب",
+"example": "# پروژه را باز کن",
+"version": "2026-10-08",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_voxel.zip",
+"folders": [],
+"size": 1289448,
+"offline": true,
+"repo": "https://github.com/godotengine/godot-demo-projects"
+},
+{
+"id": "tpl_procgen",
+"eco": "godot",
+"cat": "game",
+"topics": [
+"godot_starters"
+],
+"title": "نمونه‌های تولید تصادفی (GDQuest)",
+"desc": "مجموعه نمونه‌ی ساخت تصادفی نقشه و دانجن.",
+"when": "برای تولید خودکار محیط.",
+"kw": "تصادفی procedural نقشه دانجن",
+"example": "# پروژه را باز کن",
+"version": "2026-06-26",
+"install": "پروژه‌ی کامل",
+"kind": "template",
+"file": "godot/tpl_procgen.zip",
+"folders": [],
+"size": 217149,
+"offline": true,
+"repo": "https://github.com/GDQuest/godot-procedural-generation"
+},
+{
+"id": "compose",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_ui"
+],
+"title": "Jetpack Compose — رابط کاربری مدرن",
+"desc": "روش رسمی و جدید ساخت UI در اندروید با کد Kotlin، بدون XML.",
+"when": "برای هر برنامه‌ی اندرویدی جدید.",
+"kw": "رابط کاربری ui compose صفحه طراحی",
+"example": "@Composable\nfun Greeting(name: String) {\n    Text(\"سلام $name\", style = MaterialTheme.typography.titleLarge)\n}",
+"version": "",
+"install": "implementation(platform(\"androidx.compose:compose-bom:2024.10.01\"))\nimplementation(\"androidx.compose.ui:ui\")\nimplementation(\"androidx.compose.material3:material3\")\nimplementation(\"androidx.activity:activity-compose:1.9.3\")\nimplementation(\"androidx.compose.ui:ui-tooling-preview\")",
+"note": "پلاگین org.jetbrains.kotlin.plugin.compose لازم است",
+"offline": false,
+"repo": ""
+},
+{
+"id": "core_ktx",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_ui"
+],
+"title": "Core KTX و AppCompat و Material",
+"desc": "پایه‌ی هر پروژه‌ی اندروید: اکستنشن‌های Kotlin، سازگاری و کامپوننت‌های متریال.",
+"when": "همیشه.",
+"kw": "پایه اندروید appcompat material",
+"example": "val color = ContextCompat.getColor(this, R.color.primary)",
+"version": "",
+"install": "implementation(\"androidx.core:core-ktx:1.13.1\")\nimplementation(\"androidx.appcompat:appcompat:1.7.0\")\nimplementation(\"com.google.android.material:material:1.12.0\")\nimplementation(\"androidx.constraintlayout:constraintlayout:2.2.0\")\nimplementation(\"androidx.recyclerview:recyclerview:1.3.2\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "navigation_compose",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_ui"
+],
+"title": "Navigation Compose — ناوبری صفحات",
+"desc": "جابه‌جایی بین صفحه‌های Compose.",
+"when": "برای برنامه‌های چندصفحه‌ای.",
+"kw": "ناوبری صفحه navigation",
+"example": "val nav = rememberNavController()\nNavHost(nav, startDestination = \"home\") {\n    composable(\"home\") { Home(onOpen = { nav.navigate(\"detail\") }) }\n    composable(\"detail\") { Detail() }\n}",
+"version": "",
+"install": "implementation(\"androidx.navigation:navigation-compose:2.8.4\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "lifecycle",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_ui"
+],
+"title": "ViewModel و Lifecycle",
+"desc": "نگه داشتن داده هنگام چرخش صفحه و جدا کردن منطق از UI.",
+"when": "در همه‌ی برنامه‌ها.",
+"kw": "viewmodel وضعیت lifecycle معماری",
+"example": "class MainVm : ViewModel() {\n    val count = MutableStateFlow(0)\n    fun inc() { count.value++ }\n}",
+"version": "",
+"install": "implementation(\"androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7\")\nimplementation(\"androidx.lifecycle:lifecycle-runtime-ktx:2.8.7\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "coroutines",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_network"
+],
+"title": "Coroutines — برنامه‌نویسی همزمان",
+"desc": "کارهای سنگین و شبکه بدون قفل شدن UI.",
+"when": "همیشه.",
+"kw": "همزمان async thread کوروتین",
+"example": "viewModelScope.launch {\n    val data = withContext(Dispatchers.IO) { api.load() }\n    state.value = data\n}",
+"version": "",
+"install": "implementation(\"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "retrofit",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_network"
+],
+"title": "Retrofit — ارتباط با API",
+"desc": "تعریف API با اینترفیس و تبدیل خودکار JSON.",
+"when": "استاندارد ارتباط با سرور در اندروید.",
+"kw": "api سرور درخواست retrofit اینترنت",
+"example": "interface Api {\n    @GET(\"products\") suspend fun products(): List<Product>\n}\nval api = Retrofit.Builder().baseUrl(\"https://example.com/api/\")\n    .addConverterFactory(GsonConverterFactory.create()).build().create(Api::class.java)",
+"version": "",
+"install": "implementation(\"com.squareup.retrofit2:retrofit:2.11.0\")\nimplementation(\"com.squareup.retrofit2:converter-gson:2.11.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "okhttp",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_network",
+"sec_network"
+],
+"title": "OkHttp — کلاینت HTTP و Certificate Pinning",
+"desc": "کلاینت HTTP پایه، لاگ درخواست‌ها و پین کردن گواهی SSL.",
+"when": "زیر Retrofit، و برای امنیت شبکه.",
+"kw": "http شبکه ssl pinning گواهی",
+"example": "val client = OkHttpClient.Builder()\n    .certificatePinner(CertificatePinner.Builder()\n        .add(\"example.com\", \"sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\").build())\n    .build()",
+"version": "",
+"install": "implementation(\"com.squareup.okhttp3:okhttp:4.12.0\")\nimplementation(\"com.squareup.okhttp3:logging-interceptor:4.12.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "gson",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_network"
+],
+"title": "Gson — تبدیل JSON",
+"desc": "تبدیل JSON به کلاس و برعکس.",
+"when": "برای کار با API.",
+"kw": "json gson",
+"example": "val p = Gson().fromJson(json, Product::class.java)",
+"version": "",
+"install": "implementation(\"com.google.code.gson:gson:2.11.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "kotlinx_serialization",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_network"
+],
+"title": "Kotlinx Serialization",
+"desc": "سریال‌سازی رسمی Kotlin، سریع و بدون reflection.",
+"when": "جایگزین مدرن Gson.",
+"kw": "json سریال",
+"example": "@Serializable data class P(val name: String)\nval p = Json.decodeFromString<P>(text)",
+"version": "",
+"install": "implementation(\"org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3\")",
+"note": "پلاگین org.jetbrains.kotlin.plugin.serialization لازم است",
+"offline": false,
+"repo": ""
+},
+{
+"id": "ktor_client",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_network"
+],
+"title": "Ktor Client",
+"desc": "کلاینت HTTP چندسکویی JetBrains.",
+"when": "اگر Kotlin Multiplatform کار می‌کنی.",
+"kw": "http ktor",
+"example": "val r: String = HttpClient(Android).get(\"https://example.com\").body()",
+"version": "",
+"install": "implementation(\"io.ktor:ktor-client-android:2.3.12\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "room",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_db"
+],
+"title": "Room — دیتابیس رسمی",
+"desc": "لایه‌ی رسمی روی SQLite با بررسی کوئری در زمان کامپایل.",
+"when": "برای داده‌های جدولی.",
+"kw": "دیتابیس sqlite room جدول",
+"example": "@Entity data class Item(@PrimaryKey val id: Int, val name: String)\n@Dao interface ItemDao {\n    @Query(\"SELECT * FROM Item\") suspend fun all(): List<Item>\n    @Insert suspend fun add(i: Item)\n}",
+"version": "",
+"install": "implementation(\"androidx.room:room-runtime:2.6.1\")\nimplementation(\"androidx.room:room-ktx:2.6.1\")\nksp(\"androidx.room:room-compiler:2.6.1\")",
+"note": "پلاگین com.google.devtools.ksp لازم است",
+"offline": false,
+"repo": ""
+},
+{
+"id": "datastore",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_db"
+],
+"title": "DataStore — ذخیره‌ی تنظیمات",
+"desc": "جایگزین مدرن SharedPreferences.",
+"when": "برای تنظیمات.",
+"kw": "تنظیمات ذخیره datastore",
+"example": "val KEY = booleanPreferencesKey(\"dark\")\ncontext.dataStore.edit { it[KEY] = true }",
+"version": "",
+"install": "implementation(\"androidx.datastore:datastore-preferences:1.1.1\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "paging",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_db"
+],
+"title": "Paging — صفحه‌بندی لیست",
+"desc": "بارگذاری تدریجی لیست‌های بلند.",
+"when": "برای لیست محصولات زیاد.",
+"kw": "صفحه بندی لیست بلند paging",
+"example": "val items = pager.flow.collectAsLazyPagingItems()",
+"version": "",
+"install": "implementation(\"androidx.paging:paging-runtime:3.3.2\")\nimplementation(\"androidx.paging:paging-compose:3.3.2\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "workmanager",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_db"
+],
+"title": "WorkManager — کار پس‌زمینه",
+"desc": "اجرای کار در پس‌زمینه حتی بعد از بسته شدن برنامه.",
+"when": "برای همگام‌سازی و پشتیبان‌گیری.",
+"kw": "پس زمینه زمانبندی background",
+"example": "WorkManager.getInstance(ctx).enqueue(OneTimeWorkRequestBuilder<SyncWorker>().build())",
+"version": "",
+"install": "implementation(\"androidx.work:work-runtime-ktx:2.10.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "camerax",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_media_ml"
+],
+"title": "CameraX — دوربین",
+"desc": "API ساده و سازگار برای دوربین.",
+"when": "برای عکس، اسکن و پردازش زنده.",
+"kw": "دوربین camera عکس",
+"example": "val provider = ProcessCameraProvider.getInstance(ctx).get()\nprovider.bindToLifecycle(owner, CameraSelector.DEFAULT_BACK_CAMERA, preview)",
+"version": "",
+"install": "implementation(\"androidx.camera:camera-core:1.4.0\")\nimplementation(\"androidx.camera:camera-camera2:1.4.0\")\nimplementation(\"androidx.camera:camera-lifecycle:1.4.0\")\nimplementation(\"androidx.camera:camera-view:1.4.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "tflite",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_media_ml"
+],
+"title": "TensorFlow Lite — هوش مصنوعی روی گوشی",
+"desc": "اجرای مدل‌های یادگیری ماشین (مثل YOLO) روی گوشی، با GPU.",
+"when": "برای تشخیص اشیا و پروژه‌های Edge AI.",
+"kw": "هوش مصنوعی مدل yolo tflite تشخیص شی ai",
+"example": "val interpreter = Interpreter(FileUtil.loadMappedFile(ctx, \"model.tflite\"))\ninterpreter.run(input, output)",
+"version": "",
+"install": "implementation(\"org.tensorflow:tensorflow-lite:2.16.1\")\nimplementation(\"org.tensorflow:tensorflow-lite-gpu:2.16.1\")\nimplementation(\"org.tensorflow:tensorflow-lite-support:0.4.4\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "mlkit",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_media_ml"
+],
+"title": "ML Kit — بارکد و متن",
+"desc": "اسکن بارکد و تشخیص متن بدون نیاز به مدل جداگانه.",
+"when": "برای اسکن کالا.",
+"kw": "بارکد متن ocr mlkit",
+"example": "BarcodeScanning.getClient().process(image).addOnSuccessListener { codes -> }",
+"version": "",
+"install": "implementation(\"com.google.mlkit:barcode-scanning:17.3.0\")\nimplementation(\"com.google.mlkit:text-recognition:16.0.1\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "media3",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_media_ml"
+],
+"title": "Media3 ExoPlayer — پخش ویدیو و صدا",
+"desc": "پخش‌کننده‌ی رسمی و قدرتمند.",
+"when": "برای ویدیو و پادکست.",
+"kw": "ویدیو صدا پخش exoplayer",
+"example": "val p = ExoPlayer.Builder(ctx).build(); p.setMediaItem(MediaItem.fromUri(url)); p.prepare(); p.play()",
+"version": "",
+"install": "implementation(\"androidx.media3:media3-exoplayer:1.4.1\")\nimplementation(\"androidx.media3:media3-ui:1.4.1\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "coil",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_ui"
+],
+"title": "Coil — نمایش عکس",
+"desc": "بارگذاری و کش عکس، مخصوص Compose.",
+"when": "برای عکس‌های اینترنتی.",
+"kw": "عکس تصویر کش coil",
+"example": "AsyncImage(model = url, contentDescription = null)",
+"version": "",
+"install": "implementation(\"io.coil-kt:coil-compose:2.7.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "glide",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_ui"
+],
+"title": "Glide — نمایش عکس (View)",
+"desc": "بارگذاری عکس برای برنامه‌های XML.",
+"when": "در پروژه‌های قدیمی‌تر.",
+"kw": "عکس glide",
+"example": "Glide.with(this).load(url).into(imageView)",
+"version": "",
+"install": "implementation(\"com.github.bumptech.glide:glide:4.16.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "lottie_android",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_ui"
+],
+"title": "Lottie Android",
+"desc": "انیمیشن‌های Lottie.",
+"when": "برای لودینگ و انیمیشن.",
+"kw": "انیمیشن lottie",
+"example": "LottieAnimation(rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.anim)).value)",
+"version": "",
+"install": "implementation(\"com.airbnb.android:lottie-compose:6.6.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "hilt",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_di"
+],
+"title": "Hilt — تزریق وابستگی",
+"desc": "تزریق وابستگی رسمی گوگل.",
+"when": "برای پروژه‌های بزرگ.",
+"kw": "تزریق وابستگی di hilt dagger",
+"example": "@HiltAndroidApp class App : Application()\n@AndroidEntryPoint class MainActivity : ComponentActivity()",
+"version": "",
+"install": "implementation(\"com.google.dagger:hilt-android:2.52\")\nksp(\"com.google.dagger:hilt-compiler:2.52\")",
+"note": "پلاگین com.google.dagger.hilt.android و ksp لازم است",
+"offline": false,
+"repo": ""
+},
+{
+"id": "koin",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_di"
+],
+"title": "Koin — تزریق وابستگی ساده",
+"desc": "تزریق وابستگی سبک، بدون تولید کد.",
+"when": "ساده‌تر از Hilt.",
+"kw": "تزریق وابستگی koin di",
+"example": "val appModule = module { single { Api() } }\nstartKoin { modules(appModule) }",
+"version": "",
+"install": "implementation(\"io.insert-koin:koin-android:4.0.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "timber",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_di"
+],
+"title": "Timber — لاگ",
+"desc": "لاگ‌گیری راحت.",
+"when": "برای دیباگ.",
+"kw": "لاگ log دیباگ",
+"example": "Timber.plant(Timber.DebugTree())\nTimber.d(\"شروع\")",
+"version": "",
+"install": "implementation(\"com.jakewharton.timber:timber:5.0.1\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "leakcanary",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_di"
+],
+"title": "LeakCanary — پیدا کردن نشت حافظه",
+"desc": "پیدا کردن خودکار نشت حافظه در نسخه‌ی دیباگ.",
+"when": "برای برنامه‌هایی که کند می‌شوند.",
+"kw": "نشت حافظه memory leak",
+"example": "// فقط اضافه کن، خودش کار می‌کند",
+"version": "",
+"install": "debugImplementation(\"com.squareup.leakcanary:leakcanary-android:2.14\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "osmdroid",
+"eco": "kotlin",
+"cat": "dev",
+"topics": [
+"android_ui"
+],
+"title": "osmdroid — نقشه بدون گوگل",
+"desc": "نقشه‌ی OpenStreetMap برای اندروید.",
+"when": "وقتی Google Maps در دسترس نیست.",
+"kw": "نقشه map openstreetmap",
+"example": "map.setTileSource(TileSourceFactory.MAPNIK)\nmap.controller.setCenter(GeoPoint(29.61, 52.53))",
+"version": "",
+"install": "implementation(\"org.osmdroid:osmdroid-android:6.1.20\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "libgdx",
+"eco": "kotlin",
+"cat": "game",
+"topics": [
+"android_game"
+],
+"title": "LibGDX — موتور بازی جاوا و Kotlin",
+"desc": "موتور بازی دوبعدی و سه‌بعدی برای اندروید و دسکتاپ، همراه با فیزیک Box2D.",
+"when": "برای بازی با Kotlin خالص.",
+"kw": "بازی موتور libgdx box2d game",
+"example": "class MyGame : ApplicationAdapter() {\n    lateinit var batch: SpriteBatch\n    override fun create() { batch = SpriteBatch() }\n    override fun render() { ScreenUtils.clear(0f, 0f, 0f, 1f) }\n}",
+"version": "",
+"install": "implementation(\"com.badlogicgames.gdx:gdx:1.12.1\")\nimplementation(\"com.badlogicgames.gdx:gdx-backend-android:1.12.1\")\nimplementation(\"com.badlogicgames.gdx:gdx-box2d:1.12.1\")",
+"note": "کتابخانه‌های native (gdx-platform) هم لازم است",
+"offline": false,
+"repo": ""
+},
+{
+"id": "sceneview",
+"eco": "kotlin",
+"cat": "game",
+"topics": [
+"android_game"
+],
+"title": "SceneView — نمایش مدل سه‌بعدی",
+"desc": "نمایش مدل‌های glb و gltf با Filament در Compose.",
+"when": "برای نمایش سه‌بعدی محصول یا صحنه‌ی ساده.",
+"kw": "سه بعدی 3d مدل glb",
+"example": "Scene(modifier = Modifier.fillMaxSize(), childNodes = rememberNodes { add(ModelNode(modelLoader.createModelInstance(\"car.glb\"))) })",
+"version": "",
+"install": "implementation(\"io.github.sceneview:sceneview:2.2.1\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "security_crypto",
+"eco": "kotlin",
+"cat": "security",
+"topics": [
+"sec_storage"
+],
+"title": "Security Crypto — ذخیره‌ی رمزشده",
+"desc": "EncryptedSharedPreferences و EncryptedFile با کلید داخل Keystore.",
+"when": "برای توکن و داده‌ی حساس.",
+"kw": "ذخیره امن رمز شده keystore",
+"example": "val key = MasterKey.Builder(ctx).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()\nval prefs = EncryptedSharedPreferences.create(ctx, \"secure\", key,\n    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,\n    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)",
+"version": "",
+"install": "implementation(\"androidx.security:security-crypto:1.1.0-alpha06\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "biometric",
+"eco": "kotlin",
+"cat": "security",
+"topics": [
+"sec_auth"
+],
+"title": "Biometric — اثر انگشت و چهره",
+"desc": "پنجره‌ی استاندارد احراز هویت بیومتریک.",
+"when": "برای قفل برنامه.",
+"kw": "اثر انگشت چهره بیومتریک fingerprint",
+"example": "val prompt = BiometricPrompt(activity, executor, callback)\nprompt.authenticate(BiometricPrompt.PromptInfo.Builder()\n    .setTitle(\"ورود\").setNegativeButtonText(\"لغو\").build())",
+"version": "",
+"install": "implementation(\"androidx.biometric:biometric:1.1.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "tink",
+"eco": "kotlin",
+"cat": "security",
+"topics": [
+"sec_crypto"
+],
+"title": "Tink — رمزنگاری امن گوگل",
+"desc": "رمزنگاری با API ساده که جلوی اشتباهات رایج را می‌گیرد.",
+"when": "انتخاب پیشنهادی برای رمزنگاری در اندروید.",
+"kw": "رمزنگاری tink aes",
+"example": "AeadConfig.register()\nval h = KeysetHandle.generateNew(KeyTemplates.get(\"AES256_GCM\"))\nval aead = h.getPrimitive(Aead::class.java)\nval ct = aead.encrypt(plain, null)",
+"version": "",
+"install": "implementation(\"com.google.crypto.tink:tink-android:1.15.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "sqlcipher",
+"eco": "kotlin",
+"cat": "security",
+"topics": [
+"sec_storage"
+],
+"title": "SQLCipher — دیتابیس رمزشده",
+"desc": "SQLite با رمزنگاری کامل فایل.",
+"when": "برای داده‌های مالی و حساب‌ها.",
+"kw": "دیتابیس رمز شده sqlcipher",
+"example": "System.loadLibrary(\"sqlcipher\")\nval db = SQLiteDatabase.openOrCreateDatabase(file, password, null, null)",
+"version": "",
+"install": "implementation(\"net.zetetic:sqlcipher-android:4.6.1\")\nimplementation(\"androidx.sqlite:sqlite:2.4.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "bouncycastle",
+"eco": "kotlin",
+"cat": "security",
+"topics": [
+"sec_crypto"
+],
+"title": "Bouncy Castle",
+"desc": "کتابخانه‌ی کامل الگوریتم‌های رمزنگاری.",
+"when": "برای الگوریتم‌های خاص.",
+"kw": "رمزنگاری bouncycastle",
+"example": "Security.addProvider(BouncyCastleProvider())",
+"version": "",
+"install": "implementation(\"org.bouncycastle:bcprov-jdk18on:1.78.1\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "java_jwt",
+"eco": "kotlin",
+"cat": "security",
+"topics": [
+"sec_auth"
+],
+"title": "Java JWT",
+"desc": "ساخت و بررسی توکن JWT.",
+"when": "برای سیستم ورود.",
+"kw": "jwt توکن ورود",
+"example": "val t = JWT.create().withClaim(\"id\", 1).sign(Algorithm.HMAC256(secret))",
+"version": "",
+"install": "implementation(\"com.auth0:java-jwt:4.4.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "conscrypt",
+"eco": "kotlin",
+"cat": "security",
+"topics": [
+"sec_network"
+],
+"title": "Conscrypt — TLS به‌روز",
+"desc": "پیاده‌سازی به‌روز TLS 1.3 برای گوشی‌های قدیمی.",
+"when": "برای اتصال امن روی اندرویدهای قدیمی.",
+"kw": "tls ssl امنیت شبکه",
+"example": "Security.insertProviderAt(Conscrypt.newProvider(), 1)",
+"version": "",
+"install": "implementation(\"org.conscrypt:conscrypt-android:2.5.2\")",
+"note": "",
+"offline": false,
+"repo": ""
+},
+{
+"id": "rootbeer",
+"eco": "kotlin",
+"cat": "security",
+"topics": [
+"sec_app"
+],
+"title": "RootBeer — تشخیص روت",
+"desc": "تشخیص گوشی روت‌شده.",
+"when": "برای برنامه‌های مالی.",
+"kw": "روت root تشخیص",
+"example": "if (RootBeer(ctx).isRooted) { /* هشدار */ }",
+"version": "",
+"install": "implementation(\"com.scottyab:rootbeer-lib:0.1.0\")",
+"note": "",
+"offline": false,
+"repo": ""
+}
+],
+"topics": [
+{
+"id": "game2d",
+"cat": "game",
+"icon": "sports_esports",
+"title": "ساخت بازی دوبعدی با Flutter",
+"kw": "بازی دوبعدی flame شروع بازی سازی",
+"sections": [
+{
+"h": "از کجا شروع کنم؟",
+"p": "برای بازی دوبعدی در Flutter، موتور Flame انتخاب اصلی است. یک کلاس از FlameGame می‌سازی، کامپوننت‌ها (بازیکن، دشمن، سکه) را به آن اضافه می‌کنی و با GameWidget نمایشش می‌دهی. هر کامپوننت متد update(dt) دارد که هر فریم اجرا می‌شود و dt زمان گذشته از فریم قبل است.",
+"code": ""
+},
+{
+"h": "ساختار پیشنهادی پروژه",
+"p": "پوشه‌ی lib/game برای کلاس بازی، lib/game/components برای بازیکن و دشمن، و assets/images و assets/audio برای فایل‌ها. اگر بازی RPG از نمای بالاست، Bonfire خیلی جلوترت می‌اندازد چون جوی‌استیک، دشمن و نقشه را آماده دارد.",
+"code": ""
+},
+{
+"h": "حرکت بازیکن با کیبورد",
+"p": "با میکسین KeyboardHandler کلیدها را می‌گیری و در update موقعیت را تغییر می‌دهی:",
+"code": "class Player extends SpriteComponent with KeyboardHandler {\n  final Vector2 velocity = Vector2.zero();\n  @override\n  bool onKeyEvent(KeyEvent e, Set<LogicalKeyboardKey> keys) {\n    velocity.x = (keys.contains(LogicalKeyboardKey.arrowRight) ? 1 : 0)\n               - (keys.contains(LogicalKeyboardKey.arrowLeft) ? 1 : 0);\n    return true;\n  }\n  @override\n  void update(double dt) => position += velocity * 200 * dt;\n}\n// در بازی: class MyGame extends FlameGame with HasKeyboardHandlerComponents"
+},
+{
+"h": "برخورد",
+"p": "به کامپوننت‌ها RectangleHitbox یا CircleHitbox اضافه کن، میکسین CollisionCallbacks بگذار و onCollision را پیاده کن. به بازی هم HasCollisionDetection اضافه کن.",
+"code": "class Coin extends SpriteComponent with CollisionCallbacks {\n  @override\n  Future<void> onLoad() async => add(CircleHitbox());\n  @override\n  void onCollision(Set<Vector2> p, PositionComponent other) {\n    if (other is Player) removeFromParent();\n  }\n}"
+},
+{
+"h": "قدم بعدی",
+"p": "صدا با flame_audio، فیزیک واقعی با flame_forge2d، مرحله‌سازی با Tiled و flame_tiled، و منو و امتیاز با flame_bloc.",
+"code": ""
+}
+],
+"libs": [
+"flame",
+"flame_bloc",
+"flame_riverpod",
+"flame_svg",
+"flame_lottie",
+"flame_noise",
+"bonfire",
+"sensors_plus"
+]
+},
+{
+"id": "game_physics",
+"cat": "game",
+"icon": "science",
+"title": "فیزیک در بازی",
+"kw": "فیزیک جاذبه برخورد جرم box2d forge2d",
+"sections": [
+{
+"h": "کی فیزیک واقعی لازم است؟",
+"p": "اگر فقط حرکت ساده و برخورد می‌خواهی، Hitboxهای خود Flame کافی است. اگر اجسام باید بیفتند، بغلتند، روی هم تلنبار شوند یا با فنر و طناب وصل شوند، از Forge2D (همان Box2D) استفاده کن.",
+"code": ""
+},
+{
+"h": "واحدها مهم‌اند",
+"p": "Box2D با متر کار می‌کند، نه پیکسل. اجسام را بین ۰٫۱ تا ۱۰ متر نگه دار. Forge2DGame خودش zoom را تنظیم می‌کند (پیش‌فرض ۱۰ پیکسل برای هر متر).",
+"code": ""
+},
+{
+"h": "سه نوع بدنه",
+"p": "static: زمین و دیوار، هیچ‌وقت حرکت نمی‌کند. dynamic: توپ و جعبه، تحت تأثیر نیروها. kinematic: سکوی متحرک که با کد جابه‌جا می‌شود.",
+"code": ""
+},
+{
+"h": "اعمال نیرو",
+"p": "برای پرش از ضربه (impulse) استفاده کن، برای موتور ماشین از نیروی پیوسته (force):",
+"code": "body.applyLinearImpulse(Vector2(0, -50));   // پرش\nbody.applyForce(Vector2(30, 0));            // هل دادن مداوم"
+},
+{
+"h": "در Godot",
+"p": "Godot فیزیک داخلی دارد: RigidBody3D برای اجسام، CharacterBody3D برای شخصیت و VehicleBody3D برای ماشین. از نسخه‌ی 4.4 موتور Jolt داخل خود Godot است. در Project Settings → Physics → 3D آن را انتخاب کن تا پایداری بیشتر شود.",
+"code": ""
+}
+],
+"libs": [
+"flame_forge2d",
+"forge2d",
+"vector_math"
+]
+},
+{
+"id": "game_audio",
+"cat": "game",
+"icon": "music_note",
+"title": "صدا و موسیقی بازی",
+"kw": "صدا موسیقی افکت آهنگ رادیو",
+"sections": [
+{
+"h": "دو نوع صدا",
+"p": "افکت‌های کوتاه مثل شلیک و بوق را از قبل بارگذاری کن تا بدون تأخیر پخش شوند. موسیقی طولانی را استریم کن. فرمت ogg برای موسیقی و wav برای افکت‌های خیلی کوتاه مناسب است.",
+"code": ""
+},
+{
+"h": "Flutter",
+"p": "در Flame از FlameAudio.play برای افکت و FlameAudio.bgm برای موسیقی استفاده کن. خارج از بازی، audioplayers کافی است.",
+"code": "await FlameAudio.audioCache.loadAll(['horn.wav']);\nFlameAudio.play('horn.wav', volume: 0.8);"
+},
+{
+"h": "Godot",
+"p": "AudioStreamPlayer3D صدا را سه‌بعدی می‌کند؛ صدای ماشین دورتر آرام‌تر شنیده می‌شود. برای صدای موتور، pitch_scale را با دور موتور تغییر بده:",
+"code": "$EngineSound.pitch_scale = lerp(0.8, 2.0, rpm / max_rpm)"
+}
+],
+"libs": [
+"flame_audio",
+"audioplayers"
+]
+},
+{
+"id": "game_maps",
+"cat": "game",
+"icon": "map",
+"title": "نقشه و مرحله‌سازی (Tiled)",
+"kw": "نقشه مرحله لول tiled کاشی",
+"sections": [
+{
+"h": "ابزار",
+"p": "نرم‌افزار رایگان Tiled را نصب کن، تایل‌ست (تصویر کاشی‌ها) بساز و نقشه را نقاشی کن. لایه‌ی Object هم برای جای سکه، دشمن و نقطه‌ی شروع بگذار.",
+"code": ""
+},
+{
+"h": "بارگذاری",
+"p": "فایل tmx را در assets/tiles قرار بده و در pubspec معرفی کن:",
+"code": "final map = await TiledComponent.load('level1.tmx', Vector2.all(16));\nworld.add(map);\nfinal spawns = map.tileMap.getLayer<ObjectGroup>('spawns');\nfor (final o in spawns!.objects) { world.add(Enemy(Vector2(o.x, o.y))); }"
+},
+{
+"h": "Bonfire",
+"p": "Bonfire نقشه‌ی Tiled را مستقیم می‌خواند و از اشیای نقشه دشمن و آیتم می‌سازد.",
+"code": ""
+}
+],
+"libs": [
+"flame_tiled",
+"tiled",
+"bonfire"
+]
+},
+{
+"id": "godot_vehicle",
+"cat": "game",
+"icon": "directions_car",
+"title": "ماشین و رانندگی در Godot (مخصوص بازی شیراز)",
+"kw": "ماشین رانندگی فرمان ترمز دستی دریفت vehicle گاز فیزیک تعلیق خودرو",
+"sections": [
+{
+"h": "بهترین نقطه‌ی شروع",
+"p": "دو پروژه‌ی آماده در کتابخانه هست: «Truck Town» (دموی رسمی با VehicleBody3D) و «Racing Starter Kit» کنی. اول Truck Town را باز کن و vehicle.gd را بخوان؛ کوتاه است و همه‌چیز را نشان می‌دهد.",
+"code": ""
+},
+{
+"h": "ساختار ماشین",
+"p": "VehicleBody3D بدنه است و چهار VehicleWheel3D زیرش. چرخ‌های جلو use_as_steering و چرخ‌های عقب use_as_traction دارند. mass را حدود ۱۰۰۰ تا ۱۵۰۰ بگذار تا مثل پراید یا پژو رفتار کند.",
+"code": ""
+},
+{
+"h": "کد پایه",
+"p": "",
+"code": "extends VehicleBody3D\n@export var max_engine := 220.0\n@export var max_steer := 0.45\nfunc _physics_process(delta):\n    var speed := linear_velocity.length()\n    # فرمان حساس به سرعت: در سرعت بالا کمتر می‌چرخد\n    var steer_limit := lerp(max_steer, 0.12, clamp(speed / 30.0, 0.0, 1.0))\n    var target := Input.get_axis(\"right\", \"left\") * steer_limit\n    steering = move_toward(steering, target, 2.5 * delta)   # برگشت خودکار فرمان\n    engine_force = Input.get_axis(\"brake\", \"accelerate\") * max_engine\n    brake = 30.0 if Input.is_action_pressed(\"handbrake\") else 0.0\n    if Input.is_action_pressed(\"handbrake\"):\n        $RearLeft.wheel_friction_slip = 1.2   # دریفت\n        $RearRight.wheel_friction_slip = 1.2\n    else:\n        $RearLeft.wheel_friction_slip = 2.8\n        $RearRight.wheel_friction_slip = 2.8"
+},
+{
+"h": "تعلیق",
+"p": "روی هر چرخ suspension_stiffness بین ۳۰ تا ۵۰ و damping_compression حدود ۰٫۸ بگذار. اگر ماشین چپ می‌کند، center_of_mass را پایین بیاور (center_of_mass_mode = Custom).",
+"code": ""
+},
+{
+"h": "جاده و ترافیک",
+"p": "افزونه‌ی Road Generator جاده و تقاطع می‌سازد و مسیر AI برای ماشین‌های ترافیک هم تولید می‌کند. برای ضربه و افتادن آدم‌ها، دموی Ragdoll را ببین.",
+"code": ""
+}
+],
+"libs": [
+"road_generator",
+"destruction",
+"tpl_kenney_racing",
+"tpl_truck_town",
+"tpl_ragdoll"
+]
+},
+{
+"id": "godot_camera",
+"cat": "game",
+"icon": "videocam",
+"title": "دوربین بازی در Godot",
+"kw": "دوربین سوم شخص دنبال لرزش",
+"sections": [
+{
+"h": "ساده‌ترین روش",
+"p": "یک SpringArm3D پشت ماشین بگذار و Camera3D را بچه‌ی آن کن. SpringArm نمی‌گذارد دوربین داخل دیوار برود.",
+"code": ""
+},
+{
+"h": "روش حرفه‌ای",
+"p": "Phantom Camera را نصب کن. یک PhantomCameraHost زیر دوربین اصلی می‌گذاری و چند PhantomCamera3D می‌سازی (پیاده، رانندگی، میان‌پرده). با تغییر priority، دوربین نرم بین آن‌ها جابه‌جا می‌شود.",
+"code": "func enter_car():\n    $DriveCam.priority = 20\n    $WalkCam.priority = 0"
+},
+{
+"h": "لرزش هنگام تصادف",
+"p": "Phantom Camera افکت لرزش (noise) دارد. با یک تابع کوچک هم می‌توانی دوربین را چند فریم تصادفی جابه‌جا کنی.",
+"code": ""
+}
+],
+"libs": [
+"phantom_camera"
+]
+},
+{
+"id": "godot_ai",
+"cat": "game",
+"icon": "smart_toy",
+"title": "هوش مصنوعی NPC (پلیس، رهگذر، دشمن)",
+"kw": "هوش مصنوعی npc پلیس رهگذر دشمن مسیریابی رفتار",
+"sections": [
+{
+"h": "سه ابزار",
+"p": "۱. NavigationAgent3D برای پیدا کردن مسیر روی نقشه (داخلی Godot). ۲. ماشین حالت (State Charts یا YAFSM) برای حالت‌ها مثل گشت، تعقیب و فرار. ۳. درخت رفتار (Beehave) برای تصمیم‌گیری پیچیده‌تر.",
+"code": ""
+},
+{
+"h": "رهگذر ساده",
+"p": "یک NavigationRegion3D روی پیاده‌روها بپز (Bake) و به هر رهگذر یک نقطه‌ی تصادفی بده:",
+"code": "extends CharacterBody3D\n@onready var agent := $NavigationAgent3D\nfunc _ready():\n    agent.target_position = NavigationServer3D.map_get_random_point(get_world_3d().navigation_map, 1, false)\nfunc _physics_process(_d):\n    var next := agent.get_next_path_position()\n    velocity = (next - global_position).normalized() * 1.4\n    move_and_slide()"
+},
+{
+"h": "پلیس",
+"p": "با ماشین حالت: «گشت» (دنبال کردن مسیر جاده) → اگر بازیکن خلاف کرد، «تعقیب» (target = بازیکن) → اگر دور شد، «جستجو» → برگشت به «گشت».",
+"code": ""
+}
+],
+"libs": [
+"beehave",
+"godot_state_charts",
+"yafsm",
+"tpl_navigation"
+]
+},
+{
+"id": "godot_dialog",
+"cat": "game",
+"icon": "forum",
+"title": "دیالوگ و مأموریت",
+"kw": "دیالوگ مأموریت گفتگو داستان",
+"sections": [
+{
+"h": "کدام؟",
+"p": "Dialogic ویرایشگر گرافیکی کامل دارد و برای داستان و شخصیت‌ها عالی است. Dialogue Manager فایل متنی ساده دارد و برای دیالوگ‌های زیاد و سریع بهتر است. هر دو متن فارسی را نمایش می‌دهند؛ فقط فونت فارسی (مثل وزیرمتن) را در Theme تنظیم کن.",
+"code": ""
+},
+{
+"h": "مأموریت تاکسی (ایده)",
+"p": "مأموریت را یک Resource تعریف کن: نقطه‌ی سوار شدن، مقصد، پاداش و دیالوگ شروع. یک MissionManager (autoload) مأموریت فعال را نگه می‌دارد و با Area3D ورود ماشین به مقصد را چک می‌کند.",
+"code": "class_name Mission extends Resource\n@export var title := \"مسافر به ارگ کریمخان\"\n@export var pickup: Vector3\n@export var dropoff: Vector3\n@export var reward := 50000"
+}
+],
+"libs": [
+"dialogic",
+"dialogue_manager"
+]
+},
+{
+"id": "godot_terrain",
+"cat": "game",
+"icon": "landscape",
+"title": "شهر، زمین، جاده، درخت و آسمان",
+"kw": "زمین جاده درخت آسمان روز شب شهر محیط",
+"sections": [
+{
+"h": "نقشه‌ی شهر",
+"p": "خیابان‌ها با Road Generator، زمین اطراف با HTerrain (از تصویر ارتفاع)، و درخت‌ها و تیر چراغ برق با Proton Scatter (کنار مسیر جاده پخش می‌شوند).",
+"code": ""
+},
+{
+"h": "روز و شب",
+"p": "Sky3D را اضافه کن؛ خورشید، ماه و رنگ آسمان را خودش با ساعت تنظیم می‌کند. چراغ‌های خیابان را به سیگنال تغییر ساعت وصل کن تا شب روشن شوند.",
+"code": "if $Sky3D.current_time > 19.0 or $Sky3D.current_time < 6.0:\n    get_tree().call_group(\"street_lamps\", \"turn_on\")"
+},
+{
+"h": "لپ‌تاپ ضعیف",
+"p": "برای سرعت بیشتر از VisibilityRange (LOD دستی)، MultiMeshInstance3D برای درخت‌های تکراری و Occlusion Culling استفاده کن. دموهای رسمی occlusion و visibility_ranges در مخزن رسمی Godot هستند.",
+"code": ""
+}
+],
+"libs": [
+"smartshape2d",
+"proton_scatter",
+"road_generator",
+"hterrain",
+"spatial_gardener",
+"func_godot",
+"sky3d",
+"tpl_kenney_city"
+]
+},
+{
+"id": "godot_input",
+"cat": "game",
+"icon": "gamepad",
+"title": "کنترل‌ها: کیبورد، دسته و جوی‌استیک موبایل",
+"kw": "کنترل ورودی جوی استیک موبایل دسته کیبورد",
+"sections": [
+{
+"h": "Input Map",
+"p": "در Project Settings → Input Map اکشن‌ها را تعریف کن (accelerate، brake، left، right، handbrake) و در کد فقط از اسم اکشن استفاده کن، نه کلید مستقیم.",
+"code": ""
+},
+{
+"h": "نسخه‌ی اندروید",
+"p": "Virtual Joystick را به یک CanvasLayer اضافه کن و اکشن‌هایش را به همان اکشن‌های Input Map وصل کن تا کد ماشین بدون تغییر روی گوشی کار کند. برای گاز و ترمز، TouchScreenButton با action تنظیم‌شده بگذار.",
+"code": ""
+},
+{
+"h": "تنظیم کلید توسط کاربر",
+"p": "G.U.I.D.E امکان تغییر کلیدها در منوی تنظیمات را می‌دهد.",
+"code": ""
+}
+],
+"libs": [
+"guide",
+"input_helper",
+"virtual_joystick"
+]
+},
+{
+"id": "godot_ui",
+"cat": "game",
+"icon": "dashboard",
+"title": "منو، صفحه‌ی بارگذاری و صدا",
+"kw": "منو تنظیمات بارگذاری صحنه",
+"sections": [
+{
+"h": "منوی آماده",
+"p": "Maaack's Menus منوی اصلی، تنظیمات و توقف را آماده می‌دهد. بعد از نصب، از منوی Project → Tools قالب را در پروژه کپی کن.",
+"code": ""
+},
+{
+"h": "متن فارسی",
+"p": "در Godot 4 متن راست‌به‌چپ پشتیبانی می‌شود. فونت Vazirmatn را در Theme پیش‌فرض بگذار (Project Settings → GUI → Theme → Custom Font).",
+"code": ""
+},
+{
+"h": "کنسول تست",
+"p": "Panku Console برای تست سریع خوب است، اما همان‌طور که خودت گفتی نسخه‌ی فروشی نباید تقلب داشته باشد؛ پس آن را فقط در نسخه‌ی debug فعال کن:",
+"code": "if not OS.is_debug_build():\n    Panku.queue_free()"
+}
+],
+"libs": [
+"maaacks_menus",
+"scene_manager",
+"panku_console",
+"sound_manager",
+"aseprite_wizard",
+"gif_exporter",
+"icon_explorer"
+]
+},
+{
+"id": "godot_save",
+"cat": "game",
+"icon": "save",
+"title": "ذخیره‌ی بازی",
+"kw": "ذخیره سیو بازی پول",
+"sections": [
+{
+"h": "روش داخلی",
+"p": "ساده‌ترین روش ذخیره‌ی یک Dictionary با FileAccess در مسیر user:// است. برای جلوگیری از دستکاری، open_encrypted_with_pass را به کار ببر.",
+"code": "func save_game(data: Dictionary):\n    var f := FileAccess.open_encrypted_with_pass(\"user://save.dat\", FileAccess.WRITE, \"kelid-makhfi\")\n    f.store_var(data)\nfunc load_game() -> Dictionary:\n    if not FileAccess.file_exists(\"user://save.dat\"): return {}\n    var f := FileAccess.open_encrypted_with_pass(\"user://save.dat\", FileAccess.READ, \"kelid-makhfi\")\n    return f.get_var()"
+},
+{
+"h": "افزونه",
+"p": "Save Made Easy همین کار را با API ساده‌تر و رمزنگاری انجام می‌دهد.",
+"code": ""
+}
+],
+"libs": [
+"save_made_easy"
+]
+},
+{
+"id": "godot_testing",
+"cat": "game",
+"icon": "bug_report",
+"title": "تست و دیباگ در Godot",
+"kw": "تست دیباگ خطا",
+"sections": [
+{
+"h": "تست خودکار",
+"p": "GUT یا GdUnit4 برای تست منطق (پول، مأموریت، آسیب ماشین). اجرای تست قبل از هر بیلد جلوی خراب شدن چیزهای قبلی را می‌گیرد.",
+"code": ""
+},
+{
+"h": "دیباگ فیزیک",
+"p": "Debug → Visible Collision Shapes را روشن کن تا شکل برخوردها را ببینی.",
+"code": ""
+}
+],
+"libs": [
+"gut",
+"gdunit4",
+"panku_console"
+]
+},
+{
+"id": "godot_starters",
+"cat": "game",
+"icon": "rocket_launch",
+"title": "پروژه‌های آماده‌ی Godot برای یادگیری",
+"kw": "پروژه آماده قالب نمونه دمو یادگیری",
+"sections": [
+{
+"h": "ترتیب پیشنهادی",
+"p": "۱. Squash the Creeps (اولین بازی سه‌بعدی). ۲. پلتفرمر سه‌بعدی کنی (کنترل شخصیت). ۳. Truck Town و Racing Kit (رانندگی). ۴. شخصیت سوم‌شخص GDQuest (پیاده‌روی حرفه‌ای). ۵. مسیریابی (رهگذرها).",
+"code": ""
+},
+{
+"h": "استفاده",
+"p": "در برنامه روی «باز کردن پروژه» بزن تا در پوشه‌ای که انتخاب می‌کنی استخراج شود، بعد در Godot با Import بازش کن.",
+"code": ""
+}
+],
+"libs": [
+"tpl_kenney_racing",
+"tpl_truck_town",
+"tpl_kenney_city",
+"tpl_kenney_platformer",
+"tpl_kenney_fps",
+"tpl_third_person",
+"tpl_platformer3d",
+"tpl_squash_creeps",
+"tpl_navigation",
+"tpl_ragdoll",
+"tpl_voxel",
+"tpl_procgen"
+]
+},
+{
+"id": "state",
+"cat": "dev",
+"icon": "account_tree",
+"title": "مدیریت وضعیت (State Management)",
+"kw": "وضعیت state مدیریت داده riverpod bloc provider",
+"sections": [
+{
+"h": "کدام را انتخاب کنم؟",
+"p": "برنامه‌ی کوچک یا شروع یادگیری: Provider. پروژه‌ی جدید جدی: Riverpod (پیشنهاد اصلی). تیم بزرگ با معماری سخت‌گیرانه: Bloc. GetX سریع است ولی در پروژه‌ی بزرگ نگهداری‌اش سخت می‌شود.",
+"code": ""
+},
+{
+"h": "قاعده‌ی طلایی",
+"p": "منطق (محاسبه، API، دیتابیس) را در ویجت ننویس. ویجت فقط نمایش می‌دهد و رویداد را به Notifier یا Cubit می‌فرستد.",
+"code": ""
+},
+{
+"h": "نمونه‌ی کامل Riverpod",
+"p": "",
+"code": "final itemsProvider = AsyncNotifierProvider<ItemsNotifier, List<Item>>(ItemsNotifier.new);\n\nclass ItemsNotifier extends AsyncNotifier<List<Item>> {\n  @override\n  Future<List<Item>> build() => api.fetchItems();\n  Future<void> add(Item i) async {\n    await api.add(i);\n    ref.invalidateSelf();   // دوباره بارگذاری\n  }\n}\n\nclass ItemsPage extends ConsumerWidget {\n  @override\n  Widget build(BuildContext context, WidgetRef ref) {\n    return ref.watch(itemsProvider).when(\n      data: (items) => ListView(children: [for (final i in items) Text(i.name)]),\n      loading: () => const CircularProgressIndicator(),\n      error: (e, _) => Text('خطا: $e'),\n    );\n  }\n}"
+}
+],
+"libs": [
+"flame_bloc",
+"flame_riverpod",
+"provider",
+"flutter_riverpod",
+"riverpod",
+"hooks_riverpod",
+"flutter_hooks",
+"flutter_bloc",
+"bloc",
+"hydrated_bloc",
+"get",
+"get_it",
+"equatable",
+"freezed_annotation",
+"rxdart",
+"fpdart"
+]
+},
+{
+"id": "network",
+"cat": "dev",
+"icon": "cloud",
+"title": "ارتباط با سرور و API",
+"kw": "اینترنت api سرور درخواست json دانلود آپلود",
+"sections": [
+{
+"h": "http یا dio؟",
+"p": "برای چند درخواست ساده http کافی است. اگر توکن، آپلود فایل، تایم‌اوت، تلاش دوباره یا لاگ می‌خواهی، dio.",
+"code": ""
+},
+{
+"h": "تبدیل JSON به مدل",
+"p": "بدون ابزار تولید کد، دستی بنویس؛ برای مدل‌های کم سریع‌تر است:",
+"code": "class Product {\n  final int id; final String name; final int price;\n  Product({required this.id, required this.name, required this.price});\n  factory Product.fromJson(Map<String, dynamic> j) =>\n      Product(id: j['id'], name: j['name'], price: j['price']);\n}\nfinal list = (jsonDecode(res.body) as List).map((e) => Product.fromJson(e)).toList();"
+},
+{
+"h": "WooCommerce",
+"p": "برای سایت‌های فروشگاهی‌ات، API ووکامرس با Consumer Key و Secret کار می‌کند. کلیدها را در flutter_secure_storage نگه دار و هرگز داخل کد نگذار.",
+"code": ""
+},
+{
+"h": "وقتی اینترنت قطع است",
+"p": "با connectivity_plus وضعیت را چک کن و داده‌ی آخر را در Hive یا sqflite کش کن تا برنامه آفلاین هم چیزی نشان بدهد.",
+"code": ""
+}
+],
+"libs": [
+"json_annotation",
+"http",
+"dio",
+"web_socket_channel",
+"connectivity_plus",
+"cached_network_image",
+"webview_flutter"
+]
+},
+{
+"id": "storage_kv",
+"cat": "dev",
+"icon": "tune",
+"title": "ذخیره‌ی تنظیمات و داده‌ی کوچک",
+"kw": "ذخیره تنظیمات تم زبان",
+"sections": [
+{
+"h": "انتخاب",
+"p": "تنظیمات ساده: shared_preferences. داده‌ی زیاد کلید و مقدار یا کش: Hive CE. رمز و توکن: حتماً flutter_secure_storage (بخش امنیت).",
+"code": ""
+},
+{
+"h": "نمونه",
+"p": "",
+"code": "final p = await SharedPreferences.getInstance();\nawait p.setString('lang', 'fa');\nfinal lang = p.getString('lang') ?? 'fa';"
+}
+],
+"libs": [
+"hydrated_bloc",
+"shared_preferences",
+"hive_ce",
+"path_provider"
+]
+},
+{
+"id": "database",
+"cat": "dev",
+"icon": "storage",
+"title": "دیتابیس محلی",
+"kw": "دیتابیس پایگاه داده sqlite جدول حسابداری",
+"sections": [
+{
+"h": "انتخاب",
+"p": "اندروید و iOS: sqflite. ویندوز و لینوکس: sqflite_common_ffi (همان API). همه‌ی پلتفرم‌ها با سرعت بالا: sqlite3. NoSQL ساده و سریع: Hive CE.",
+"code": ""
+},
+{
+"h": "یک کد برای موبایل و ویندوز",
+"p": "برای برنامه‌ی حسابداری که هم روی گوشی و هم ویندوز اجرا می‌شود:",
+"code": "import 'dart:io';\nimport 'package:sqflite_common_ffi/sqflite_ffi.dart';\n\nFuture<Database> openDb() async {\n  if (Platform.isWindows || Platform.isLinux) {\n    sqfliteFfiInit();\n    databaseFactory = databaseFactoryFfi;\n  }\n  return openDatabase('accounting.db', version: 1, onCreate: (db, v) async {\n    await db.execute('''CREATE TABLE tx(\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      title TEXT, amount INTEGER, date TEXT)''');\n  });\n}"
+},
+{
+"h": "مهاجرت نسخه",
+"p": "اگر بعداً ستون اضافه کردی، version را یکی بالا ببر و در onUpgrade دستور ALTER TABLE بنویس تا داده‌های قبلی کاربر پاک نشوند.",
+"code": ""
+}
+],
+"libs": [
+"sqflite",
+"sqflite_common_ffi",
+"sqlite3",
+"hive_ce",
+"hive_ce_flutter"
+]
+},
+{
+"id": "routing",
+"cat": "dev",
+"icon": "alt_route",
+"title": "صفحات و ناوبری",
+"kw": "ناوبری صفحه مسیر رفتن",
+"sections": [
+{
+"h": "GoRouter",
+"p": "استاندارد امروز Flutter. برای لاگین از redirect استفاده کن:",
+"code": "GoRouter(redirect: (ctx, state) => loggedIn ? null : '/login', routes: [...]);"
+},
+{
+"h": "ساده",
+"p": "برای دو سه صفحه همان Navigator.push کافی است.",
+"code": "Navigator.of(context).push(MaterialPageRoute(builder: (_) => const Detail()));"
+}
+],
+"libs": [
+"get",
+"go_router"
+]
+},
+{
+"id": "ui_widgets",
+"cat": "dev",
+"icon": "widgets",
+"title": "رابط کاربری زیبا و انیمیشن",
+"kw": "رابط کاربری ui ویجت انیمیشن اسلایدر لیست",
+"sections": [
+{
+"h": "فارسی و راست‌به‌چپ",
+"p": "در MaterialApp مقدار locale: Locale('fa') بگذار، flutter_localizations را اضافه کن و فونت وزیرمتن را در theme تنظیم کن تا کل برنامه راست‌به‌چپ شود.",
+"code": "MaterialApp(\n  locale: const Locale('fa'),\n  supportedLocales: const [Locale('fa')],\n  localizationsDelegates: GlobalMaterialLocalizations.delegates,\n  theme: ThemeData(fontFamily: 'Vazirmatn', useMaterial3: true),\n)"
+},
+{
+"h": "لیست ابزارها",
+"p": "لودینگ اسکلتی: shimmer. بنر: carousel_slider. حذف با کشیدن: flutter_slidable. انیمیشن سریع: flutter_animate. انیمیشن آماده: lottie. گالری نامنظم: flutter_staggered_grid_view.",
+"code": ""
+}
+],
+"libs": [
+"lottie",
+"table_calendar",
+"shimmer",
+"carousel_slider",
+"flutter_slidable",
+"smooth_page_indicator",
+"flutter_staggered_grid_view",
+"badges",
+"auto_size_text",
+"animations",
+"flutter_animate",
+"flutter_markdown_plus",
+"cupertino_icons"
+]
+},
+{
+"id": "charts",
+"cat": "dev",
+"icon": "bar_chart",
+"title": "نمودار و گزارش",
+"kw": "نمودار چارت گزارش آمار",
+"sections": [
+{
+"h": "fl_chart",
+"p": "خطی برای روند فروش، میله‌ای برای مقایسه‌ی ماه‌ها و دایره‌ای برای سهم هر دسته.",
+"code": "BarChart(BarChartData(barGroups: [\n  for (var i = 0; i < sales.length; i++)\n    BarChartGroupData(x: i, barRods: [BarChartRodData(toY: sales[i].toDouble())]),\n]))"
+}
+],
+"libs": [
+"fl_chart"
+]
+},
+{
+"id": "images",
+"cat": "dev",
+"icon": "image",
+"title": "عکس، آیکون و QR",
+"kw": "عکس تصویر آیکون svg qr فشرده",
+"sections": [
+{
+"h": "ابزارها",
+"p": "عکس اینترنتی با کش: cached_network_image. SVG: flutter_svg. زوم: photo_view. ساخت QR: qr_flutter. کوچک کردن عکس قبل از آپلود: image.",
+"code": ""
+},
+{
+"h": "کوچک کردن عکس محصول",
+"p": "",
+"code": "final img = decodeImage(await File(path).readAsBytes())!;\nfinal out = encodeJpg(copyResize(img, width: 1200), quality: 82);"
+}
+],
+"libs": [
+"cached_network_image",
+"flutter_svg",
+"lottie",
+"photo_view",
+"image_picker",
+"qr_flutter",
+"image"
+]
+},
+{
+"id": "media",
+"cat": "dev",
+"icon": "photo_camera",
+"title": "دوربین، ویدیو، صدا و اسکن",
+"kw": "دوربین ویدیو صدا بارکد اسکن",
+"sections": [
+{
+"h": "ابزارها",
+"p": "انتخاب عکس از گالری: image_picker. کنترل کامل دوربین: camera. بارکد و QR: mobile_scanner. ویدیو: video_player. صدا: audioplayers. صفحه‌ی وب و درگاه پرداخت: webview_flutter.",
+"code": ""
+},
+{
+"h": "مجوزها",
+"p": "قبل از دوربین و میکروفون مجوز بگیر (permission_handler) و در AndroidManifest مجوز CAMERA را اضافه کن.",
+"code": "<uses-permission android:name=\"android.permission.CAMERA\"/>"
+}
+],
+"libs": [
+"audioplayers",
+"image_picker",
+"camera",
+"video_player",
+"webview_flutter",
+"mobile_scanner"
+]
+},
+{
+"id": "files",
+"cat": "dev",
+"icon": "description",
+"title": "فایل، PDF، اکسل و فاکتور",
+"kw": "فایل pdf اکسل فاکتور چاپ خروجی",
+"sections": [
+{
+"h": "فاکتور PDF فارسی",
+"p": "برای فاکتور حتماً فونت فارسی بارگذاری کن و Directionality را rtl بگذار؛ وگرنه حروف جدا یا برعکس نمایش داده می‌شوند.",
+"code": ""
+},
+{
+"h": "خروجی اکسل",
+"p": "با پکیج excel لیست کالا یا گزارش را xlsx کن و با share_plus بفرست.",
+"code": ""
+},
+{
+"h": "مسیر ذخیره",
+"p": "path_provider مسیر پوشه‌ی اسناد را می‌دهد و file_picker پنجره‌ی انتخاب فایل را باز می‌کند.",
+"code": ""
+}
+],
+"libs": [
+"path_provider",
+"path",
+"file_picker",
+"pdf",
+"printing",
+"excel",
+"csv",
+"uuid",
+"archive",
+"xml"
+]
+},
+{
+"id": "device",
+"cat": "dev",
+"icon": "smartphone",
+"title": "دستگاه، مجوزها و امکانات سیستم",
+"kw": "مجوز دستگاه مدل باتری اینترنت لینک تماس",
+"sections": [
+{
+"h": "ابزارها",
+"p": "مجوزها: permission_handler. مدل گوشی: device_info_plus. نسخه‌ی برنامه: package_info_plus. لینک و تماس: url_launcher. اشتراک‌گذاری: share_plus. اینترنت: connectivity_plus. سنسورها: sensors_plus.",
+"code": ""
+}
+],
+"libs": [
+"sensors_plus",
+"connectivity_plus",
+"url_launcher",
+"permission_handler",
+"device_info_plus",
+"package_info_plus",
+"share_plus",
+"battery_plus"
+]
+},
+{
+"id": "location_maps",
+"cat": "dev",
+"icon": "place",
+"title": "نقشه و موقعیت مکانی",
+"kw": "نقشه مکان gps موقعیت",
+"sections": [
+{
+"h": "نقشه بدون گوگل",
+"p": "flutter_map با OpenStreetMap کار می‌کند و کلید API لازم ندارد. برای کاشی‌های فارسی می‌توانی از سرویس‌های ایرانی مثل نشان یا پارسی‌مپ استفاده کنی (کلید خودشان را لازم دارند).",
+"code": ""
+},
+{
+"h": "نشانگر روی نقشه",
+"p": "",
+"code": "MarkerLayer(markers: [Marker(point: const LatLng(29.61, 52.53), child: const Icon(Icons.location_on, color: Colors.red))])"
+}
+],
+"libs": [
+"geolocator",
+"flutter_map",
+"latlong2"
+]
+},
+{
+"id": "notifications",
+"cat": "dev",
+"icon": "notifications",
+"title": "اعلان (نوتیفیکیشن)",
+"kw": "اعلان نوتیفیکیشن یادآور",
+"sections": [
+{
+"h": "اعلان محلی",
+"p": "flutter_local_notifications اعلان را بدون سرور نمایش می‌دهد و می‌تواند زمان‌بندی کند. در اندروید ۱۳ به بعد باید مجوز POST_NOTIFICATIONS را بگیری.",
+"code": ""
+},
+{
+"h": "اعلان از سرور",
+"p": "Firebase Cloud Messaging در ایران محدودیت دارد. برای اعلان از سرور، سرویس‌های ایرانی مثل نجوا یا پوشه را بررسی کن.",
+"code": ""
+}
+],
+"libs": [
+"flutter_local_notifications"
+]
+},
+{
+"id": "persian_date",
+"cat": "dev",
+"icon": "calendar_month",
+"title": "تاریخ شمسی و اعداد فارسی",
+"kw": "تاریخ شمسی جلالی فارسی عدد قیمت",
+"sections": [
+{
+"h": "تاریخ",
+"p": "shamsi_date ساده‌ترین راه تبدیل و نمایش تاریخ شمسی است.",
+"code": "final j = Jalali.fromDateTime(DateTime.now());\nfinal f = j.formatter;\nprint('${f.wN} ${f.d} ${f.mN} ${f.yyyy}'); // شنبه ۲۵ مهر ۱۴۰۵"
+},
+{
+"h": "قیمت با جداکننده",
+"p": "",
+"code": "String toman(int n) => '${NumberFormat.decimalPattern('fa').format(n)} تومان';"
+}
+],
+"libs": [
+"table_calendar",
+"intl",
+"shamsi_date"
+]
+},
+{
+"id": "code_quality",
+"cat": "dev",
+"icon": "verified",
+"title": "کیفیت کد، لاگ و ابزارهای کمکی",
+"kw": "lint تست لاگ کیفیت",
+"sections": [
+{
+"h": "ابزارها",
+"p": "flutter_lints را در analysis_options بگذار، با logger لاگ بگیر و از collection برای کار با لیست‌ها استفاده کن.",
+"code": ""
+}
+],
+"libs": [
+"flutter_lints",
+"lints",
+"logger",
+"collection"
+]
+},
+{
+"id": "android_ui",
+"cat": "dev",
+"icon": "android",
+"title": "اندروید (Kotlin): رابط کاربری",
+"kw": "اندروید kotlin compose رابط کاربری",
+"sections": [
+{
+"h": "Compose",
+"p": "پروژه‌ی جدید را با Compose شروع کن. ViewModel برای منطق و Navigation Compose برای صفحه‌ها. برای عکس از Coil استفاده کن.",
+"code": ""
+},
+{
+"h": "آفلاین کردن",
+"p": "کتابخانه‌های Kotlin داخل این بسته نیستند چون سرورهای Maven برای من بسته بود. یک بار با اینترنت از بخش «کش Gradle» دکمه‌ی دانلود را بزن تا همه‌شان در کش Gradle خودت ذخیره شوند. بعد از آن در Android Studio گزینه‌ی Offline mode را روشن کن.",
+"code": ""
+}
+],
+"libs": [
+"compose",
+"core_ktx",
+"navigation_compose",
+"lifecycle",
+"coil",
+"glide",
+"lottie_android",
+"osmdroid"
+]
+},
+{
+"id": "android_network",
+"cat": "dev",
+"icon": "lan",
+"title": "اندروید (Kotlin): شبکه و API",
+"kw": "اندروید retrofit okhttp شبکه api",
+"sections": [
+{
+"h": "استاندارد",
+"p": "Retrofit + OkHttp + Coroutines. درخواست‌ها را در viewModelScope.launch صدا بزن.",
+"code": ""
+}
+],
+"libs": [
+"coroutines",
+"retrofit",
+"okhttp",
+"gson",
+"kotlinx_serialization",
+"ktor_client"
+]
+},
+{
+"id": "android_db",
+"cat": "dev",
+"icon": "storage",
+"title": "اندروید (Kotlin): دیتابیس و ذخیره‌سازی",
+"kw": "اندروید room datastore دیتابیس",
+"sections": [
+{
+"h": "انتخاب",
+"p": "Room برای جدول‌ها، DataStore برای تنظیمات، WorkManager برای کار پس‌زمینه. برای داده‌ی حساس SQLCipher.",
+"code": ""
+}
+],
+"libs": [
+"room",
+"datastore",
+"paging",
+"workmanager"
+]
+},
+{
+"id": "android_media_ml",
+"cat": "dev",
+"icon": "memory",
+"title": "اندروید (Kotlin): دوربین و هوش مصنوعی",
+"kw": "دوربین هوش مصنوعی tflite yolo تشخیص شی",
+"sections": [
+{
+"h": "YOLO روی گوشی",
+"p": "CameraX فریم‌ها را با ImageAnalysis می‌دهد، تو آن‌ها را به اندازه‌ی ورودی مدل (مثلاً 640×640) تغییر می‌دهی و به Interpreter پکیج TFLite می‌دهی. GpuDelegate سرعت را چند برابر می‌کند. مقایسه‌ی CPU، GPU و NNAPI موضوع خوبی برای بنچمارک است.",
+"code": ""
+}
+],
+"libs": [
+"camerax",
+"tflite",
+"mlkit",
+"media3"
+]
+},
+{
+"id": "android_game",
+"cat": "game",
+"icon": "videogame_asset",
+"title": "بازی با Kotlin",
+"kw": "بازی kotlin libgdx",
+"sections": [
+{
+"h": "LibGDX",
+"p": "موتور اصلی بازی در دنیای Java و Kotlin است. پروژه را با ابزار gdx-liftoff بساز (آن ابزار هم اینترنت لازم دارد). اگر هدفت بازی سه‌بعدی بزرگ است، Godot ساده‌تر است.",
+"code": ""
+}
+],
+"libs": [
+"libgdx",
+"sceneview"
+]
+},
+{
+"id": "android_di",
+"cat": "dev",
+"icon": "hub",
+"title": "اندروید (Kotlin): معماری، تزریق وابستگی و دیباگ",
+"kw": "hilt koin di لاگ نشت حافظه",
+"sections": [
+{
+"h": "انتخاب",
+"p": "Koin ساده و بدون تولید کد است. Hilt رسمی گوگل است ولی سنگین‌تر. Timber برای لاگ و LeakCanary برای نشت حافظه.",
+"code": ""
+}
+],
+"libs": [
+"hilt",
+"koin",
+"timber",
+"leakcanary"
+]
+},
+{
+"id": "sec_crypto",
+"cat": "security",
+"icon": "lock",
+"title": "رمزنگاری و هش",
+"kw": "رمزنگاری رمز کردن هش aes sha پسورد",
+"sections": [
+{
+"h": "سه مفهوم اصلی",
+"p": "هش (SHA-256): یک‌طرفه است و برای بررسی صحت فایل به کار می‌رود. رمزنگاری متقارن (AES-GCM): با یک کلید رمز و باز می‌شود و برای فایل و داده مناسب است. رمزنگاری نامتقارن (RSA و Ed25519): کلید عمومی و خصوصی دارد و برای امضا و تبادل کلید به کار می‌رود.",
+"code": ""
+},
+{
+"h": "پسورد کاربر: هش ساده کافی نیست",
+"p": "برای ذخیره‌ی پسورد هرگز SHA-256 ساده یا MD5 به کار نبر. از الگوریتم‌های کند مثل Argon2id یا PBKDF2 با salt تصادفی استفاده کن (پکیج cryptography).",
+"code": "final salt = List<int>.generate(16, (_) => Random.secure().nextInt(256));\nfinal algo = Argon2id(parallelism: 1, memory: 19000, iterations: 2, hashLength: 32);\nfinal key = await algo.deriveKeyFromPassword(password: password, nonce: salt);\nfinal hash = await key.extractBytes();   // salt و hash را ذخیره کن"
+},
+{
+"h": "اشتباهات رایج",
+"p": "کلید را داخل کد ننویس. IV یا nonce را تکرار نکن (هر بار تصادفی بساز). از حالت ECB استفاده نکن؛ GCM را به کار ببر. Random معمولی برای رمزنگاری مناسب نیست؛ Random.secure() لازم است.",
+"code": ""
+},
+{
+"h": "Kotlin",
+"p": "در اندروید Tink گوگل امن‌ترین و ساده‌ترین انتخاب است.",
+"code": ""
+}
+],
+"libs": [
+"crypto",
+"encrypt",
+"pointycastle",
+"cryptography",
+"cryptography_flutter",
+"asn1lib",
+"tink",
+"bouncycastle"
+]
+},
+{
+"id": "sec_storage",
+"cat": "security",
+"icon": "enhanced_encryption",
+"title": "ذخیره‌ی امن داده",
+"kw": "ذخیره امن توکن رمز keystore",
+"sections": [
+{
+"h": "قانون",
+"p": "توکن، رمز و کلید API هرگز نباید در shared_preferences یا فایل معمولی ذخیره شود. روی گوشی روت‌شده این‌ها به‌راحتی خوانده می‌شوند.",
+"code": ""
+},
+{
+"h": "Flutter",
+"p": "flutter_secure_storage کلید را در Android Keystore و Keychain نگه می‌دارد.",
+"code": "const s = FlutterSecureStorage();\nawait s.write(key: 'wc_secret', value: secret);"
+},
+{
+"h": "دیتابیس رمزشده",
+"p": "Hive CE با HiveAesCipher و SQLCipher در اندروید. کلید دیتابیس را در Secure Storage نگه دار.",
+"code": "final key = Hive.generateSecureKey();\nawait storage.write(key: 'hive', value: base64Encode(key));\nfinal box = await Hive.openBox('secret', encryptionCipher: HiveAesCipher(key));"
+}
+],
+"libs": [
+"flutter_secure_storage",
+"security_crypto",
+"sqlcipher"
+]
+},
+{
+"id": "sec_auth",
+"cat": "security",
+"icon": "fingerprint",
+"title": "ورود، احراز هویت و اثر انگشت",
+"kw": "ورود لاگین احراز هویت اثر انگشت jwt توکن",
+"sections": [
+{
+"h": "JWT",
+"p": "سرور بعد از ورود یک توکن امضاشده می‌دهد. برنامه آن را در Secure Storage ذخیره می‌کند و در هدر Authorization می‌فرستد. توکن را در کلاینت بررسی کن، ولی تصمیم نهایی همیشه با سرور است.",
+"code": ""
+},
+{
+"h": "قفل برنامه با اثر انگشت",
+"p": "",
+"code": "final auth = LocalAuthentication();\nif (await auth.canCheckBiometrics) {\n  final ok = await auth.authenticate(localizedReason: 'برای باز کردن حسابداری اثر انگشت بزنید');\n}"
+},
+{
+"h": "نکته",
+"p": "اثر انگشت فقط قفل محلی است. برای امنیت واقعی، کلید رمزنگاری را به بیومتریک گره بزن (در Kotlin با BiometricPrompt و CryptoObject).",
+"code": ""
+}
+],
+"libs": [
+"cryptography",
+"local_auth",
+"dart_jsonwebtoken",
+"biometric",
+"java_jwt"
+]
+},
+{
+"id": "sec_network",
+"cat": "security",
+"icon": "vpn_lock",
+"title": "امنیت شبکه و SSL Pinning",
+"kw": "ssl pinning گواهی https امنیت شبکه",
+"sections": [
+{
+"h": "HTTPS همیشه",
+"p": "هیچ درخواستی را روی http ساده نفرست. در اندروید cleartext به‌صورت پیش‌فرض بسته است؛ بازش نکن.",
+"code": ""
+},
+{
+"h": "Certificate Pinning در dio",
+"p": "با pinning، برنامه فقط به گواهی سرور خودت اعتماد می‌کند و حمله‌ی مرد میانی خنثی می‌شود:",
+"code": "(dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {\n  final client = HttpClient(context: SecurityContext(withTrustedRoots: false));\n  client.badCertificateCallback = (cert, host, port) =>\n      sha256.convert(cert.der).toString() == expectedFingerprint;\n  return client;\n};"
+},
+{
+"h": "Kotlin",
+"p": "OkHttp خودش CertificatePinner دارد (در بخش کتابخانه‌ها نمونه هست).",
+"code": ""
+}
+],
+"libs": [
+"dio",
+"basic_utils",
+"okhttp",
+"conscrypt"
+]
+},
+{
+"id": "sec_app",
+"cat": "security",
+"icon": "shield",
+"title": "محافظت از برنامه",
+"kw": "روت مبهم سازی اسکرین شات تقلب محافظت",
+"sections": [
+{
+"h": "مبهم‌سازی کد Flutter",
+"p": "هنگام بیلد نسخه‌ی نهایی از این دستور استفاده کن تا اسم کلاس‌ها و توابع ناخوانا شود:",
+"code": "flutter build apk --release --obfuscate --split-debug-info=build/symbols"
+},
+{
+"h": "R8 در اندروید",
+"p": "در build.gradle.kts برای release مقادیر isMinifyEnabled = true و isShrinkResources = true را بگذار.",
+"code": "buildTypes { release { isMinifyEnabled = true; isShrinkResources = true } }"
+},
+{
+"h": "روت و اسکرین‌شات",
+"p": "تشخیص روت (flutter_jailbreak_detection یا RootBeer) و جلوگیری از اسکرین‌شات (no_screenshot) برای صفحه‌های حساس. این‌ها مانع کامل نیستند، فقط کار مهاجم را سخت‌تر می‌کنند.",
+"code": ""
+},
+{
+"h": "بازی فروشی",
+"p": "در Godot برای خروجی، PCK را با کلید رمزنگاری کن (Export → Encryption). این کار نیاز به کامپایل قالب export با همان کلید دارد.",
+"code": ""
+}
+],
+"libs": [
+"flutter_jailbreak_detection",
+"no_screenshot",
+"rootbeer"
+]
+}
+],
+"stats": {
+"pub_packages": 287,
+"pub_versions": 641
+}
+}

@@ -1,0 +1,39 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [aspar-library]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Create Windows runner
+        run: flutter create --platforms=windows --no-pub --project-name aspar_library --org ir.aspar .
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings lib
+
+      - name: Build
+        run: flutter build windows --release
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: AsparLibrary-windows
+          path: build/windows/x64/runner/Release/
+          retention-days: 30
